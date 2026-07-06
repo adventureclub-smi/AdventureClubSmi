@@ -120,6 +120,15 @@
 }
 
 @media (max-width: 900px) {
+  // .content's stacked height (icon + h1 + subtitle + cta + memberCard) can
+  // otherwise silently stretch .hero far past its 360px floor, forcing the
+  // absolutely-positioned video to stretch/zoom to match — give it a
+  // deliberate mobile height instead of an emergent one, and trim content
+  // sizing so it comfortably fits within it.
+  .hero {
+    min-height: 480px;
+  }
+
   .content {
     flex-direction: column;
     align-items: flex-start;
@@ -130,7 +139,24 @@
     font-size: 32px;
   }
 
+  .subtitle {
+    font-size: 15px;
+    margin-bottom: 18px;
+  }
+
   .memberCard {
     width: 100%;
+    padding: 20px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: 520px;
+  }
+
+  .content h1 {
+    font-size: 26px;
   }
 }

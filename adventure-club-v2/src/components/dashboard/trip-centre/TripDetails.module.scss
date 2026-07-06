@@ -528,21 +528,16 @@
     border-radius: 22px;
   }
 
+  // A second fixed bottom bar here would permanently overlap the dashboard
+  // shell's own mobile nav bar (both anchored to bottom:0), hiding whichever
+  // has the lower z-index. Instead this renders in-flow as the last block
+  // on the page — still one tap away, without fighting the main nav for the
+  // same strip of screen.
   .mobileActions {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 40;
-
     display: flex;
     gap: 10px;
 
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-
-    background: rgba(13, 13, 13, 0.92);
-    backdrop-filter: blur(14px);
-    border-top: 1px solid rgba(245, 245, 245, 0.08);
+    margin-top: 28px;
 
     a {
       flex: 1;
@@ -560,9 +555,5 @@
       color: var(--color-midnight);
       background: var(--color-accent);
     }
-  }
-
-  .container {
-    padding-bottom: 80px;
   }
 }
