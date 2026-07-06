@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import puppeteer from "puppeteer";
+import type { Browser } from "puppeteer-core";
 
 export type CertificateData = {
   studentName: string;
@@ -61,6 +61,34 @@ function buildHtml(data: CertificateData) {
     );
 }
 
+// Vercel's serverless functions can't run the full `puppeteer` package (its
+// bundled Chromium download is far too large for the function size limit),
+// so production launches `puppeteer-core` against the Linux Chromium build
+// from `@sparticuz/chromium` instead. That binary only runs on Vercel's
+// Linux runtime, so local dev keeps using the full `puppeteer` package
+// (already has its own bundled Chromium for whatever OS you're on).
+async function launchBrowser(): Promise<Browser> {
+  if (process.env.VERCEL) {
+    const [{ default: chromium }, { default: puppeteerCore }] = await Promise.all([
+      import("@sparticuz/chromium"),
+      import("puppeteer-core"),
+    ]);
+
+    return puppeteerCore.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  }
+
+  const { default: puppeteer } = await import("puppeteer");
+
+  return puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  }) as unknown as Promise<Browser>;
+}
+
 // Renders the certificate template to a PNG buffer via headless Chromium.
 // Originally rendered to PDF, but Cloudinary's default account security
 // settings block raw PDF/ZIP delivery (401 "deny or ACL failure") unless
@@ -71,10 +99,7 @@ function buildHtml(data: CertificateData) {
 export async function generateCertificateImage(data: CertificateData): Promise<Buffer> {
   const html = buildHtml(data);
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
