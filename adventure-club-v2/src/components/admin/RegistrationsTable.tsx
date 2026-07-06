@@ -9,8 +9,10 @@ type Registration = {
   id: string;
   registrationNumber: string;
   status: string;
-  paymentDeadline: string | null;
+  initialPaymentDeadline: string | null;
   remarks: string | null;
+
+  paymentPortal: boolean;
 
   user: {
     id: string;
@@ -20,6 +22,9 @@ type Registration = {
     department: string;
     year: string;
     phoneNumber: string;
+
+    upiId?: string | null;
+    upiPhone?: string | null;
   };
 };
 
