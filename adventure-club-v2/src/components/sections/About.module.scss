@@ -1,0 +1,164 @@
+.about {
+  padding: 140px 0;
+  background: #050505;
+}
+
+.container {
+  width: min(1400px, calc(100% - 64px));
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.images {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.largeImage {
+  position: relative;
+  height: 620px;
+  overflow: hidden;
+  border-radius: 30px;
+}
+
+.smallImages {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.small {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 30px;
+}
+
+.image {
+  object-fit: cover;
+  transition: transform .6s ease;
+}
+
+.largeImage:hover .image,
+.small:hover .image {
+  transform: scale(1.08);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  color: #22c55e;
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: clamp(52px, 6vw, 84px);
+  line-height: .95;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  color: white;
+}
+
+.description {
+  font-size: 18px;
+  line-height: 1.9;
+  color: rgba(255,255,255,.72);
+  margin-bottom: 50px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 24px;
+}
+
+.stats div {
+  background: #101010;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px;
+  padding: 28px;
+  text-align: center;
+  transition: .35s;
+}
+
+.stats div:hover {
+  transform: translateY(-6px);
+  border-color: #22c55e;
+}
+
+.stats h3 {
+  font-size: 42px;
+  color: #22c55e;
+  margin-bottom: 10px;
+}
+
+.stats p {
+  color: rgba(255,255,255,.75);
+  font-size: 15px;
+}
+
+@media (max-width:1100px) {
+
+  .container {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .images {
+    grid-template-columns: 1fr;
+  }
+
+  .smallImages {
+    flex-direction: row;
+  }
+
+  .largeImage {
+    height: 500px;
+  }
+
+  .small {
+    height: 220px;
+  }
+
+}
+
+@media (max-width:768px) {
+
+  .about {
+    padding: 100px 0;
+  }
+
+  .container {
+    width: calc(100% - 40px);
+  }
+
+  .title {
+    font-size: 54px;
+  }
+
+  .description {
+    font-size: 16px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .smallImages {
+    flex-direction: column;
+  }
+
+}

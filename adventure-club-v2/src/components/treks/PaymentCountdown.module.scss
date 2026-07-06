@@ -1,0 +1,116 @@
+.card {
+  margin-top: 24px;
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 18px;
+  padding: 28px;
+  text-align: center;
+  color: var(--color-text);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.card h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.card p {
+  color: var(--color-text-muted);
+  margin-bottom: 28px;
+}
+
+.timer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.timer div {
+  background: rgba(245, 245, 245, 0.05);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 14px;
+  padding: 18px 10px;
+}
+
+.timer span {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--color-text);
+}
+
+.timer small {
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+  background: rgba(234, 179, 8, 0.12);
+  color: #eab308;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.expired {
+  margin-top: 24px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 18px;
+  padding: 28px;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.expired h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-danger);
+  margin-bottom: 12px;
+}
+
+.expired p {
+  color: var(--color-text-muted);
+}
+
+.urgent {
+  border: 1px solid #eab308;
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 rgba(234, 179, 8, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(234, 179, 8, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(234, 179, 8, 0.25);
+  }
+}
+
+@media (max-width: 768px) {
+  .timer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .timer span {
+    font-size: 26px;
+  }
+}

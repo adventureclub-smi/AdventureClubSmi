@@ -1,0 +1,108 @@
+export type CTAButton = {
+  label: string;
+  href: string;
+  style: "primary" | "secondary";
+};
+
+export interface HeroContent {
+  videoUrl: string;
+  tagline: string;
+  titleWords: string[];
+  leadLine: string;
+  subtitle: string;
+  buttons: CTAButton[];
+  showCountdown: boolean;
+}
+
+export interface StatItem {
+  id: string;
+  value: number;
+  suffix: string;
+  label: string;
+}
+
+export interface ActivityCard {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  backgroundImage: string;
+  highlights: string[];
+  difficulty?: string;
+  bestSeason?: string;
+  duration?: string;
+  funFact?: string;
+  buttonText: string;
+  buttonLink: string;
+  order: number;
+}
+
+export interface UpcomingTreksConfig {
+  eyebrow: string;
+  heading: string;
+  featuredBadgeLabel: string;
+  showFeaturedCountdown: boolean;
+  featuredTrekId?: string | null;
+}
+
+export type MediaType = "image" | "video";
+
+export interface GalleryPhoto {
+  id: string;
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
+export interface StoryMedia {
+  type: MediaType;
+  src: string;
+}
+
+export interface Story {
+  id: string;
+  title: string;
+  description: string;
+  media: StoryMedia[];
+  order: number;
+  published: boolean;
+}
+
+export interface FinalSectionContent {
+  videoUrl?: string | null;
+  imageUrl: string;
+  heading: string[];
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+export interface SocialLinks {
+  instagram?: string;
+  linkedin?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface HomepageContent {
+  hero: HeroContent;
+  stats: StatItem[];
+  activities: ActivityCard[];
+  upcomingTreks: UpcomingTreksConfig;
+  gallery: GalleryPhoto[];
+  stories: Story[];
+  finalSection: FinalSectionContent;
+  socials: SocialLinks;
+}
+
+export interface TrekSummary {
+  id: string;
+  title: string;
+  destination: string;
+  difficulty: string;
+  date: string;
+  price: number;
+  coverImage: string;
+  seatsLeft: number;
+  registrationOpensAt: string | null;
+}

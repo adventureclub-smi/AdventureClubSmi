@@ -1,0 +1,570 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum RegistrationStatus {
+  WAITING
+  APPROVED
+  WAITLIST
+  REJECTED
+  COMPLETED
+  MISSED
+}
+
+enum PaymentType {
+  INITIAL
+  FINAL
+}
+
+enum PaymentStatus {
+  LOCKED
+  PENDING
+  PAID
+}
+
+enum RefundStatus {
+  PENDING
+  COMPLETED
+}
+
+enum PaymentMethod {
+  ONLINE
+  CASH
+  UPI
+  BANK_TRANSFER
+}
+
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  clubId String @unique
+
+  fullName String
+
+  email String @unique
+
+  phoneNumber String @unique
+
+  institution String
+
+  department String
+
+  year String
+
+  password String
+
+  role String @default("member")
+
+  createdAt DateTime @default(now())
+
+  registrations Registration[]
+
+  membershipStatus String @default("PENDING")
+
+  clubRole String @default("Member")
+
+  bloodGroup String?
+
+  dateOfBirth DateTime?
+
+  collegeRollNumber String?
+
+  emergencyContactName String?
+
+  emergencyContactRelation String?
+
+  emergencyContactPhone String?
+
+  upiId String?
+
+  upiPhone String?
+
+  // =========================
+  // Government ID Verification
+  // =========================
+
+  govtIdType String?
+
+  govtIdNumber String?
+
+  govtIdImageUrl String?
+
+  govtIdStatus String @default("NOT_SUBMITTED")
+
+  govtIdLocked Boolean @default(false)
+
+  govtIdSubmittedAt DateTime?
+
+  govtIdVerifiedAt DateTime?
+}
+
+model Trek {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  title String
+
+  destination String
+
+  trailType String
+
+  difficulty String
+
+  altitude String
+
+  duration String
+
+  distance String
+
+  // Portfolio Automation
+  distanceKm Float @default(0)
+
+  altitudeMeters Int @default(0)
+
+  campNights Int @default(0)
+
+  countsAsPeak Boolean @default(true)
+
+  trekDay String
+
+  date DateTime
+
+  price Int
+
+  initialPayment Int
+
+  finalPayment Int
+
+  coverImage String?
+
+  seats Int
+
+  description String
+
+  itinerary String?
+
+  requiredItems String[]
+
+  optionalItems String[]
+
+  leaderMessage String?
+
+  transportDetails String?
+
+  weatherNote String?
+
+  reportingInstructions String?
+
+  // =========================
+  // Trip Centre
+  // =========================
+
+  meetingPoint String?
+
+  meetingTime DateTime?
+
+  whatsappGroupLink String?
+
+  emergencyNumber String?
+
+  tripCentrePublished Boolean @default(false)
+
+  tripCentrePublishedAt DateTime?
+
+  // =========================
+
+  refundPercentage Int?
+
+  status String @default("Registration Open")
+
+  registrationOpensAt DateTime?
+
+  registrationClosesAt DateTime?
+
+  registrationOpenedManually Boolean @default(false)
+
+  registrationClosedManually Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  registrations Registration[]
+
+  gallery Gallery[]
+
+  expenses Expense[]
+
+  incomes Income[]
+
+  announcements TripAnnouncement[]
+}
+
+model Registration {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  registrationNumber String @unique
+
+  // Student
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  // Guest
+  isGuest Boolean @default(false)
+
+  guestName        String?
+  guestInstitution String?
+  guestDepartment  String?
+  guestYear        String?
+  guestPhoneNumber String?
+
+  // Trek
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  // Registration
+  status RegistrationStatus @default(WAITING)
+
+  approvedBy String?
+  approvedAt DateTime?
+
+  initialPaymentDeadline DateTime?
+
+  remarks String?
+
+  // ===== Initial Payment =====
+
+  initialPaymentPaid Boolean @default(false)
+
+  initialPaymentPaidAt DateTime?
+
+  initialPaymentId String?
+
+  // ===== Bond Form =====
+
+  bondFormSubmitted Boolean @default(false)
+
+  bondFormSubmittedAt DateTime?
+
+  // ===== Attendance =====
+
+  attendanceMarked Boolean @default(false)
+
+  attendanceMarkedAt DateTime?
+
+  // ===== Final Payment =====
+
+  finalPaymentUnlocked Boolean @default(false)
+
+  finalPaymentPaid Boolean @default(false)
+
+  finalPaymentPaidAt DateTime?
+
+  finalPaymentId String?
+
+  // ===== Certificate =====
+
+  certificateIssued Boolean @default(false)
+
+  certificateIssuedAt DateTime?
+
+  // timestamps
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  // Relations
+
+  payments Payment[]
+
+  refunds Refund[]
+
+  attendance Attendance?
+
+  emergencyContact EmergencyContact?
+
+  certificate Certificate?
+
+  // Offline payment support
+  offlinePaymentCreated Boolean @default(false)
+
+  offlinePaymentVerified Boolean @default(false)
+
+  paymentMethod String?
+
+  paymentReference String?
+
+  paymentAmount Int?
+
+  paymentRecordedAt DateTime?
+
+  paymentRecordedBy String?
+
+  paymentPortal Boolean @default(false)
+
+  // =========================
+  // Booking (Govt Permits)
+  // =========================
+
+  bookingAssignedTo String?
+}
+
+model Payment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  registrationId String       @db.ObjectId
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  type PaymentType
+
+  amount Int
+
+  status PaymentStatus @default(LOCKED)
+
+  paymentMethod PaymentMethod?
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+
+  verifiedBy String?
+
+  paidAt    DateTime?
+  reference String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+}
+
+model Refund {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  registrationId String       @db.ObjectId
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  amount Int
+
+  status RefundStatus @default(PENDING)
+
+  processedBy String?
+
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  title String
+
+  amount Int
+
+  remarks String?
+
+  createdBy String?
+
+  createdAt DateTime @default(now())
+}
+
+model Income {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  title String
+
+  amount Int
+
+  remarks String?
+
+  createdBy String?
+
+  createdAt DateTime @default(now())
+}
+
+model Attendance {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  registrationId String       @unique @db.ObjectId
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  present Boolean @default(false)
+
+  markedBy String?
+
+  markedAt DateTime?
+}
+
+model EmergencyContact {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  registrationId String       @unique @db.ObjectId
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  name String
+
+  relationship String
+
+  phoneNumber String
+}
+
+model Gallery {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  imageUrl String
+
+  uploadedBy String?
+
+  createdAt DateTime @default(now())
+}
+
+model Song {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  title String
+
+  audioUrl String
+
+  thumbnailUrl String
+
+  order Int @default(0)
+
+  uploadedBy String?
+
+  createdAt DateTime @default(now())
+}
+
+model TribeMember {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name String
+
+  role String
+
+  // 1 = Core Leadership (President, Treasurer...), 2 = Department Heads /
+  // Team. Roles/titles change every year so this drives the homepage's
+  // layout grouping instead of matching on the (unstable) role text.
+  tier Int @default(2)
+
+  year String
+
+  course String
+
+  photoUrl String
+
+  bio String
+
+  songTitle String?
+
+  songUrl String?
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model InstagramPost {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  postUrl String
+
+  thumbnailUrl String?
+
+  caption String?
+
+  createdAt DateTime @default(now())
+}
+
+model Certificate {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  registrationId String       @unique @db.ObjectId
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  certificateUrl String
+
+  issuedAt DateTime @default(now())
+}
+
+model PaymentSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  clubName String
+
+  receiverName String
+
+  upiId String @unique
+
+  supportPhone String?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model SocialSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  instagram String?
+
+  linkedin String?
+
+  email String?
+
+  phone String?
+
+  updatedAt DateTime @updatedAt
+}
+
+model HomepageGalleryPhoto {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  imageUrl String
+
+  caption String?
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model CertificateSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  facultyHeadName String?
+
+  facultyHeadSignatureUrl String?
+
+  presidentName String?
+
+  presidentSignatureUrl String?
+
+  updatedAt DateTime @updatedAt
+}
+
+model TripAnnouncement {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+
+  trek Trek @relation(fields: [trekId], references: [id])
+
+  title String
+
+  message String
+
+  createdBy String?
+
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,140 @@
+.section {
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: 1px;
+    color: var(--color-text);
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+}
+
+.empty {
+  background: var(--color-charcoal);
+  border: 1px dashed rgba(245, 245, 245, 0.15);
+  border-radius: 18px;
+  padding: 40px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 18px;
+  padding: 22px;
+  transition: 0.25s;
+}
+
+.card:hover {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.5px;
+    color: var(--color-text);
+    font-size: 18px;
+  }
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
+.manage {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stageLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-text-muted);
+
+  span:last-child {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+}
+
+.track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(245, 245, 245, 0.08);
+  overflow: hidden;
+
+  div {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: inherit;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(245, 245, 245, 0.05);
+    border: 1px solid rgba(245, 245, 245, 0.08);
+    color: var(--color-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    transition: 0.2s;
+  }
+
+  a:hover {
+    color: var(--color-text);
+    border-color: rgba(34, 197, 94, 0.35);
+  }
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

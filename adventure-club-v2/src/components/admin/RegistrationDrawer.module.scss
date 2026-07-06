@@ -1,0 +1,507 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 999;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  width: 520px;
+  max-width: 100%;
+  height: 100vh;
+
+  background: #0f172a;
+
+  border-left: 1px solid #1e293b;
+
+  overflow-y: auto;
+
+  z-index: 1000;
+
+  padding: 30px;
+
+  animation: slide .25s ease;
+
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* HEADER */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.label {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.header h2 {
+  color: white;
+  font-size: 28px;
+  margin: 0;
+}
+
+.clubId {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.close {
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #1e293b;
+  color: white;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.close:hover {
+  background: #334155;
+}
+
+/* STATUS */
+
+.statusCard {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.statusLabel {
+  display: block;
+  color: #94a3b8;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.badge {
+  display: inline-block;
+
+  padding: 8px 16px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.waiting {
+  background: rgba(250,204,21,.18);
+  color: #facc15;
+}
+
+.approved {
+  background: rgba(34,197,94,.18);
+  color: #22c55e;
+}
+
+.rejected {
+  background: rgba(239,68,68,.18);
+  color: #ef4444;
+}
+
+.registrationcomplete {
+  background: rgba(99,102,241,.18);
+  color: #818cf8;
+}
+
+/* QUICK ACTIONS */
+
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.quickActions button {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  padding: 18px;
+
+  border: none;
+
+  border-radius: 16px;
+
+  color: white;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.quickActions button:hover {
+  transform: translateY(-2px);
+}
+
+.quickActions strong {
+  display: block;
+  font-size: 15px;
+}
+
+.quickActions small {
+  color: rgba(255,255,255,.8);
+}
+
+.approve {
+  background: linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+.wait {
+  background: linear-gradient(135deg,#ca8a04,#eab308);
+}
+
+.reject {
+  background: linear-gradient(135deg,#dc2626,#ef4444);
+}
+
+/* CARD */
+
+.card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.card h3 {
+  color: white;
+  margin-bottom: 18px;
+}
+
+.cardDescription {
+  color: #94a3b8;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* INFO */
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 0;
+
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoRow span {
+  color: #94a3b8;
+}
+
+.infoRow strong {
+  color: white;
+}
+
+/* DEADLINE */
+
+.deadlineGrid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+}
+
+.deadlineGrid button {
+  padding: 14px;
+
+  border-radius: 12px;
+
+  border: 1px solid #334155;
+
+  background: #1e293b;
+
+  color: white;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.deadlineGrid button:hover {
+  border-color: #22c55e;
+}
+
+.activeDeadline {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+}
+
+/* TEXTAREA */
+
+.card textarea {
+  width: 100%;
+
+  min-height: 140px;
+
+  background: #1e293b;
+
+  border: 1px solid #334155;
+
+  border-radius: 12px;
+
+  padding: 14px;
+
+  color: white;
+
+  resize: vertical;
+}
+
+.card textarea:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+/* TIMELINE */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.timelineItem {
+  display: flex;
+  gap: 16px;
+}
+
+.timelineDot {
+  width: 12px;
+  height: 12px;
+
+  margin-top: 8px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+}
+
+.timelineItem strong {
+  color: white;
+}
+
+.timelineItem p {
+  color: #94a3b8;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* DANGER */
+
+.dangerCard {
+  border: 1px solid rgba(239,68,68,.35);
+
+  border-radius: 18px;
+
+  padding: 22px;
+}
+
+.dangerCard h3 {
+  color: #ef4444;
+  margin-bottom: 10px;
+}
+
+.dangerCard p {
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.deleteButton {
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  border: 1px solid #ef4444;
+
+  background: transparent;
+
+  color: #ef4444;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.deleteButton:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* FOOTER */
+
+.footer {
+  position: sticky;
+  bottom: -30px;
+
+  display: flex;
+  gap: 12px;
+
+  background: #0f172a;
+
+  padding-top: 16px;
+}
+
+.cancel,
+.save {
+  flex: 1;
+
+  padding: 15px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  transition: .2s;
+}
+
+.cancel {
+  background: #1e293b;
+  color: white;
+}
+
+.cancel:hover {
+  background: #334155;
+}
+
+.save {
+  background: linear-gradient(135deg,#16a34a,#22c55e);
+  color: white;
+}
+
+.save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(34,197,94,.25);
+}
+
+/* MOBILE */
+
+@media (max-width:768px) {
+
+  .drawer {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .deadlineGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    flex-direction: column;
+  }
+}
+
+.paymentPortal {
+  margin-top: 20px;
+}
+
+.primaryButton {
+  width: 100%;
+  margin-top: 15px;
+  height: 46px;
+  border: none;
+  border-radius: 12px;
+  background: #22c55e;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  background: #16a34a;
+}
+
+.secondaryButton {
+  width: 100%;
+  margin-top: 15px;
+  height: 46px;
+  border: none;
+  border-radius: 12px;
+  background: #334155;
+  color: white;
+}
+
+.subHeading {
+  margin: 18px 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.divider {
+  height: 1px;
+  margin: 18px 0;
+  background: rgba(255,255,255,.08);
+}
+
+.empty {
+  color: #8b96a8;
+  font-style: italic;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+
+  padding: 8px 0;
+
+  span {
+    color: #8f98b2;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  strong {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+
+    text-align: right;
+
+    flex: 1;
+
+    word-break: break-word;
+  }
+}

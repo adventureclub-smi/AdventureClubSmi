@@ -1,0 +1,365 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.loading {
+  padding: 40px;
+  color: var(--color-text-muted);
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 20px;
+  padding: 28px;
+
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-accent);
+
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.identity {
+  flex: 1;
+  min-width: 200px;
+
+  h1 {
+    font-family: var(--font-display);
+    letter-spacing: 0.5px;
+    color: var(--color-text);
+    font-size: 28px;
+  }
+
+  p {
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    font-size: 14px;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip,
+.chipAccent {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chip {
+  background: rgba(245, 245, 245, 0.08);
+  color: var(--color-text-muted);
+}
+
+.chipAccent {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-accent);
+}
+
+.saveButton {
+  height: 52px;
+  padding: 0 28px;
+  border: none;
+  border-radius: 14px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  font-size: 15px;
+  font-weight: 700;
+  transition: 0.25s;
+}
+
+.saveButton:hover {
+  background: var(--color-accent-hover);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  color: var(--color-accent);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.completionCard {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 20px;
+  padding: 24px 26px;
+  margin-bottom: 28px;
+}
+
+.completionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.5px;
+    color: var(--color-text);
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 480px;
+  }
+}
+
+.completionPercent {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: #eab308;
+}
+
+.completionPercentDone {
+  color: var(--color-accent);
+}
+
+.progressTrack {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(245, 245, 245, 0.08);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(to right, #eab308, var(--color-accent));
+}
+
+.missingFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.missingChip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: #eab308;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.card {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 20px;
+  padding: 26px;
+  transition: 0.25s;
+}
+
+.card:hover {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.card h2 {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  color: var(--color-text);
+  font-size: 20px;
+  margin-bottom: 22px;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.fields div {
+  display: flex;
+  flex-direction: column;
+}
+
+.fields label {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-bottom: 7px;
+  font-weight: 500;
+}
+
+.fields input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(245, 245, 245, 0.03);
+  color: var(--color-text);
+  font-size: 14px;
+  transition: 0.25s;
+}
+
+.fields input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.fields input:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.note {
+  display: block;
+  margin-top: 18px;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.badgeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.badgeEarned,
+.badgeLocked {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.badgeEarned {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-accent);
+}
+
+.badgeLocked {
+  background: rgba(245, 245, 245, 0.05);
+  color: var(--color-text-muted);
+}
+
+.passwordText {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.settingsActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.passwordButton {
+  height: 48px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  transition: 0.25s;
+}
+
+.passwordButton:hover {
+  background: #1d4ed8;
+}
+
+.logoutButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-danger);
+  color: white;
+  font-weight: 600;
+  transition: 0.25s;
+}
+
+.logoutButton:hover {
+  background: var(--color-danger-hover);
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+  }
+
+  .profileHeader {
+    padding: 22px;
+  }
+
+  .completionHeader {
+    flex-direction: column;
+  }
+
+  .fields {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,90 @@
+.timeline {
+  position: relative;
+  background: var(--color-midnight);
+  padding: 140px 0;
+}
+
+.container {
+  width: min(900px, calc(100% - 64px));
+  margin: 0 auto;
+}
+
+.heading {
+  margin-bottom: 90px;
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.heading h2 {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 600;
+}
+
+.track {
+  position: relative;
+  padding-left: 64px;
+}
+
+.lineTrack {
+  position: absolute;
+  left: 20px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: rgba(245, 245, 245, 0.12);
+}
+
+.line {
+  position: absolute;
+  inset: 0;
+  transform-origin: top;
+  background: var(--color-accent);
+}
+
+.nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+}
+
+.node {
+  position: relative;
+  opacity: 0;
+}
+
+.node::before {
+  content: "";
+  position: absolute;
+  left: -50px;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.18);
+}
+
+.index {
+  display: block;
+  font-family: var(--font-display);
+  color: var(--color-moss);
+  font-size: 13px;
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+}
+
+.node h3 {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.6vw, 34px);
+  color: var(--color-text);
+  font-weight: 600;
+}

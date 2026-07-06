@@ -1,0 +1,132 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  width: 750px;
+  max-width: 95%;
+  max-height: 85vh;
+  overflow-y: auto;
+
+  background: #181818;
+  border: 1px solid #2f2f2f;
+  border-radius: 16px;
+
+  padding: 25px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+
+.header h2 {
+  color: white;
+  font-size: 24px;
+}
+
+.header button {
+  background: transparent;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.header button:hover {
+  color: white;
+}
+
+.search {
+  width: 100%;
+  padding: 14px;
+
+  border-radius: 10px;
+  border: 1px solid #333;
+
+  background: #111;
+  color: white;
+
+  margin-bottom: 20px;
+
+  font-size: 15px;
+}
+
+.search:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+.message {
+  color: #aaa;
+  text-align: center;
+  margin: 30px 0;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.member {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 18px;
+
+  background: #222;
+  border-radius: 12px;
+  border: 1px solid #333;
+
+  transition: .2s;
+}
+
+.member:hover {
+  border-color: #22c55e;
+}
+
+.member h3 {
+  color: white;
+  margin-bottom: 8px;
+}
+
+.member p {
+  color: #bdbdbd;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.member button {
+  background: #22c55e;
+  color: white;
+
+  border: none;
+  border-radius: 10px;
+
+  padding: 10px 20px;
+
+  cursor: pointer;
+  font-weight: 600;
+
+  transition: .2s;
+}
+
+.member button:hover {
+  background: #16a34a;
+}
+
+.member button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}

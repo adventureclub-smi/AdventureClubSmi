@@ -1,0 +1,17 @@
+.heroCountdown {
+  width: min(1200px, calc(100% - 80px));
+
+  margin: -250px auto 80px;
+
+  display: flex;
+
+  justify-content: flex-start;
+
+  position: relative;
+
+  left:-100px;   /* move left */
+
+  top: -30px;    /* move up */
+
+  z-index: 20;
+}

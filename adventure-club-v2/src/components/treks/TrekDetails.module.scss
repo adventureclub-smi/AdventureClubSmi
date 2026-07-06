@@ -1,0 +1,305 @@
+.hero {
+  position: relative;
+
+  height: 70vh;
+
+  min-height: 650px;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    rgba(0, 0, 0, 0.25),
+    rgba(0, 0, 0, 0.85)
+  );
+}
+
+.content {
+  position: absolute;
+
+  bottom: 90px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: min(1300px, calc(100% - 60px));
+
+  color: white;
+}
+
+.content p {
+  color: var(--color-accent);
+
+  letter-spacing: 3px;
+
+  margin-bottom: 15px;
+}
+
+.content h1 {
+  font-family: var(--font-display);
+  letter-spacing: 1px;
+  font-size: 72px;
+
+  margin-bottom: 20px;
+}
+
+.content span {
+  color: #d5d5d5;
+}
+
+.main {
+  width: min(1300px, calc(100% - 60px));
+
+  margin: 80px auto;
+
+  display: grid;
+
+  grid-template-columns: 2fr 1fr;
+
+  gap: 60px;
+}
+
+.left h2 {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  font-size: 42px;
+
+  color: var(--color-text);
+
+  margin-bottom: 25px;
+}
+
+.left p {
+  color: #c5c5c5;
+
+  line-height: 2;
+}
+
+.right {
+  background: var(--color-charcoal);
+
+  border-radius: 24px;
+
+  border: 1px solid rgba(245, 245, 245, 0.08);
+
+  min-height: 450px;
+
+  padding: 30px;
+
+  position: sticky;
+
+  top: 110px;
+}
+
+@media (max-width: 900px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+
+  .content h1 {
+    font-size: 46px;
+  }
+
+  .right {
+    position: static;
+  }
+}
+
+.price {
+  text-align: center;
+
+  margin-bottom: 35px;
+}
+
+.price h2 {
+  font-family: var(--font-display);
+  letter-spacing: 1px;
+  color: var(--color-accent);
+
+  font-size: 54px;
+
+  margin-bottom: 8px;
+}
+
+.price span {
+  color: var(--color-text-muted);
+}
+
+.payments {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 15px;
+
+  margin-bottom: 35px;
+}
+
+.payments div {
+  background: rgba(245, 245, 245, 0.04);
+
+  border-radius: 14px;
+
+  padding: 18px;
+
+  text-align: center;
+}
+
+.payments p {
+  color: var(--color-text-muted);
+
+  font-size: 13px;
+
+  margin-bottom: 8px;
+}
+
+.payments h3 {
+  color: var(--color-text);
+
+  font-size: 26px;
+}
+
+.divider {
+  height: 1px;
+
+  background: rgba(245, 245, 245, 0.08);
+
+  margin: 30px 0;
+}
+
+.details {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+
+  margin-bottom: 35px;
+}
+
+.details div {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+}
+
+.details span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+}
+
+.details strong {
+  color: var(--color-text);
+}
+
+.status {
+  text-align: center;
+  color: var(--color-accent);
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.badgeRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.registerButton {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  text-decoration: none;
+
+  border: none;
+
+  background: var(--color-accent);
+
+  color: var(--color-midnight);
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  padding: 18px;
+
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  transition: .25s;
+}
+
+.registerButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: var(--color-accent-hover);
+}
+
+.registerButton:disabled {
+  background: rgba(245, 245, 245, 0.08);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.note {
+  margin-top: 18px;
+
+  text-align: center;
+
+  color: var(--color-text-muted);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+.navActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.navButton {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  text-decoration: none;
+
+  background: rgba(245, 245, 245, 0.06);
+  border: 1px solid rgba(245, 245, 245, 0.1);
+
+  color: var(--color-text);
+
+  font-size: 14px;
+  font-weight: 600;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  transition: 0.25s;
+}
+
+.navButton:hover {
+  background: rgba(245, 245, 245, 0.12);
+  border-color: rgba(34, 197, 94, 0.4);
+}

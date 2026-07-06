@@ -1,0 +1,178 @@
+.section {
+  padding: 90px 0;
+  background: #0d0d0d;
+}
+
+.card {
+  width: min(1300px, calc(100% - 40px));
+  margin: auto;
+
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+
+  overflow: hidden;
+
+  border-radius: 30px;
+
+  background: #171717;
+
+  border: 1px solid #252525;
+
+  transition: .4s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  border-color: #5dd15d;
+  box-shadow: 0 30px 60px rgba(0,0,0,.35);
+}
+
+.imageContainer {
+  position: relative;
+  min-height: 620px;
+}
+
+.image {
+  object-fit: cover;
+  transition: .7s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.08);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,.55),
+    rgba(0,0,0,.05)
+  );
+}
+
+.content {
+  padding: 60px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tag {
+  color: #6EEB83;
+
+  letter-spacing: 4px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  margin-bottom: 20px;
+}
+
+.content h2 {
+  color: white;
+
+  font-size: 54px;
+
+  line-height: 1.1;
+
+  margin-bottom: 15px;
+}
+
+.location {
+  color: #b5b5b5;
+
+  font-size: 18px;
+
+  margin-bottom: 40px;
+}
+
+.info {
+  display: flex;
+  gap: 45px;
+
+  margin-bottom: 40px;
+}
+
+.info span {
+  color: #7b7b7b;
+
+  font-size: 13px;
+}
+
+.info h4 {
+  color: white;
+
+  font-size: 20px;
+
+  margin-top: 8px;
+}
+
+.description {
+  color: #c7c7c7;
+
+  line-height: 1.9;
+
+  margin-bottom: 45px;
+}
+
+.button {
+  align-self: flex-start;
+
+  background: #6EEB83;
+
+  color: #111;
+
+  padding: 18px 34px;
+
+  border-radius: 14px;
+
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition: .3s ease;
+}
+
+.button:hover {
+  background: white;
+
+  transform: translateX(8px);
+}
+
+@media (max-width: 1100px) {
+
+  .card {
+    grid-template-columns: 1fr;
+  }
+
+  .imageContainer {
+    min-height: 420px;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .content {
+    padding: 35px 25px;
+  }
+
+  .content h2 {
+    font-size: 36px;
+  }
+
+  .info {
+    flex-wrap: wrap;
+    gap: 25px;
+  }
+
+  .button {
+    width: 100%;
+    text-align: center;
+  }
+
+}

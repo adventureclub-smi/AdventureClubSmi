@@ -1,0 +1,47 @@
+.card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.card h2 {
+  color: white;
+  margin-bottom: 20px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: #181818;
+  padding: 18px;
+  border-radius: 14px;
+
+  transition: .2s;
+}
+
+.item:hover {
+  background: #202020;
+}
+
+.item h3 {
+  color: white;
+  margin-bottom: 6px;
+}
+
+.item p {
+  color: #888;
+}
+
+.item span {
+  color: #16a34a;
+  font-weight: 600;
+}

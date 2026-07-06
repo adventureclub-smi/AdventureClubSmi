@@ -1,0 +1,173 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ---------------- INPUTS ---------------- */
+
+.inputGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  height: 58px;
+
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: 0.3s ease;
+}
+
+.inputGroup:focus-within {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.icon {
+  margin-left: 18px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.inputGroup input {
+  flex: 1;
+
+  height: 100%;
+
+  margin-left: 14px;
+  margin-right: 14px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: white;
+
+  font-size: 16px;
+}
+
+.inputGroup input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.eye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+
+  border: none;
+  background: transparent;
+
+  color: rgba(255, 255, 255, 0.6);
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.eye:hover {
+  color: #22c55e;
+}
+
+/* ---------------- OPTIONS ---------------- */
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 14px;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.options input[type="checkbox"] {
+  accent-color: #22c55e;
+}
+
+.options a {
+  color: #22c55e;
+  transition: 0.3s;
+}
+
+.options a:hover {
+  color: #16a34a;
+}
+
+/* ---------------- BUTTON ---------------- */
+
+.loginBtn {
+  height: 58px;
+
+  border: none;
+  border-radius: 16px;
+
+  background: #22c55e;
+
+  color: white;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.3s ease;
+}
+
+.loginBtn:hover {
+  background: #16a34a;
+  transform: translateY(-2px);
+}
+
+/* ---------------- SIGNUP ---------------- */
+
+.signup {
+  margin-top: 10px;
+
+  text-align: center;
+
+  color: rgba(255, 255, 255, 0.75);
+
+  font-size: 15px;
+}
+
+.signup a {
+  margin-left: 8px;
+
+  color: #22c55e;
+
+  font-weight: 600;
+
+  transition: 0.3s;
+}
+
+.signup a:hover {
+  color: #16a34a;
+}
+
+/* ---------------- MOBILE ---------------- */
+
+@media (max-width: 768px) {
+  .options {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .loginBtn {
+    font-size: 16px;
+  }
+}

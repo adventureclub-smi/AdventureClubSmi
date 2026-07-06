@@ -1,0 +1,166 @@
+.container {
+  max-width: 1400px;
+  margin: auto;
+  color: var(--color-text);
+}
+
+.status {
+  color: var(--color-accent);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.saveButton {
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.saveButton:hover {
+  background: var(--color-accent-hover);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  color: var(--color-text);
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.govtStatusRow {
+  margin-bottom: 12px;
+}
+
+.viewDocLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 6px 0 4px;
+}
+
+.govtActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.verifyButton {
+  flex: 1;
+  height: 42px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.verifyButton:hover {
+  background: var(--color-accent-hover);
+}
+
+.lockButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px;
+  border: 1px solid rgba(245, 245, 245, 0.12);
+  border-radius: 10px;
+  background: rgba(245, 245, 245, 0.06);
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.lockButton:hover {
+  background: rgba(245, 245, 245, 0.12);
+}
+
+.card p {
+  color: var(--color-text-muted);
+  margin: 10px 0;
+  font-size: 14px;
+
+  strong {
+    color: var(--color-text);
+  }
+}
+
+.fields {
+  display: grid;
+  gap: 16px;
+}
+
+.fields div {
+  display: flex;
+  flex-direction: column;
+}
+
+.fields label {
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.fields select {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(245, 245, 245, 0.05);
+  color: var(--color-text);
+}
+
+.fields select:focus {
+  outline: none;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.trekRow {
+  margin-bottom: 14px;
+
+  strong {
+    color: var(--color-text);
+  }
+
+  p {
+    color: var(--color-text-muted);
+    margin-top: 2px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,109 @@
+.activities {
+  padding: 140px 0;
+  background: #050505;
+}
+
+.container {
+  width: min(1440px, calc(100% - 64px));
+  margin: 0 auto;
+}
+
+/* ---------- Heading ---------- */
+
+.heading {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.heading span {
+  display: inline-block;
+  margin-bottom: 20px;
+
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 600;
+
+  letter-spacing: 8px;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  font-size: clamp(52px, 6vw, 90px);
+  font-weight: 900;
+  line-height: 0.9;
+  text-transform: uppercase;
+
+  margin-bottom: 28px;
+
+  color: white;
+}
+
+.heading p {
+  width: min(720px, 100%);
+  margin: auto;
+
+  color: rgba(255,255,255,.72);
+
+  font-size: 18px;
+  line-height: 1.9;
+}
+
+/* ---------- Cards ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 32px;
+
+  margin-bottom: 32px;
+}
+
+.bottom {
+  display: flex;
+  justify-content: center;
+
+  margin-top: 40px;
+}
+
+.largeCard {
+  width: min(760px, 100%);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1100px) {
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .activities {
+    padding: 100px 0;
+  }
+
+  .container {
+    width: calc(100% - 40px);
+  }
+
+  .heading h2 {
+    font-size: 56px;
+  }
+
+  .heading p {
+    font-size: 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .largeCard {
+    width: 100%;
+  }
+
+}

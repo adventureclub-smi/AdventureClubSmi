@@ -1,0 +1,144 @@
+.container {
+  min-height: 100vh;
+  background: var(--color-midnight);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.card {
+  width: 100%;
+  max-width: 620px;
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 20px;
+  padding: 35px;
+  color: var(--color-text);
+}
+
+.card h1 {
+  font-family: var(--font-display);
+  letter-spacing: 1px;
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.field label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.field input {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(245, 245, 245, 0.03);
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  padding: 34px;
+  border: 2px dashed rgba(245, 245, 245, 0.15);
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: 0.25s ease;
+
+  strong {
+    color: var(--color-text);
+    font-size: 15px;
+  }
+
+  span {
+    font-size: 13px;
+  }
+
+  input {
+    display: none;
+  }
+}
+
+.upload:hover {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.preview {
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.fileName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--color-accent);
+  font-size: 14px;
+}
+
+.error {
+  margin-top: 14px;
+  color: var(--color-danger);
+  font-size: 14px;
+}
+
+.submit {
+  width: 100%;
+  margin-top: 25px;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  font-size: 16px;
+  font-weight: 700;
+  transition: 0.25s;
+}
+
+.submit:hover {
+  background: var(--color-accent-hover);
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 20px;
+  }
+
+  .card {
+    padding: 24px;
+  }
+}

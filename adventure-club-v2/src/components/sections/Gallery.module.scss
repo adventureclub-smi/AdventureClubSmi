@@ -1,0 +1,270 @@
+.gallery {
+  position: relative;
+  background: var(--color-midnight);
+  padding: 100px 0 120px;
+  overflow: hidden;
+}
+
+.headingWrap {
+  width: min(1300px, calc(100% - 64px));
+  margin: 0 auto 60px;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.headingWrap h2 {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 600;
+}
+
+/* ---------- EMPTY STATE ---------- */
+
+.empty {
+  width: min(460px, calc(100% - 64px));
+  margin: 0 auto;
+  background: var(--color-charcoal);
+  border: 1px dashed rgba(245, 245, 245, 0.15);
+  border-radius: 18px;
+  padding: 60px 30px;
+  text-align: center;
+  color: var(--color-text-muted);
+
+  h3 {
+    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: 22px;
+    margin: 14px 0 8px;
+  }
+}
+
+/* ---------- MARQUEE ---------- */
+
+.marqueeViewport {
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+.marqueeTrack {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  gap: 24px;
+  padding: 20px 0;
+  animation-name: marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.marqueeViewport:hover .marqueeTrack {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.tile {
+  position: relative;
+  flex-shrink: 0;
+  width: 240px;
+  height: 320px;
+
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-charcoal);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+
+  transition: transform 0.3s ease;
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.tiltLeft {
+  transform: rotate(-3deg);
+}
+
+.tiltRight {
+  transform: rotate(3deg);
+}
+
+.tiltLeft:hover {
+  transform: rotate(-3deg) translateY(-8px) scale(1.03);
+}
+
+.tiltRight:hover {
+  transform: rotate(3deg) translateY(-8px) scale(1.03);
+}
+
+.media {
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeTrack {
+    animation: none;
+  }
+}
+
+/* ---------- LIGHTBOX ---------- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  background: rgba(5, 5, 5, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+.dialog {
+  position: relative;
+  width: min(90vw, 1100px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  height: min(75vh, 720px);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-charcoal);
+}
+
+.lightboxImage {
+  object-fit: contain;
+}
+
+.caption {
+  margin-top: 16px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.closeButton {
+  position: absolute;
+  top: -52px;
+  right: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 999px;
+  background: rgba(245, 245, 245, 0.1);
+  color: var(--color-text);
+  transition: 0.2s ease;
+}
+
+.closeButton:hover {
+  background: rgba(245, 245, 245, 0.18);
+}
+
+.navArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+
+  border: none;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.6);
+  color: var(--color-text);
+  backdrop-filter: blur(6px);
+  transition: 0.2s ease;
+}
+
+.navArrow:hover {
+  background: rgba(13, 13, 13, 0.85);
+}
+
+.navPrev {
+  left: 10px;
+}
+
+.navNext {
+  right: 10px;
+}
+
+@media (max-width: 700px) {
+  .gallery {
+    padding: 60px 0 90px;
+  }
+
+  .headingWrap {
+    margin-bottom: 40px;
+  }
+
+  .tile {
+    width: 160px;
+    height: 220px;
+  }
+
+  .marqueeTrack {
+    gap: 14px;
+  }
+
+  .closeButton {
+    top: -46px;
+  }
+
+  .navArrow {
+    width: 38px;
+    height: 38px;
+  }
+}

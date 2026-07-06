@@ -1,0 +1,288 @@
+.container {
+  padding: 30px;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.topBar h1 {
+  color: white;
+  margin-bottom: 5px;
+}
+
+.topBar p {
+  color: #9ca3af;
+}
+
+.topBarActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.addButton {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.addButton:hover {
+  background: #16a34a;
+}
+
+.registrationModeGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px;
+  background: #161616;
+  border: 1px solid #2d2d2d;
+  border-radius: 12px;
+}
+
+.modeButton,
+.modeButtonActiveAuto,
+.modeButtonActiveOpen,
+.modeButtonActiveClosed {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: .2s;
+}
+
+.modeButton {
+  background: transparent;
+  color: #9ca3af;
+}
+
+.modeButton:hover {
+  background: #222222;
+  color: white;
+}
+
+.modeButtonActiveAuto {
+  background: #2563eb;
+  color: white;
+}
+
+.modeButtonActiveOpen {
+  background: #22c55e;
+  color: white;
+}
+
+.modeButtonActiveClosed {
+  background: #ef4444;
+  color: white;
+}
+
+.modeButton:disabled,
+.modeButtonActiveAuto:disabled,
+.modeButtonActiveOpen:disabled,
+.modeButtonActiveClosed:disabled {
+  cursor: not-allowed;
+}
+
+.search {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #2d2d2d;
+  background: #161616;
+  color: white;
+  margin-bottom: 30px;
+  font-size: 15px;
+}
+
+.search:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+.section {
+  margin-bottom: 45px;
+}
+
+.section h2 {
+  color: white;
+  margin-bottom: 18px;
+}
+
+.empty {
+  color: #888;
+}
+
+.card {
+  background: #181818;
+  border: 1px solid #2b2b2b;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 15px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  transition: .2s;
+}
+
+.card:hover {
+  border-color: #22c55e;
+}
+
+.left {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.number {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.left h3 {
+  color: white;
+  margin-bottom: 8px;
+}
+
+.left p {
+  color: #bcbcbc;
+  margin: 3px 0;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.badge {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.waiting {
+  background: #f59e0b;
+  color: white;
+}
+
+.approved {
+  background: #3b82f6;
+  color: white;
+}
+
+.registrationcomplete {
+  background: #22c55e;
+  color: white;
+}
+
+.rejected {
+  background: #ef4444;
+  color: white;
+}
+
+.viewButton {
+  border: none;
+  background: #2d2d2d;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.viewButton:hover {
+  background: #22c55e;
+}
+
+@media (max-width: 768px) {
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .right {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .topBar {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .topBarActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .registrationModeGroup {
+    width: 100%;
+  }
+
+  .modeButton,
+  .modeButtonActiveAuto,
+  .modeButtonActiveOpen,
+  .modeButtonActiveClosed {
+    flex: 1;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+}
+
+.card {
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: #22c55e;
+}
+
+.selected {
+  border-left: 5px solid #22c55e !important;
+  background: #1b2a20;
+}
+
+.right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.badge {
+  min-width: 140px;
+  text-align: center;
+}

@@ -1,0 +1,131 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  color: white;
+  font-size: 30px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.card {
+  background: #111827;
+  border: 1px solid #263548;
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.card h1 {
+  color: white;
+  font-size: 34px;
+}
+
+.card p {
+  color: #94a3b8;
+  margin-top: 8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: #111827;
+
+  border: 1px solid #263548;
+
+  border-radius: 18px;
+
+  padding: 22px;
+}
+
+.user h3 {
+  color: white;
+}
+
+.user p {
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.paid {
+  background: #16a34a;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.pending {
+  background: #dc2626;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.actions button {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  opacity: .9;
+}
+
+@media(max-width:900px){
+
+.stats{
+
+grid-template-columns:1fr 1fr;
+
+}
+
+.row{
+
+flex-direction:column;
+align-items:flex-start;
+gap:18px;
+
+}
+
+}
+
+@media(max-width:650px){
+
+.stats{
+
+grid-template-columns:1fr;
+
+}
+
+}

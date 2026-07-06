@@ -1,0 +1,162 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 120px 40px 80px;
+}
+
+.header {
+  margin-bottom: 32px;
+
+  h1 {
+    font-family: var(--font-display);
+    letter-spacing: 1px;
+    color: var(--color-text);
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--color-text-muted);
+  }
+}
+
+.filters {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+
+  select {
+    height: 46px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(245, 245, 245, 0.1);
+    background: var(--color-charcoal);
+    color: var(--color-text);
+    font-size: 14px;
+  }
+}
+
+.empty {
+  color: var(--color-text-muted);
+  padding: 60px 0;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.imageWrap {
+  position: relative;
+  display: block;
+  height: 190px;
+}
+
+.image {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.05);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(13, 13, 13, 0.7), transparent 60%);
+}
+
+.difficulty {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: rgba(245, 245, 245, 0.12);
+  color: var(--color-text);
+  backdrop-filter: blur(6px);
+}
+
+.content {
+  padding: 22px;
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-muted);
+    margin: 6px 0;
+    font-size: 14px;
+  }
+}
+
+.content h2 {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  color: var(--color-text);
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.price {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  font-size: 20px;
+  color: var(--color-accent);
+}
+
+.registerButton {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.25s;
+}
+
+.registerButton:hover {
+  background: var(--color-accent-hover);
+}
+
+@media (max-width: 700px) {
+  .container {
+    padding: 100px 16px 60px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header h1 {
+    font-size: 30px;
+  }
+}
