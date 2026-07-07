@@ -16,8 +16,16 @@
   padding: 32px;
 }
 
+// Clears the fixed mobile menu bar in AdminSidebar (position:fixed;
+// bottom:0) so page content never renders underneath it.
+@media (max-width: 1024px) {
+  .main {
+    padding-bottom: 90px;
+  }
+}
+
 @media (max-width: 700px) {
   .main {
-    padding: 20px 16px;
+    padding: 20px 16px 90px;
   }
 }

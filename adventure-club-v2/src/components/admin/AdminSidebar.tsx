@@ -111,18 +111,20 @@ export default function AdminSidebar() {
           aria-label="Open menu"
           onClick={() => setOpen(true)}
         >
-          <Menu size={22} />
+          <Menu size={20} />
+          Menu
         </button>
 
         <Image
           src="/logo/logo-white.png"
           alt="Adventure Club"
-          width={30}
-          height={30}
+          width={28}
+          height={28}
         />
 
         <button aria-label="Logout" onClick={handleLogout}>
-          <LogOut size={20} />
+          <LogOut size={18} />
+          Logout
         </button>
       </div>
 

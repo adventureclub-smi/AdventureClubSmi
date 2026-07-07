@@ -104,20 +104,28 @@
     display: none;
   }
 
+  // position:fixed (not sticky) is required here — AdminSidebar's return
+  // is a fragment, so this bar is a direct sibling of .content inside the
+  // layout's row-direction flex shell. Sticky never escapes that flex
+  // layout, so it rendered as a squeezed flex item instead of a proper
+  // full-width bar. Fixed removes it from the flex flow entirely, same
+  // fix as the student dashboard's bottom nav.
   .mobileTopBar {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    position: sticky;
-    top: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 60;
 
-    padding: 14px 18px;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
 
-    background: rgba(13, 13, 13, 0.9);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(245, 245, 245, 0.08);
+    background: rgba(13, 13, 13, 0.92);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(245, 245, 245, 0.08);
 
     button {
       background: rgba(245, 245, 245, 0.08);
@@ -126,6 +134,8 @@
       border-radius: 10px;
       padding: 8px;
       display: flex;
+      align-items: center;
+      gap: 8px;
     }
   }
 
