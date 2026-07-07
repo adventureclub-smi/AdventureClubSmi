@@ -57,7 +57,7 @@ export default function TrekTile({
             <div className={styles.bottom}>
               <div>
                 <p className={styles.date}>
-                  {new Date(trek.date).toLocaleDateString()}
+                  {new Date(trek.date).toLocaleDateString("en-IN")}
                 </p>
                 <h4>₹{trek.price}</h4>
               </div>
