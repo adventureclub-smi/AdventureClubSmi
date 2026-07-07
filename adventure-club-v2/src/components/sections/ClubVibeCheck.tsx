@@ -125,17 +125,13 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
   }
 
   function nextSong() {
-    if (currentIndex === null) {
-      setCurrentIndex(0);
-      return;
-    }
-
-    setCurrentIndex((currentIndex + 1) % songs.length);
+    const from = currentIndex ?? Math.floor((songs.length - 1) / 2);
+    setCurrentIndex((from + 1) % songs.length);
   }
 
   if (songs.length === 0) return null;
 
-  const activeIndex = currentIndex ?? 0;
+  const activeIndex = currentIndex ?? Math.floor((songs.length - 1) / 2);
 
   return (
     <section className={styles.section} id="vibe-check">
