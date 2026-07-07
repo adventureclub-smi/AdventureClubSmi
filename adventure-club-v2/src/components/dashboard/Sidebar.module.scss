@@ -84,10 +84,6 @@
   background: var(--color-danger-hover);
 }
 
-.mobileTopBar {
-  display: none;
-}
-
 .mobileNav {
   display: none;
 }
@@ -95,31 +91,6 @@
 @media (max-width: 900px) {
   .sidebar {
     display: none;
-  }
-
-  .mobileTopBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    position: sticky;
-    top: 0;
-    z-index: 50;
-
-    padding: 14px 20px;
-
-    background: rgba(13, 13, 13, 0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(245, 245, 245, 0.08);
-
-    button {
-      background: rgba(239, 68, 68, 0.12);
-      color: var(--color-danger);
-      border: none;
-      border-radius: 10px;
-      padding: 8px;
-      display: flex;
-    }
   }
 
   .mobileNav {
@@ -138,7 +109,8 @@
     backdrop-filter: blur(14px);
     border-top: 1px solid rgba(245, 245, 245, 0.08);
 
-    a {
+    a,
+    .mobileLogout {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -154,12 +126,19 @@
       font-weight: 600;
       text-align: center;
 
+      background: none;
+      border: none;
+
       span {
         max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+    }
+
+    .mobileLogout {
+      color: var(--color-danger);
     }
   }
 
@@ -172,7 +151,8 @@
 // per item on small phones — shrink further rather than let labels clip
 // into neighboring tabs.
 @media (max-width: 400px) {
-  .mobileNav a {
+  .mobileNav a,
+  .mobileNav .mobileLogout {
     font-size: 9px;
     padding: 6px 2px;
     gap: 3px;

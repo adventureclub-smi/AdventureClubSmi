@@ -107,18 +107,6 @@ export default function Sidebar() {
         </button>
       </aside>
 
-      <nav className={styles.mobileTopBar}>
-        <Image
-          src="/logo/logo-white.png"
-          alt="Adventure Club"
-          width={32}
-          height={32}
-        />
-        <button onClick={handleLogout} aria-label="Logout">
-          <LogOut size={20} />
-        </button>
-      </nav>
-
       <nav className={styles.mobileNav}>
         {navLinks.map((link) => (
           <Link
@@ -130,6 +118,11 @@ export default function Sidebar() {
             <span>{link.label.replace("My ", "")}</span>
           </Link>
         ))}
+
+        <button type="button" onClick={handleLogout} className={styles.mobileLogout}>
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
       </nav>
     </>
   );
