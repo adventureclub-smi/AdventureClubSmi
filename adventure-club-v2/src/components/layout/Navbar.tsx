@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Download } from "lucide-react";
+import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import styles from "./Navbar.module.scss";
 
 const links = [
@@ -17,6 +18,7 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { canInstall, promptInstall } = useInstallPrompt();
 
   return (
     <header className={styles.header}>
@@ -71,6 +73,17 @@ export default function Navbar() {
         {/* BUTTONS */}
 
         <div className={styles.actions}>
+          {canInstall && (
+            <button
+              type="button"
+              className={styles.install}
+              onClick={promptInstall}
+            >
+              <Download size={16} />
+              Download App
+            </button>
+          )}
+
           <Link href="/login" className={styles.login}>
             Login
           </Link>
@@ -137,6 +150,20 @@ export default function Navbar() {
               </ul>
 
               <div className={styles.drawerActions}>
+                {canInstall && (
+                  <button
+                    type="button"
+                    className={styles.install}
+                    onClick={() => {
+                      promptInstall();
+                      setOpen(false);
+                    }}
+                  >
+                    <Download size={16} />
+                    Download App
+                  </button>
+                )}
+
                 <Link
                   href="/login"
                   className={styles.login}
