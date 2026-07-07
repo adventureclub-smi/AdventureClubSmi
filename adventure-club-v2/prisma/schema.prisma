@@ -264,6 +264,10 @@ model Registration {
 
   finalPaymentId String?
 
+  // ===== College Reimbursement =====
+
+  reimbursementAmount Int?
+
   // ===== Certificate =====
 
   certificateIssued Boolean @default(false)
