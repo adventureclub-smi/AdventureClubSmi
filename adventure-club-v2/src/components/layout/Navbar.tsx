@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
 import styles from "./Navbar.module.scss";
 
 const links = [
@@ -14,6 +16,8 @@ const links = [
 ];
 
 export default function Navbar() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className={styles.header}>
       <motion.nav
@@ -75,7 +79,84 @@ export default function Navbar() {
             Join Club
           </Link>
         </div>
+
+        {/* MOBILE MENU TRIGGER */}
+
+        <button
+          type="button"
+          className={styles.menuTrigger}
+          aria-label="Open menu"
+          onClick={() => setOpen(true)}
+        >
+          <Menu size={22} />
+        </button>
       </motion.nav>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className={styles.drawerOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)}
+          >
+            <motion.div
+              className={styles.drawer}
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.drawerHeader}>
+                <Image
+                  src="/logo/logo-white.png"
+                  alt="Adventure Club"
+                  width={36}
+                  height={36}
+                />
+
+                <button
+                  type="button"
+                  aria-label="Close menu"
+                  onClick={() => setOpen(false)}
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              <ul className={styles.drawerMenu}>
+                {links.map((item) => (
+                  <li key={item.name}>
+                    <Link href={item.href} onClick={() => setOpen(false)}>
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <div className={styles.drawerActions}>
+                <Link
+                  href="/login"
+                  className={styles.login}
+                  onClick={() => setOpen(false)}
+                >
+                  Login
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className={styles.join}
+                  onClick={() => setOpen(false)}
+                >
+                  Join Club
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
