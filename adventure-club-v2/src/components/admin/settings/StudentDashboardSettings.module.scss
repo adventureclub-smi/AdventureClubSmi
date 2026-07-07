@@ -1,0 +1,77 @@
+.container {
+  max-width: 700px;
+  color: var(--color-text);
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.status {
+  color: var(--color-accent);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 18px;
+  padding: 24px;
+
+  label {
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  input[type="file"] {
+    color: var(--color-text-muted);
+    font-size: 13px;
+  }
+}
+
+.previewWrap {
+  margin-top: 4px;
+}
+
+.preview {
+  width: 100%;
+  max-width: 420px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+}
+
+.form > button {
+  margin-top: 8px;
+  height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  font-size: 15px;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.form > button:hover {
+  background: var(--color-accent-hover);
+}
+
+.form > button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -30,7 +30,7 @@ export default function AuthLayout({
         className={styles.video}
       >
         <source
-          src="https://res.cloudinary.com/ix7lwsey/video/upload/v1783360653/AdventureClub/Videos/hero.mp4"
+          src="https://res.cloudinary.com/ix7lwsey/video/upload/q_auto,f_auto,w_1280/v1783360653/AdventureClub/Videos/hero.mp4"
           type="video/mp4"
         />
       </video>

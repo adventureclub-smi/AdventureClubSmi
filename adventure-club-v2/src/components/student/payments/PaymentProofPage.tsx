@@ -7,6 +7,8 @@ import { UploadCloud, CheckCircle2 } from "lucide-react";
 import BackButton from "@/components/dashboard/shared/BackButton";
 import styles from "./PaymentProofPage.module.scss";
 
+const MAX_SCREENSHOT_BYTES = 1024 * 1024; // 1MB
+
 type Props = {
   registrationId: string;
   paymentType: "INITIAL" | "FINAL";
@@ -20,12 +22,23 @@ export default function PaymentProofPage({ registrationId, paymentType }: Props)
   const [error, setError] = useState<string | null>(null);
 
   function handleFile(selected: File | null) {
-    setFile(selected);
-
     if (!selected) {
+      setFile(null);
       setPreview(null);
       return;
     }
+
+    if (selected.size > MAX_SCREENSHOT_BYTES) {
+      setError(
+        "That screenshot is over 1MB. Please compress it (or crop out anything unnecessary) and try again."
+      );
+      setFile(null);
+      setPreview(null);
+      return;
+    }
+
+    setError(null);
+    setFile(selected);
 
     const reader = new FileReader();
     reader.onload = () => setPreview(reader.result as string);
@@ -53,7 +66,11 @@ export default function PaymentProofPage({ registrationId, paymentType }: Props)
         body: form,
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.message || "Failed to submit payment. Please try again.");
+        return;
+      }
 
       window.location.href = `/student/payments/${registrationId}/submitted`;
     } catch {
@@ -96,7 +113,7 @@ export default function PaymentProofPage({ registrationId, paymentType }: Props)
             <>
               <UploadCloud size={32} />
               <strong>Tap to upload payment screenshot</strong>
-              <span>PNG or JPG</span>
+              <span>PNG or JPG, up to 1MB</span>
             </>
           )}
 

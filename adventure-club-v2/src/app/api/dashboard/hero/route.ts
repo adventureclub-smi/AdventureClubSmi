@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { getStudentDashboardSettings } from "@/data/student-dashboard-settings";
 
 export async function GET() {
   try {
@@ -38,6 +39,8 @@ export async function GET() {
       );
     }
 
+    const { bannerImageUrl } = await getStudentDashboardSettings();
+
     return NextResponse.json({
       name: user.fullName,
       clubId: user.clubId,
@@ -48,6 +51,8 @@ export async function GET() {
 
       role:
         (user as any).clubRole || "Member",
+
+      bannerImageUrl,
     });
 
   } catch (error) {

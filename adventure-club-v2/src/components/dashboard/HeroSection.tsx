@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import styles from "./HeroSection.module.scss";
@@ -10,6 +11,7 @@ type Props = {
   clubId: string;
   membership: string;
   role: string;
+  bannerImageUrl?: string | null;
   tripCentreHref?: string | null;
 };
 
@@ -18,6 +20,7 @@ export default function HeroSection({
   clubId,
   membership,
   role,
+  bannerImageUrl,
   tripCentreHref,
 }: Props) {
   const hour = new Date().getHours();
@@ -28,12 +31,14 @@ export default function HeroSection({
 
   return (
     <section className={styles.hero}>
-      <video autoPlay muted loop playsInline className={styles.video}>
-        <source
-          src="https://res.cloudinary.com/ix7lwsey/video/upload/v1783360663/AdventureClub/Videos/drone.mp4"
-          type="video/mp4"
-        />
-      </video>
+      <Image
+        src={bannerImageUrl || "/images/default-trek.jpg"}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className={styles.banner}
+      />
 
       <div className={styles.overlay} />
 

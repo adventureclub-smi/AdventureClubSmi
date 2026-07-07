@@ -45,3 +45,5 @@ next-env.d.ts
 # large raw video assets — hero/drone are served from Cloudinary in
 # production; the rest is unused raw footage. Never commit videos here.
 /public/videos
+
+.vercel

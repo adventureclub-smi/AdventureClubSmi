@@ -553,6 +553,14 @@ model CertificateSettings {
   updatedAt DateTime @updatedAt
 }
 
+model StudentDashboardSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  bannerImageUrl String?
+
+  updatedAt DateTime @updatedAt
+}
+
 model TripAnnouncement {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 

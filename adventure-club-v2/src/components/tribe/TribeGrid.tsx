@@ -129,7 +129,7 @@ export default function TribeGrid({ members }: { members: TribeMemberSummary[] }
       <div className={styles.bgVideo}>
         <video autoPlay muted loop playsInline className={styles.bgVideoEl}>
           <source
-            src="https://res.cloudinary.com/ix7lwsey/video/upload/v1783360663/AdventureClub/Videos/drone.mp4"
+            src="https://res.cloudinary.com/ix7lwsey/video/upload/q_auto,f_auto,w_1280/v1783360663/AdventureClub/Videos/drone.mp4"
             type="video/mp4"
           />
         </video>

@@ -7,6 +7,8 @@ import {
   PaymentType,
 } from "@prisma/client";
 
+const MAX_SCREENSHOT_BYTES = 1024 * 1024; // 1MB
+
 export async function POST(req: NextRequest) {
   try {
     const form = await req.formData();
@@ -28,6 +30,16 @@ export async function POST(req: NextRequest) {
 
     const screenshot =
       form.get("screenshot");
+
+    if (screenshot instanceof File && screenshot.size > MAX_SCREENSHOT_BYTES) {
+      return NextResponse.json(
+        {
+          message:
+            "Screenshot is too large (over 1MB). Please compress it and try again.",
+        },
+        { status: 400 }
+      );
+    }
 
     const registration =
       await prisma.registration.findUnique({

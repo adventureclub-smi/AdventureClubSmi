@@ -28,6 +28,7 @@ type HeroData = {
   clubId: string;
   membership: string;
   role: string;
+  bannerImageUrl: string | null;
 };
 
 type NextTrekData = {
@@ -138,6 +139,7 @@ export default function Dashboard() {
           clubId={hero.clubId}
           membership={hero.membership}
           role={hero.role}
+          bannerImageUrl={hero.bannerImageUrl}
           tripCentreHref={tripCentreHref}
         />
       )}

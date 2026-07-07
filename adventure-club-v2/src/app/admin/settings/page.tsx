@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet, Music, Users, Camera, Link2, Images, Award } from "lucide-react";
+import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import QuickActionCard from "@/components/dashboard/shared/QuickActionCard";
 
@@ -53,6 +53,12 @@ export default function SettingsPage() {
           icon={Award}
           label="Certificate Signatories"
           href="/admin/settings/certificate"
+        />
+
+        <QuickActionCard
+          icon={LayoutDashboard}
+          label="Student Dashboard"
+          href="/admin/settings/student-dashboard"
         />
       </div>
     </div>
