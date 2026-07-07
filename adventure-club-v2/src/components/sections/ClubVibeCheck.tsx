@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, SkipForward } from "lucide-react";
 
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { SongSummary } from "@/data/songs";
 import styles from "./ClubVibeCheck.module.scss";
 
@@ -18,6 +19,8 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const revealRef = useRef<HTMLDivElement>(null);
+  const revealStyle = useScrollReveal(revealRef);
   const frameRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -159,7 +162,11 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
         <div className={styles.bgArtScrim} />
       </div>
 
-      <div className={styles.container}>
+      <motion.div
+        className={styles.container}
+        ref={revealRef}
+        style={revealStyle}
+      >
         <motion.div
           className={styles.heading}
           initial={{ opacity: 0, y: 40 }}
@@ -242,7 +249,7 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
             </button>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
 
       <audio ref={audioRef} crossOrigin="anonymous" onEnded={nextSong} />
     </section>

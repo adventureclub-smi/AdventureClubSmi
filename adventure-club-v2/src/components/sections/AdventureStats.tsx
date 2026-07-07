@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useCountUp } from "@/hooks/useCountUp";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { StatItem } from "@/types/homepage";
 import styles from "./AdventureStats.module.scss";
 
@@ -33,10 +34,16 @@ function StatTile({
 export default function AdventureStats({ stats }: { stats: StatItem[] }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
+  const revealRef = useRef<HTMLDivElement>(null);
+  const revealStyle = useScrollReveal(revealRef);
 
   return (
     <section className={styles.statistics} ref={ref}>
-      <div className={styles.container}>
+      <motion.div
+        className={styles.container}
+        ref={revealRef}
+        style={revealStyle}
+      >
         <motion.div
           className={styles.heading}
           initial={{ opacity: 0, y: 40 }}
@@ -66,7 +73,7 @@ export default function AdventureStats({ stats }: { stats: StatItem[] }) {
             </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

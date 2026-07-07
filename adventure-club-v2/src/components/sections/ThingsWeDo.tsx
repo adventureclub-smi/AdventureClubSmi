@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { ActivityCard } from "@/types/homepage";
 import styles from "./ThingsWeDo.module.scss";
 
@@ -67,6 +68,8 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
 
   const rowRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ startX: number; startScroll: number } | null>(null);
+  const revealRef = useRef<HTMLDivElement>(null);
+  const revealStyle = useScrollReveal(revealRef);
 
   const active = sorted[activeIndex];
 
@@ -176,7 +179,11 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
         ))}
       </div>
 
-      <div className={styles.stage}>
+      <motion.div
+        className={styles.stage}
+        ref={revealRef}
+        style={revealStyle}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={active.id}
@@ -321,7 +328,7 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

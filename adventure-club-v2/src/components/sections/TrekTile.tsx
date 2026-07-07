@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTilt } from "@/hooks/useTilt";
 import type { TrekSummary } from "@/types/homepage";
 import styles from "./TrekTile.module.scss";
 
@@ -13,15 +15,20 @@ export default function TrekTile({
   trek: TrekSummary;
   index: number;
 }) {
+  const tileRef = useRef<HTMLDivElement>(null);
+  const tilt = useTilt(tileRef, 5);
+
   return (
     <motion.div
       className={styles.tile}
-      style={{ zIndex: index }}
+      style={{ zIndex: index, ...tilt.style }}
       initial={{ opacity: 0, y: 60 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.7, delay: (index % 3) * 0.1 }}
       whileHover={{ y: -14, zIndex: 20 }}
+      ref={tileRef}
+      {...tilt.handlers}
     >
       <Link href={`/treks/${trek.id}`} className={styles.link}>
         <div className={styles.imageWrap}>

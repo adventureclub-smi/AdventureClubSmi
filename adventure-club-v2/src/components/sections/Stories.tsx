@@ -1,20 +1,29 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { Story } from "@/types/homepage";
 import styles from "./Stories.module.scss";
 
 const alignments = ["left", "center", "right"] as const;
 
 export default function Stories({ stories }: { stories: Story[] }) {
+  const revealRef = useRef<HTMLDivElement>(null);
+  const revealStyle = useScrollReveal(revealRef);
+
   const visible = stories
     .filter((story) => story.published)
     .sort((a, b) => a.order - b.order);
 
   return (
     <section className={styles.stories} id="stories">
-      <div className={styles.container}>
+      <motion.div
+        className={styles.container}
+        ref={revealRef}
+        style={revealStyle}
+      >
         <motion.div
           className={styles.heading}
           initial={{ opacity: 0, y: 40 }}
@@ -70,7 +79,7 @@ export default function Stories({ stories }: { stories: Story[] }) {
             );
           })}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

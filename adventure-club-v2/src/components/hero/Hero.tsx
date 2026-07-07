@@ -1,13 +1,28 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import {
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import HeroOverlay from "./HeroOverlay";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
 import type { HeroContent } from "@/types/homepage";
 import styles from "./Hero.module.scss";
+
+// Three.js touches the GPU/canvas — never render it on the server, and
+// only pull the (fairly heavy) three.js bundle in once the browser
+// actually needs it, so it can't block first paint.
+const HeroScene = dynamic(() => import("@/components/three/HeroScene"), {
+  ssr: false,
+});
 
 function HeroCountdown({
   target,
@@ -78,8 +93,42 @@ export default function Hero({
   nextTrekId?: string | null;
   nextTrekRegistrationOpensAt?: string | null;
 }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const reducedMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
+  const [pointerFine, setPointerFine] = useState(false);
+  const scrollProgressRef = useRef(0);
+
+  useEffect(() => {
+    const updateMobile = () => setIsMobile(window.innerWidth < 700);
+    updateMobile();
+    window.addEventListener("resize", updateMobile);
+
+    function checkPointer() {
+      setPointerFine(window.matchMedia("(pointer: fine)").matches);
+    }
+    checkPointer();
+
+    return () => window.removeEventListener("resize", updateMobile);
+  }, []);
+
+  // Hero content gently recedes as the user starts scrolling into the next
+  // section, rather than cutting abruptly — the 3D scene reads the same
+  // progress (via a ref, not React state, since it updates every frame) to
+  // sink slightly further away at the same time.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const contentY = useTransform(scrollYProgress, [0, 0.8], [0, -60]);
+
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    scrollProgressRef.current = v;
+  });
+
   return (
-    <section className={styles.hero} id="home">
+    <section className={styles.hero} id="home" ref={sectionRef}>
       <video
         className={styles.video}
         autoPlay
@@ -91,9 +140,25 @@ export default function Hero({
         <source src={content.videoUrl} type="video/mp4" />
       </video>
 
+      <div className={styles.scene}>
+        <HeroScene
+          interactive={pointerFine && !reducedMotion}
+          animate={!reducedMotion}
+          scrollProgress={scrollProgressRef}
+          isMobile={isMobile}
+        />
+      </div>
+
       <HeroOverlay />
 
-      <div className={styles.content}>
+      <motion.div
+        className={styles.content}
+        style={
+          reducedMotion
+            ? undefined
+            : { opacity: contentOpacity, y: contentY }
+        }
+      >
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -173,7 +238,7 @@ export default function Hero({
             registrationOpensAt={nextTrekRegistrationOpensAt}
           />
         )}
-      </div>
+      </motion.div>
 
       <motion.div
         animate={{ y: [0, 10, 0] }}

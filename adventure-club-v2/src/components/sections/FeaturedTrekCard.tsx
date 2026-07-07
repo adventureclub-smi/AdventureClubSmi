@@ -1,11 +1,13 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
+import { useTilt } from "@/hooks/useTilt";
 import { getJourneyAction, getJourneyBadge } from "@/lib/registration-journey";
 import type { MyRegistrationSummary } from "@/data/treks";
 import type { TrekSummary } from "@/types/homepage";
@@ -67,6 +69,9 @@ export default function FeaturedTrekCard({
     ? getJourneyAction(trek.id, registration)
     : null;
 
+  const cardRef = useRef<HTMLDivElement>(null);
+  const tilt = useTilt(cardRef, 6);
+
   return (
     <motion.div
       className={styles.card}
@@ -74,6 +79,9 @@ export default function FeaturedTrekCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8 }}
+      ref={cardRef}
+      style={tilt.style}
+      {...tilt.handlers}
     >
       <div className={styles.imageWrap}>
         <Image

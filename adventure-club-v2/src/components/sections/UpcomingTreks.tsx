@@ -1,6 +1,11 @@
+"use client";
+
+import { useRef } from "react";
+import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import FeaturedTrekCard from "./FeaturedTrekCard";
 import TrekTile from "./TrekTile";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { MyRegistrationSummary } from "@/data/treks";
 import type { TrekSummary, UpcomingTreksConfig } from "@/types/homepage";
 import styles from "./UpcomingTreks.module.scss";
@@ -14,6 +19,9 @@ export default function UpcomingTreks({
   config: UpcomingTreksConfig;
   myRegistrations?: MyRegistrationSummary[];
 }) {
+  const revealRef = useRef<HTMLDivElement>(null);
+  const revealStyle = useScrollReveal(revealRef);
+
   const featured = config.featuredTrekId
     ? treks.find((trek) => trek.id === config.featuredTrekId) ?? treks[0]
     : treks[0];
@@ -26,7 +34,11 @@ export default function UpcomingTreks({
 
   return (
     <section className={styles.section} id="treks">
-      <div className={styles.container}>
+      <motion.div
+        className={styles.container}
+        ref={revealRef}
+        style={revealStyle}
+      >
         <div className={styles.heading}>
           <span className={styles.eyebrow}>{config.eyebrow}</span>
           <h2>{config.heading}</h2>
@@ -56,7 +68,7 @@ export default function UpcomingTreks({
             )}
           </>
         )}
-      </div>
+      </motion.div>
     </section>
   );
 }

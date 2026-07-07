@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Compass } from "lucide-react";
 
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { GalleryPhoto } from "@/types/homepage";
 import GalleryLightbox from "./GalleryLightbox";
 import styles from "./Gallery.module.scss";
@@ -12,6 +13,8 @@ import styles from "./Gallery.module.scss";
 export default function Gallery({ items }: { items: GalleryPhoto[] }) {
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const openerRef = useRef<HTMLButtonElement | null>(null);
+  const revealRef = useRef<HTMLDivElement>(null);
+  const revealStyle = useScrollReveal(revealRef);
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -27,7 +30,8 @@ export default function Gallery({ items }: { items: GalleryPhoto[] }) {
 
   return (
     <section className={styles.gallery} id="gallery">
-      <div className={styles.headingWrap}>
+      <motion.div ref={revealRef} style={revealStyle}>
+        <div className={styles.headingWrap}>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -76,6 +80,7 @@ export default function Gallery({ items }: { items: GalleryPhoto[] }) {
           </div>
         </div>
       )}
+      </motion.div>
 
       <AnimatePresence>
         {openIndex !== null && (

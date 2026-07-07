@@ -23,6 +23,16 @@
   z-index: 1;
 }
 
+// Sits above the video but below HeroOverlay's darkening gradient (z-index
+// 2), so the same tuning that keeps the text legible also keeps this
+// ambient wireframe subtle rather than needing separate opacity tuning.
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .content {
   position: relative;
   z-index: 3;

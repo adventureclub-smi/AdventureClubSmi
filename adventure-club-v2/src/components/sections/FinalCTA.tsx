@@ -8,6 +8,7 @@ import {
   useScroll,
   useTransform,
   useMotionTemplate,
+  useReducedMotion,
 } from "framer-motion";
 import type { FinalSectionContent } from "@/types/homepage";
 import styles from "./FinalCTA.module.scss";
@@ -23,9 +24,12 @@ export default function FinalCTA({
     offset: ["start end", "end center"],
   });
 
+  const reducedMotion = useReducedMotion();
+
   const brightness = useTransform(scrollYProgress, [0, 1], [0.3, 1]);
   const filter = useMotionTemplate`brightness(${brightness})`;
   const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.9, 0.45]);
+  const contentScale = useTransform(scrollYProgress, [0, 1], [0.92, 1]);
 
   return (
     <section className={styles.cta} ref={ref} id="join">
@@ -55,7 +59,10 @@ export default function FinalCTA({
         style={{ opacity: overlayOpacity }}
       />
 
-      <div className={styles.content}>
+      <motion.div
+        className={styles.content}
+        style={reducedMotion ? undefined : { scale: contentScale }}
+      >
         <motion.span
           className={styles.eyebrow}
           initial={{ opacity: 0, y: 20 }}
@@ -106,7 +113,7 @@ export default function FinalCTA({
             </motion.span>
           </Link>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }
