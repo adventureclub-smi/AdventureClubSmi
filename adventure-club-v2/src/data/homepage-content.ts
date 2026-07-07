@@ -1,6 +1,7 @@
 import type { HomepageContent } from "@/types/homepage";
 import { getSocialSettings } from "@/data/social-settings";
 import { getGalleryPhotos } from "@/data/gallery-photos";
+import { getStories } from "@/data/stories";
 
 /**
  * Single centralized source for all non-database homepage content.
@@ -9,17 +10,19 @@ import { getGalleryPhotos } from "@/data/gallery-photos";
  * or Prisma model) — every homepage component already consumes this
  * shape via props, so no component changes will be required.
  *
- * `socials` and `gallery` already come from the database (admin-editable
- * Instagram/LinkedIn links, and the homepage gallery photos) — everything
- * else here is still static placeholder content.
+ * `socials`, `gallery`, and `stories` already come from the database
+ * (admin-editable Instagram/LinkedIn links, homepage gallery photos, and
+ * homepage stories) — everything else here is still static placeholder
+ * content.
  */
 export async function getHomepageContent(): Promise<HomepageContent> {
-  const [socials, gallery] = await Promise.all([
+  const [socials, gallery, stories] = await Promise.all([
     getSocialSettings(),
     getGalleryPhotos(),
+    getStories(),
   ]);
 
-  return { ...homepageContent, socials, gallery };
+  return { ...homepageContent, socials, gallery, stories };
 }
 
 const homepageContent: HomepageContent = {
@@ -187,35 +190,11 @@ const homepageContent: HomepageContent = {
   // Gallery to edit/replace them).
   gallery: [],
 
-  stories: [
-    {
-      id: "story-strangers",
-      title: "We left as strangers.",
-      description:
-        "Twelve of us boarded a bus before sunrise, most having never spoken a word to each other.",
-      media: [{ type: "image", src: "/images/about/about-2.jpg" }],
-      order: 1,
-      published: true,
-    },
-    {
-      id: "story-summit",
-      title: "We reached the summit together.",
-      description:
-        "By the time we reached the top, we weren't classmates anymore — we were a team.",
-      media: [{ type: "image", src: "/images/activities/trekking.jpg" }],
-      order: 2,
-      published: true,
-    },
-    {
-      id: "story-sunrise",
-      title: "The sunrise made every step worth it.",
-      description:
-        "Every blister, every aching muscle — forgotten the moment the sky turned gold.",
-      media: [{ type: "image", src: "/images/activities/photography.jpg" }],
-      order: 3,
-      published: true,
-    },
-  ],
+  // Always overridden by getStories() in getHomepageContent() above — kept
+  // here only to satisfy the HomepageContent type. Seeded with the original
+  // 3 stories directly in the database (see admin Settings > Stories to
+  // add/remove them).
+  stories: [],
 
   finalSection: {
     videoUrl:

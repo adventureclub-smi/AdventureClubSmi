@@ -539,6 +539,22 @@ model HomepageGalleryPhoto {
   createdAt DateTime @default(now())
 }
 
+model HomepageStory {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  imageUrl String
+
+  title String
+
+  description String
+
+  order Int @default(0)
+
+  published Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}
+
 model CertificateSettings {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
