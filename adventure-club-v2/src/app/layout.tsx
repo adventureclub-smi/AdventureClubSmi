@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Bebas_Neue, Manrope } from "next/font/google";
+import ServiceWorkerRegister from "@/components/layout/ServiceWorkerRegister";
 import "./globals.scss";
 
 const geistSans = Geist({
@@ -28,6 +29,18 @@ export const metadata: Metadata = {
   title: "Adventure Club | Srishti Manipal Institute",
   description:
     "Explore mountains, forests, rivers and unforgettable adventures with Adventure Club — Srishti Manipal Institute.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0d0d0d",
 };
 
 export default function RootLayout({
@@ -40,7 +53,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${manrope.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <ServiceWorkerRegister />
+        {children}
+      </body>
     </html>
   );
 }
