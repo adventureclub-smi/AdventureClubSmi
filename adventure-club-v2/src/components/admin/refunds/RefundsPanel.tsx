@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Wallet, PiggyBank, Receipt, TrendingUp, Save } from "lucide-react";
+import {
+  Wallet,
+  PiggyBank,
+  Receipt,
+  TrendingUp,
+  Save,
+  CheckCircle2,
+  Undo2,
+} from "lucide-react";
 import styles from "./RefundsPanel.module.scss";
-import type { RefundRegistration } from "./types";
+import type { RefundRegistration, RefundTrekSettings } from "./types";
 
 function participantName(registration: RefundRegistration) {
   return registration.user?.fullName ?? registration.guestName ?? "Unknown Participant";
@@ -15,12 +23,17 @@ function sumAmounts(group: RefundRegistration[], amounts: Record<string, string>
 
 export default function RefundsPanel({ trekId }: { trekId: string }) {
   const [registrations, setRegistrations] = useState<RefundRegistration[]>([]);
+  const [trek, setTrek] = useState<RefundTrekSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [amounts, setAmounts] = useState<Record<string, string>>({});
   const [finalBulk, setFinalBulk] = useState("");
   const [initialBulk, setInitialBulk] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
+  const [expectedMin, setExpectedMin] = useState("");
+  const [expectedMax, setExpectedMax] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsStatus, setSettingsStatus] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -28,14 +41,21 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
     async function load() {
       try {
         const res = await fetch(`/api/admin/refunds/${trekId}`);
-        const data: RefundRegistration[] = await res.json();
+        const data: { trek: RefundTrekSettings; registrations: RefundRegistration[] } =
+          await res.json();
 
-        if (!active || !Array.isArray(data)) return;
+        if (!active || !data?.registrations) return;
 
-        setRegistrations(data);
+        setRegistrations(data.registrations);
+        setTrek(data.trek);
+        setExpectedMin(data.trek.expectedReimbursementMin?.toString() ?? "");
+        setExpectedMax(data.trek.expectedReimbursementMax?.toString() ?? "");
         setAmounts(
           Object.fromEntries(
-            data.map((r) => [r.id, r.reimbursementAmount != null ? String(r.reimbursementAmount) : ""])
+            data.registrations.map((r) => [
+              r.id,
+              r.reimbursementAmount != null ? String(r.reimbursementAmount) : "",
+            ])
           )
         );
       } catch (error) {
@@ -66,6 +86,8 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
   const initialTotal = useMemo(() => sumAmounts(initialGroup, amounts), [initialGroup, amounts]);
   const grandTotal = finalTotal + initialTotal;
   const profit = grandTotal - finalTotal;
+
+  const receivedCount = registrations.filter((r) => r.reimbursementReceived).length;
 
   function applyBulk(group: RefundRegistration[], value: string) {
     setAmounts((prev) => {
@@ -117,7 +139,63 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
     }
   }
 
-  if (loading) {
+  async function handleSaveRange() {
+    setSavingSettings(true);
+    setSettingsStatus("");
+
+    try {
+      const res = await fetch(`/api/admin/refunds/${trekId}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expectedReimbursementMin: expectedMin ? parseInt(expectedMin, 10) : null,
+          expectedReimbursementMax: expectedMax ? parseInt(expectedMax, 10) : null,
+        }),
+      });
+
+      const data = await res.json();
+      setTrek(data);
+      setSettingsStatus("Expected range saved.");
+    } catch (error) {
+      console.error(error);
+      setSettingsStatus("Failed to save range.");
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
+  async function handleToggleDone() {
+    const nextDone = !trek?.reimbursementDone;
+
+    const confirmToggle = confirm(
+      nextDone
+        ? "Mark reimbursement as done for everyone on this trek? Students will see this immediately."
+        : "Undo reimbursement done for this trek?"
+    );
+
+    if (!confirmToggle) return;
+
+    setSavingSettings(true);
+    setSettingsStatus("");
+
+    try {
+      const res = await fetch(`/api/admin/refunds/${trekId}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reimbursementDone: nextDone }),
+      });
+
+      const data = await res.json();
+      setTrek(data);
+    } catch (error) {
+      console.error(error);
+      setSettingsStatus("Failed to update.");
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
+  if (loading || !trek) {
     return <div className={styles.loading}>Loading reimbursement data...</div>;
   }
 
@@ -156,6 +234,59 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
+          <h3>Reimbursement Status</h3>
+
+          <div className={styles.doneWrap}>
+            <span className={styles.receivedCount}>
+              {receivedCount} / {registrations.length} received
+            </span>
+
+            <button
+              className={trek.reimbursementDone ? styles.undoButton : styles.doneButton}
+              disabled={savingSettings}
+              onClick={handleToggleDone}
+            >
+              {trek.reimbursementDone ? <Undo2 size={15} /> : <CheckCircle2 size={15} />}
+              {trek.reimbursementDone ? "Undo Reimbursement Done" : "Reimbursement Done"}
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.rangeRow}>
+          <label className={styles.rangeInput}>
+            Expected Min
+            <input
+              type="number"
+              placeholder="₹"
+              value={expectedMin}
+              onChange={(e) => setExpectedMin(e.target.value)}
+            />
+          </label>
+
+          <label className={styles.rangeInput}>
+            Expected Max
+            <input
+              type="number"
+              placeholder="₹"
+              value={expectedMax}
+              onChange={(e) => setExpectedMax(e.target.value)}
+            />
+          </label>
+
+          <button
+            className={styles.rangeSaveButton}
+            disabled={savingSettings}
+            onClick={handleSaveRange}
+          >
+            Save Range
+          </button>
+        </div>
+
+        {settingsStatus && <p className={styles.saveStatus}>{settingsStatus}</p>}
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
           <h3>Final Payment Paid</h3>
 
           <label className={styles.bulkInput}>
@@ -181,13 +312,21 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
                   <span>{r.user?.upiPhone ?? "No UPI number"}</span>
                 </div>
 
-                <div className={styles.rowAmount}>
-                  <span>₹</span>
-                  <input
-                    type="number"
-                    value={amounts[r.id] ?? ""}
-                    onChange={(e) => handleRowChange(r.id, e.target.value)}
-                  />
+                <div className={styles.rowRight}>
+                  {r.reimbursementReceived && (
+                    <span className={styles.receivedBadge}>
+                      <CheckCircle2 size={13} /> Received
+                    </span>
+                  )}
+
+                  <div className={styles.rowAmount}>
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      value={amounts[r.id] ?? ""}
+                      onChange={(e) => handleRowChange(r.id, e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -222,13 +361,21 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
                   <span>{r.user?.upiPhone ?? "No UPI number"}</span>
                 </div>
 
-                <div className={styles.rowAmount}>
-                  <span>₹</span>
-                  <input
-                    type="number"
-                    value={amounts[r.id] ?? ""}
-                    onChange={(e) => handleRowChange(r.id, e.target.value)}
-                  />
+                <div className={styles.rowRight}>
+                  {r.reimbursementReceived && (
+                    <span className={styles.receivedBadge}>
+                      <CheckCircle2 size={13} /> Received
+                    </span>
+                  )}
+
+                  <div className={styles.rowAmount}>
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      value={amounts[r.id] ?? ""}
+                      onChange={(e) => handleRowChange(r.id, e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             ))}

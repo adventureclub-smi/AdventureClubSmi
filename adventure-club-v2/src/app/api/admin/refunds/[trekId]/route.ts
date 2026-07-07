@@ -15,6 +15,20 @@ export async function GET(
   try {
     const { trekId } = await params;
 
+    const trek = await prisma.trek.findUnique({
+      where: { id: trekId },
+      select: {
+        expectedReimbursementMin: true,
+        expectedReimbursementMax: true,
+        reimbursementDone: true,
+        reimbursementDoneAt: true,
+      },
+    });
+
+    if (!trek) {
+      return NextResponse.json({ message: "Trek not found." }, { status: 404 });
+    }
+
     const registrations = await prisma.registration.findMany({
       where: {
         trekId,
@@ -26,6 +40,7 @@ export async function GET(
         initialPaymentPaid: true,
         finalPaymentPaid: true,
         reimbursementAmount: true,
+        reimbursementReceived: true,
         user: {
           select: {
             fullName: true,
@@ -38,7 +53,7 @@ export async function GET(
       orderBy: { createdAt: "asc" },
     });
 
-    return NextResponse.json(registrations);
+    return NextResponse.json({ trek, registrations });
   } catch (error) {
     console.error(error);
 

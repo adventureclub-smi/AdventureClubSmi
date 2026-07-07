@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MapPin, CalendarDays, ArrowUpRight } from "lucide-react";
+import { MapPin, CalendarDays, ArrowUpRight, CheckCircle2 } from "lucide-react";
 
 import BackButton from "./shared/BackButton";
 import StatusBadge from "./shared/StatusBadge";
@@ -12,6 +12,8 @@ import { getJourneyBadge, type RegistrationLike } from "@/lib/registration-journ
 import styles from "./StudentTreks.module.scss";
 
 type Registration = RegistrationLike & {
+  reimbursementAmount: number | null;
+  reimbursementReceived: boolean;
   trek: {
     id: string;
     title: string;
@@ -19,12 +21,36 @@ type Registration = RegistrationLike & {
     date: string;
     difficulty: string;
     coverImage?: string | null;
+    reimbursementDone: boolean;
+    expectedReimbursementMin: number | null;
+    expectedReimbursementMax: number | null;
   };
 };
 
 export default function StudentTreks() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [markingId, setMarkingId] = useState<string | null>(null);
+
+  async function handleMarkReceived(registrationId: string) {
+    setMarkingId(registrationId);
+
+    try {
+      const res = await fetch(`/api/student/reimbursement/${registrationId}/received`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        setRegistrations((prev) =>
+          prev.map((r) =>
+            r.id === registrationId ? { ...r, reimbursementReceived: true } : r
+          )
+        );
+      }
+    } finally {
+      setMarkingId(null);
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -64,6 +90,10 @@ export default function StudentTreks() {
           {registrations.map((reg, i) => {
             const badge = getJourneyBadge(reg);
 
+            const tripOver = reg.status === "COMPLETED" || reg.status === "MISSED";
+            const eligibleForReimbursement =
+              tripOver && (reg.finalPaymentPaid || reg.initialPaymentPaid);
+
             return (
               <motion.div
                 key={reg.id}
@@ -101,6 +131,46 @@ export default function StudentTreks() {
                       year: "numeric",
                     })}
                   </p>
+
+                  {eligibleForReimbursement && (
+                    <div className={styles.reimbursement}>
+                      {!reg.trek.reimbursementDone ? (
+                        <p className={styles.reimbursementPending}>
+                          Reimbursement Pending
+                          {(reg.trek.expectedReimbursementMin != null ||
+                            reg.trek.expectedReimbursementMax != null) && (
+                            <span>
+                              {" "}
+                              · Expected ₹{reg.trek.expectedReimbursementMin ?? "?"}–
+                              {reg.trek.expectedReimbursementMax ?? "?"}
+                            </span>
+                          )}
+                        </p>
+                      ) : reg.reimbursementReceived ? (
+                        <p className={styles.reimbursementReceived}>
+                          <CheckCircle2 size={14} /> Reimbursement Received — ₹
+                          {reg.reimbursementAmount ?? 0}
+                        </p>
+                      ) : (
+                        <div className={styles.reimbursementDone}>
+                          <p>
+                            Reimbursement Done — ₹{reg.reimbursementAmount ?? 0}
+                          </p>
+                          <p className={styles.reimbursementNote}>
+                            Please check and click below once you&apos;ve received it.
+                          </p>
+                          <button
+                            type="button"
+                            className={styles.receivedButton}
+                            disabled={markingId === reg.id}
+                            onClick={() => handleMarkReceived(reg.id)}
+                          >
+                            {markingId === reg.id ? "Marking..." : "Received"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <Link href={`/dashboard/treks/${reg.id}`} className={styles.openButton}>
                     Open <ArrowUpRight size={15} />
