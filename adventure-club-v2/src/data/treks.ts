@@ -1,6 +1,4 @@
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { verifyToken } from "@/lib/auth";
 import type { RegistrationLike } from "@/lib/registration-journey";
 import type { TrekSummary } from "@/types/homepage";
 
@@ -34,43 +32,3 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
 }
 
 export type MyRegistrationSummary = RegistrationLike & { trekId: string };
-
-// So the homepage's featured-trek card can reflect the visiting student's
-// actual registration status (Approved / Pay Initial Payment / Waiting for
-// Verification / etc.) instead of always showing "Register Now" once
-// they're already registered. Returns [] for anonymous visitors.
-export async function getMyRegistrationsForHomepage(): Promise<
-  MyRegistrationSummary[]
-> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  if (!token) return [];
-
-  const payload = verifyToken(token);
-
-  if (!payload) return [];
-
-  const registrations = await prisma.registration.findMany({
-    where: { userId: payload.id },
-    include: { trek: { select: { tripCentrePublished: true } } },
-  });
-
-  return registrations.map((r) => ({
-    id: r.id,
-    trekId: r.trekId,
-    status: r.status,
-    initialPaymentDeadline: r.initialPaymentDeadline
-      ? r.initialPaymentDeadline.toISOString()
-      : null,
-    initialPaymentPaid: r.initialPaymentPaid,
-    offlinePaymentCreated: r.offlinePaymentCreated,
-    offlinePaymentVerified: r.offlinePaymentVerified,
-    bondFormSubmitted: r.bondFormSubmitted,
-    attendanceMarked: r.attendanceMarked,
-    finalPaymentUnlocked: r.finalPaymentUnlocked,
-    finalPaymentPaid: r.finalPaymentPaid,
-    certificateIssued: r.certificateIssued,
-    trek: { tripCentrePublished: r.trek.tripCentrePublished },
-  }));
-}

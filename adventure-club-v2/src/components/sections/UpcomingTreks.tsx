@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import FeaturedTrekCard from "./FeaturedTrekCard";
@@ -13,14 +13,40 @@ import styles from "./UpcomingTreks.module.scss";
 export default function UpcomingTreks({
   treks,
   config,
-  myRegistrations = [],
 }: {
   treks: TrekSummary[];
   config: UpcomingTreksConfig;
-  myRegistrations?: MyRegistrationSummary[];
 }) {
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
+
+  // Fetched client-side rather than passed down from the server page — the
+  // page itself is cached (ISR) since trek/gallery/etc. content is the same
+  // for every visitor, but "my registration status" is genuinely per-visitor
+  // and can't safely be baked into that shared cached HTML.
+  const [myRegistrations, setMyRegistrations] = useState<MyRegistrationSummary[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMyRegistrations() {
+      try {
+        const res = await fetch("/api/my-registrations");
+        if (!active || !res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data)) setMyRegistrations(data);
+      } catch {
+        // Anonymous visitor or a transient error — the section already
+        // defaults to "Register Now" with no registration data.
+      }
+    }
+
+    loadMyRegistrations();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const featured = config.featuredTrekId
     ? treks.find((trek) => trek.id === config.featuredTrekId) ?? treks[0]

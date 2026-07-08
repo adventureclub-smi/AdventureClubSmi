@@ -11,23 +11,30 @@ import InstagramFeed from "@/components/sections/InstagramFeed";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import { getHomepageContent } from "@/data/homepage-content";
-import { getUpcomingTreks, getMyRegistrationsForHomepage } from "@/data/treks";
+import { getUpcomingTreks } from "@/data/treks";
 import { getSongs } from "@/data/songs";
 import { getInstagramPosts } from "@/data/instagram";
 
 // Trek listings and the music playlist can change any time from the admin
-// panel (a trek being marked completed, a song added/removed) — this page
-// has no dynamic API calls of its own, so Next.js would otherwise treat it
-// as static and cache it client-side for minutes at a time.
-export const dynamic = "force-dynamic";
+// panel (a trek being marked completed, a song added/removed), so this can't
+// be fully static — but force-dynamic meant every single visitor triggered a
+// fresh server render and live database round-trip with no caching at all,
+// which is exactly the request shape most exposed to a slow cold start.
+// ISR serves the cached page instantly and only re-renders in the
+// background at most once every 30s, so admin changes still show up
+// quickly without every visitor paying for a live query. This only works
+// because nothing left in this page's own render path is per-visitor
+// anymore — "my registration status" (genuinely personal, cookie-derived)
+// is fetched client-side by UpcomingTreks instead of baked in here, where
+// it would otherwise get cached and shown to every visitor alike.
+export const revalidate = 30;
 
 export default async function Home() {
-  const [content, treks, songs, instagramPosts, myRegistrations] = await Promise.all([
+  const [content, treks, songs, instagramPosts] = await Promise.all([
     getHomepageContent(),
     getUpcomingTreks(),
     getSongs(),
     getInstagramPosts(),
-    getMyRegistrationsForHomepage(),
   ]);
 
   return (
@@ -45,7 +52,6 @@ export default async function Home() {
       <UpcomingTreks
         treks={treks}
         config={content.upcomingTreks}
-        myRegistrations={myRegistrations}
       />
       <Gallery items={content.gallery} />
       <Stories stories={content.stories} />
