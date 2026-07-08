@@ -32,6 +32,26 @@ const nextConfig: NextConfig = {
       dynamic: 0,
     },
   },
+  // Files under /public get no caching guidance by default (max-age=0,
+  // must-revalidate), so a returning visitor's browser re-asks the server
+  // on every single load instead of just using its own cached copy — cheap
+  // per request (a 304), but needless for assets that never change in place.
+  // If hero/drone ever need updating, ship them under a new filename rather
+  // than overwriting these ones, since "immutable" tells browsers to never
+  // even check back for a year.
+  async headers() {
+    return [
+      {
+        source: "/videos/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
