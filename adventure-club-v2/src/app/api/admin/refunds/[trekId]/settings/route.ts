@@ -19,8 +19,6 @@ export async function PATCH(
     const data: {
       expectedReimbursementMin?: number | null;
       expectedReimbursementMax?: number | null;
-      reimbursementDone?: boolean;
-      reimbursementDoneAt?: Date | null;
     } = {};
 
     if ("expectedReimbursementMin" in body) {
@@ -31,19 +29,12 @@ export async function PATCH(
       data.expectedReimbursementMax = body.expectedReimbursementMax;
     }
 
-    if ("reimbursementDone" in body) {
-      data.reimbursementDone = body.reimbursementDone;
-      data.reimbursementDoneAt = body.reimbursementDone ? new Date() : null;
-    }
-
     const trek = await prisma.trek.update({
       where: { id: trekId },
       data,
       select: {
         expectedReimbursementMin: true,
         expectedReimbursementMax: true,
-        reimbursementDone: true,
-        reimbursementDoneAt: true,
       },
     });
 

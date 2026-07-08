@@ -3,6 +3,7 @@ export type RefundRegistration = {
   initialPaymentPaid: boolean;
   finalPaymentPaid: boolean;
   reimbursementAmount: number | null;
+  reimbursementDone: boolean;
   reimbursementReceived: boolean;
   user: {
     fullName: string;
@@ -16,6 +17,4 @@ export type RefundRegistration = {
 export type RefundTrekSettings = {
   expectedReimbursementMin: number | null;
   expectedReimbursementMax: number | null;
-  reimbursementDone: boolean;
-  reimbursementDoneAt: string | null;
 };

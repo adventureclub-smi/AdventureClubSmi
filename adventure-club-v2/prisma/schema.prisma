@@ -183,10 +183,6 @@ model Trek {
 
   expectedReimbursementMax Int?
 
-  reimbursementDone Boolean @default(false)
-
-  reimbursementDoneAt DateTime?
-
   // =========================
 
   refundPercentage Int?
@@ -279,6 +275,10 @@ model Registration {
   // ===== College Reimbursement =====
 
   reimbursementAmount Int?
+
+  reimbursementDone Boolean @default(false)
+
+  reimbursementDoneAt DateTime?
 
   reimbursementReceived Boolean @default(false)
 

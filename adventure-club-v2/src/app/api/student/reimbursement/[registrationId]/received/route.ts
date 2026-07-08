@@ -25,7 +25,6 @@ export async function POST(
 
     const registration = await prisma.registration.findUnique({
       where: { id: registrationId },
-      include: { trek: true },
     });
 
     if (!registration) {
@@ -36,9 +35,9 @@ export async function POST(
       return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
     }
 
-    if (!registration.trek.reimbursementDone) {
+    if (!registration.reimbursementDone) {
       return NextResponse.json(
-        { message: "Reimbursement hasn't been marked done for this trek yet." },
+        { message: "Reimbursement hasn't been marked done for you yet." },
         { status: 400 }
       );
     }

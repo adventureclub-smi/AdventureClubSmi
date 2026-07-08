@@ -34,6 +34,7 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
   const [expectedMax, setExpectedMax] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsStatus, setSettingsStatus] = useState("");
+  const [rowSavingId, setRowSavingId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -87,6 +88,7 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
   const grandTotal = finalTotal + initialTotal;
   const profit = grandTotal - finalTotal;
 
+  const doneCount = registrations.filter((r) => r.reimbursementDone).length;
   const receivedCount = registrations.filter((r) => r.reimbursementReceived).length;
 
   function applyBulk(group: RefundRegistration[], value: string) {
@@ -164,35 +166,77 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
     }
   }
 
-  async function handleToggleDone() {
-    const nextDone = !trek?.reimbursementDone;
+  async function handleToggleRowDone(registration: RefundRegistration) {
+    const nextDone = !registration.reimbursementDone;
+    const amount = amounts[registration.id] ? parseInt(amounts[registration.id], 10) : null;
 
-    const confirmToggle = confirm(
-      nextDone
-        ? "Mark reimbursement as done for everyone on this trek? Students will see this immediately."
-        : "Undo reimbursement done for this trek?"
-    );
-
-    if (!confirmToggle) return;
-
-    setSavingSettings(true);
-    setSettingsStatus("");
+    setRowSavingId(registration.id);
 
     try {
-      const res = await fetch(`/api/admin/refunds/${trekId}/settings`, {
+      const res = await fetch(`/api/admin/refunds/${trekId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reimbursementDone: nextDone }),
+        body: JSON.stringify({
+          updates: [{ registrationId: registration.id, amount, done: nextDone }],
+        }),
       });
 
-      const data = await res.json();
-      setTrek(data);
+      if (res.ok) {
+        setRegistrations((prev) =>
+          prev.map((r) =>
+            r.id === registration.id
+              ? { ...r, reimbursementAmount: amount, reimbursementDone: nextDone }
+              : r
+          )
+        );
+      }
     } catch (error) {
       console.error(error);
-      setSettingsStatus("Failed to update.");
     } finally {
-      setSavingSettings(false);
+      setRowSavingId(null);
     }
+  }
+
+  function renderRow(r: RefundRegistration) {
+    return (
+      <div key={r.id} className={styles.row}>
+        <div className={styles.rowInfo}>
+          <strong>{participantName(r)}</strong>
+          <span>{r.user?.upiId ?? "No UPI ID"}</span>
+          <span>{r.user?.upiPhone ?? "No UPI number"}</span>
+        </div>
+
+        <div className={styles.rowRight}>
+          {r.reimbursementReceived ? (
+            <span className={styles.receivedBadge}>
+              <CheckCircle2 size={13} /> Received
+            </span>
+          ) : r.reimbursementDone ? (
+            <span className={styles.doneBadge}>
+              <CheckCircle2 size={13} /> Done
+            </span>
+          ) : null}
+
+          <div className={styles.rowAmount}>
+            <span>₹</span>
+            <input
+              type="number"
+              value={amounts[r.id] ?? ""}
+              onChange={(e) => handleRowChange(r.id, e.target.value)}
+            />
+          </div>
+
+          <button
+            className={r.reimbursementDone ? styles.undoRowButton : styles.doneRowButton}
+            disabled={rowSavingId === r.id}
+            onClick={() => handleToggleRowDone(r)}
+          >
+            {r.reimbursementDone ? <Undo2 size={13} /> : <CheckCircle2 size={13} />}
+            {rowSavingId === r.id ? "Saving..." : r.reimbursementDone ? "Undo" : "Mark Done"}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (loading || !trek) {
@@ -234,22 +278,11 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3>Reimbursement Status</h3>
+          <h3>Expected Reimbursement Range</h3>
 
-          <div className={styles.doneWrap}>
-            <span className={styles.receivedCount}>
-              {receivedCount} / {registrations.length} received
-            </span>
-
-            <button
-              className={trek.reimbursementDone ? styles.undoButton : styles.doneButton}
-              disabled={savingSettings}
-              onClick={handleToggleDone}
-            >
-              {trek.reimbursementDone ? <Undo2 size={15} /> : <CheckCircle2 size={15} />}
-              {trek.reimbursementDone ? "Undo Reimbursement Done" : "Reimbursement Done"}
-            </button>
-          </div>
+          <span className={styles.receivedCount}>
+            {doneCount} done · {receivedCount} received (of {registrations.length})
+          </span>
         </div>
 
         <div className={styles.rangeRow}>
@@ -303,34 +336,7 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
         {finalGroup.length === 0 ? (
           <div className={styles.empty}>No one has completed the final payment yet.</div>
         ) : (
-          <div className={styles.rows}>
-            {finalGroup.map((r) => (
-              <div key={r.id} className={styles.row}>
-                <div className={styles.rowInfo}>
-                  <strong>{participantName(r)}</strong>
-                  <span>{r.user?.upiId ?? "No UPI ID"}</span>
-                  <span>{r.user?.upiPhone ?? "No UPI number"}</span>
-                </div>
-
-                <div className={styles.rowRight}>
-                  {r.reimbursementReceived && (
-                    <span className={styles.receivedBadge}>
-                      <CheckCircle2 size={13} /> Received
-                    </span>
-                  )}
-
-                  <div className={styles.rowAmount}>
-                    <span>₹</span>
-                    <input
-                      type="number"
-                      value={amounts[r.id] ?? ""}
-                      onChange={(e) => handleRowChange(r.id, e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <div className={styles.rows}>{finalGroup.map(renderRow)}</div>
         )}
       </section>
 
@@ -352,34 +358,7 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
         {initialGroup.length === 0 ? (
           <div className={styles.empty}>No one is in this group yet.</div>
         ) : (
-          <div className={styles.rows}>
-            {initialGroup.map((r) => (
-              <div key={r.id} className={styles.row}>
-                <div className={styles.rowInfo}>
-                  <strong>{participantName(r)}</strong>
-                  <span>{r.user?.upiId ?? "No UPI ID"}</span>
-                  <span>{r.user?.upiPhone ?? "No UPI number"}</span>
-                </div>
-
-                <div className={styles.rowRight}>
-                  {r.reimbursementReceived && (
-                    <span className={styles.receivedBadge}>
-                      <CheckCircle2 size={13} /> Received
-                    </span>
-                  )}
-
-                  <div className={styles.rowAmount}>
-                    <span>₹</span>
-                    <input
-                      type="number"
-                      value={amounts[r.id] ?? ""}
-                      onChange={(e) => handleRowChange(r.id, e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <div className={styles.rows}>{initialGroup.map(renderRow)}</div>
         )}
       </section>
 

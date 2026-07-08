@@ -20,8 +20,6 @@ export async function GET(
       select: {
         expectedReimbursementMin: true,
         expectedReimbursementMax: true,
-        reimbursementDone: true,
-        reimbursementDoneAt: true,
       },
     });
 
@@ -40,6 +38,7 @@ export async function GET(
         initialPaymentPaid: true,
         finalPaymentPaid: true,
         reimbursementAmount: true,
+        reimbursementDone: true,
         reimbursementReceived: true,
         user: {
           select: {
@@ -84,10 +83,22 @@ export async function PATCH(
 
     await Promise.all(
       updates.map(
-        (update: { registrationId: string; amount: number | null }) =>
+        (update: {
+          registrationId: string;
+          amount: number | null;
+          done?: boolean;
+        }) =>
           prisma.registration.updateMany({
             where: { id: update.registrationId, trekId },
-            data: { reimbursementAmount: update.amount },
+            data: {
+              reimbursementAmount: update.amount,
+              ...(update.done !== undefined
+                ? {
+                    reimbursementDone: update.done,
+                    reimbursementDoneAt: update.done ? new Date() : null,
+                  }
+                : {}),
+            },
           })
       )
     );

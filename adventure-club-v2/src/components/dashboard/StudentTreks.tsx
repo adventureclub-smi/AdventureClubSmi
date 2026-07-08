@@ -13,6 +13,7 @@ import styles from "./StudentTreks.module.scss";
 
 type Registration = RegistrationLike & {
   reimbursementAmount: number | null;
+  reimbursementDone: boolean;
   reimbursementReceived: boolean;
   trek: {
     id: string;
@@ -21,7 +22,6 @@ type Registration = RegistrationLike & {
     date: string;
     difficulty: string;
     coverImage?: string | null;
-    reimbursementDone: boolean;
     expectedReimbursementMin: number | null;
     expectedReimbursementMax: number | null;
   };
@@ -134,7 +134,7 @@ export default function StudentTreks() {
 
                   {eligibleForReimbursement && (
                     <div className={styles.reimbursement}>
-                      {!reg.trek.reimbursementDone ? (
+                      {!reg.reimbursementDone ? (
                         <p className={styles.reimbursementPending}>
                           Reimbursement Pending
                           {(reg.trek.expectedReimbursementMin != null ||
