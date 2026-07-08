@@ -1,4 +1,10 @@
 :root {
+    // The whole app is dark-themed with no light mode — this hints the
+    // browser to render native form controls (dropdown popups, scrollbars,
+    // etc.) in dark mode too, instead of defaulting to a white popup that
+    // clashes with everything around it.
+    color-scheme: dark;
+
     --color-midnight: #0d0d0d;
     --color-charcoal: #1b1b1b;
     --color-forest: #234b36;
@@ -44,6 +50,21 @@ img{
 button{
     cursor:pointer;
     font-family:inherit;
+}
+
+// Chromium and Firefox both respect background/color on <select>/<option>
+// for the native dropdown popup (one of the few native-control aspects that
+// actually is stylable) — every plain <select> across the site was falling
+// back to the browser's default white popup because nothing set this.
+select {
+    color-scheme: dark;
+    background-color: var(--color-charcoal);
+    color: var(--color-text);
+}
+
+option {
+    background-color: var(--color-charcoal);
+    color: var(--color-text);
 }
 
 .hero-title{
