@@ -52,7 +52,7 @@ export default function LoginForm() {
 
       alert("Login successful!");
 
-      router.push("/dashboard");
+      router.push(data.user?.clubRole === "Admin" ? "/admin" : "/dashboard");
       router.refresh();
     } catch (error) {
       console.error(error);

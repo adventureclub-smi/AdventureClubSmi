@@ -68,6 +68,7 @@ export async function POST(req: Request) {
         department: user.department,
         year: user.year,
         role: user.role,
+        clubRole: user.clubRole,
       },
     });
 
