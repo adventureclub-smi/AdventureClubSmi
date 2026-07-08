@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MapPin, CalendarDays, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { MapPin, CalendarDays, ArrowUpRight } from "lucide-react";
 
 import BackButton from "./shared/BackButton";
 import StatusBadge from "./shared/StatusBadge";
+import ReimbursementStatus from "./shared/ReimbursementStatus";
 import { getJourneyBadge, type RegistrationLike } from "@/lib/registration-journey";
 import styles from "./StudentTreks.module.scss";
 
@@ -30,27 +31,6 @@ type Registration = RegistrationLike & {
 export default function StudentTreks() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [markingId, setMarkingId] = useState<string | null>(null);
-
-  async function handleMarkReceived(registrationId: string) {
-    setMarkingId(registrationId);
-
-    try {
-      const res = await fetch(`/api/student/reimbursement/${registrationId}/received`, {
-        method: "POST",
-      });
-
-      if (res.ok) {
-        setRegistrations((prev) =>
-          prev.map((r) =>
-            r.id === registrationId ? { ...r, reimbursementReceived: true } : r
-          )
-        );
-      }
-    } finally {
-      setMarkingId(null);
-    }
-  }
 
   useEffect(() => {
     let active = true;
@@ -134,41 +114,14 @@ export default function StudentTreks() {
 
                   {eligibleForReimbursement && (
                     <div className={styles.reimbursement}>
-                      {!reg.reimbursementDone ? (
-                        <p className={styles.reimbursementPending}>
-                          Reimbursement Pending
-                          {(reg.trek.expectedReimbursementMin != null ||
-                            reg.trek.expectedReimbursementMax != null) && (
-                            <span>
-                              {" "}
-                              · Expected ₹{reg.trek.expectedReimbursementMin ?? "?"}–
-                              {reg.trek.expectedReimbursementMax ?? "?"}
-                            </span>
-                          )}
-                        </p>
-                      ) : reg.reimbursementReceived ? (
-                        <p className={styles.reimbursementReceived}>
-                          <CheckCircle2 size={14} /> Reimbursement Received — ₹
-                          {reg.reimbursementAmount ?? 0}
-                        </p>
-                      ) : (
-                        <div className={styles.reimbursementDone}>
-                          <p>
-                            Reimbursement Done — ₹{reg.reimbursementAmount ?? 0}
-                          </p>
-                          <p className={styles.reimbursementNote}>
-                            Please check and click below once you&apos;ve received it.
-                          </p>
-                          <button
-                            type="button"
-                            className={styles.receivedButton}
-                            disabled={markingId === reg.id}
-                            onClick={() => handleMarkReceived(reg.id)}
-                          >
-                            {markingId === reg.id ? "Marking..." : "Received"}
-                          </button>
-                        </div>
-                      )}
+                      <ReimbursementStatus
+                        registrationId={reg.id}
+                        reimbursementAmount={reg.reimbursementAmount}
+                        reimbursementDone={reg.reimbursementDone}
+                        reimbursementReceived={reg.reimbursementReceived}
+                        expectedMin={reg.trek.expectedReimbursementMin}
+                        expectedMax={reg.trek.expectedReimbursementMax}
+                      />
                     </div>
                   )}
 

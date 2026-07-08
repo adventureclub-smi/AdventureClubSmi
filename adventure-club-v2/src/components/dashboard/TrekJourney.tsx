@@ -9,6 +9,7 @@ import { Compass, FileCheck, MapPin, CalendarDays, IndianRupee } from "lucide-re
 import BackButton from "./shared/BackButton";
 import StatusBadge from "./shared/StatusBadge";
 import JourneyTimeline from "./shared/JourneyTimeline";
+import ReimbursementStatus from "./shared/ReimbursementStatus";
 import {
   getJourneyAction,
   getJourneyBadge,
@@ -29,6 +30,9 @@ type Payment = {
 
 type Registration = RegistrationLike & {
   payments: Payment[];
+  reimbursementAmount: number | null;
+  reimbursementDone: boolean;
+  reimbursementReceived: boolean;
   trek: {
     id: string;
     title: string;
@@ -39,6 +43,8 @@ type Registration = RegistrationLike & {
     tripCentrePublished?: boolean;
     initialPayment: number;
     finalPayment: number;
+    expectedReimbursementMin: number | null;
+    expectedReimbursementMax: number | null;
   };
 };
 
@@ -97,6 +103,10 @@ export default function TrekJourney({ registrationId }: { registrationId: string
   const action = getJourneyAction(registration.trek.id, registration);
   const paymentRows = getPaymentRows(registration);
   const steps = getJourneySteps(registration);
+
+  const tripOver = registration.status === "COMPLETED" || registration.status === "MISSED";
+  const eligibleForReimbursement =
+    tripOver && (registration.finalPaymentPaid || registration.initialPaymentPaid);
 
   return (
     <div className={styles.container}>
@@ -204,6 +214,21 @@ export default function TrekJourney({ registrationId }: { registrationId: string
               )}
             </div>
           </section>
+
+          {eligibleForReimbursement && (
+            <section className={styles.card}>
+              <h3>Reimbursement</h3>
+
+              <ReimbursementStatus
+                registrationId={registration.id}
+                reimbursementAmount={registration.reimbursementAmount}
+                reimbursementDone={registration.reimbursementDone}
+                reimbursementReceived={registration.reimbursementReceived}
+                expectedMin={registration.trek.expectedReimbursementMin}
+                expectedMax={registration.trek.expectedReimbursementMax}
+              />
+            </section>
+          )}
         </div>
 
         <div className={styles.sideColumn}>
