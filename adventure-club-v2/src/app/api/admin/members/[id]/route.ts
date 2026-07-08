@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-
-const ELEVATED_CLUB_ROLES = new Set([
-  "President",
-  "Treasurer",
-  "Event Head",
-  "Logistics Head",
-]);
+import { clubRoleBucket } from "@/lib/core-team-roles";
 
 const VALID_ACCESS_LEVELS = new Set(["NONE", "FULL", "FINANCE", "VISUAL", "BOOKING"]);
+
+const ACCESS_LEVEL_BY_BUCKET = {
+  ELEVATED: "FULL",
+  CORE: "CORE",
+  NONE: "NONE",
+} as const;
 
 export async function GET(
   req: NextRequest,
@@ -70,19 +70,21 @@ export async function PUT(
     return NextResponse.json({ message: "User not found." }, { status: 404 });
   }
 
-  // Club Role drives automatic admin-access changes: stepping into one of
-  // the four leadership roles grants Full access, stepping back out revokes
-  // it — this always applies regardless of who's saving, since any admin who
-  // can reach this page is allowed to set club roles.
-  const wasElevated = ELEVATED_CLUB_ROLES.has(existing.clubRole);
-  const willBeElevated = ELEVATED_CLUB_ROLES.has(body.clubRole);
+  // Club Role drives automatic admin-access changes: crossing between the
+  // Elevated (President/Treasurer/Event Head/Logistics Head/Admin), plain
+  // Core (Guides, Marketing Head, etc.), and None (Member/Participant)
+  // buckets grants/revokes access automatically — this always applies
+  // regardless of who's saving, since any admin who can reach this page is
+  // allowed to set club roles. Moving between two roles in the same bucket
+  // (or no clubRole change at all) leaves access untouched, falling through
+  // to the manual Access-dropdown path below instead.
+  const oldBucket = clubRoleBucket(existing.clubRole);
+  const newBucket = clubRoleBucket(body.clubRole);
 
   let nextAccessLevel: string | undefined;
 
-  if (!wasElevated && willBeElevated) {
-    nextAccessLevel = "FULL";
-  } else if (wasElevated && !willBeElevated) {
-    nextAccessLevel = "NONE";
+  if (oldBucket !== newBucket) {
+    nextAccessLevel = ACCESS_LEVEL_BY_BUCKET[newBucket];
   } else {
     // No club-role-driven transition — only President/Treasurer may set the
     // Access dropdown manually. Anyone else's requested value is dropped

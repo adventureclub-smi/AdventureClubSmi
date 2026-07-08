@@ -15,6 +15,7 @@ const TABS_BY_ACCESS: Record<AdminAccessLevel, string[] | null> = {
   FINANCE: ["Finance", "Reports", "Refunds", "Booking", "Payments"],
   VISUAL: ["Booking", "Gallery"],
   BOOKING: ["Booking"],
+  CORE: [],
   NONE: [],
 };
 

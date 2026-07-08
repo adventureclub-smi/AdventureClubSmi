@@ -180,6 +180,7 @@ export default function MemberProfile({
                 value={user.clubRole}
                 onChange={(e) => setUser({ ...user, clubRole: e.target.value })}
               >
+                <option>Admin</option>
                 <option>President</option>
                 <option>Treasurer</option>
                 <option>Member</option>

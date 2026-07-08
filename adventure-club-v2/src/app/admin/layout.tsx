@@ -20,7 +20,7 @@ export default async function AdminLayout({
 
   return (
     <div className={styles.shell}>
-      <AdminSidebar accessLevel={accessLevel} />
+      <AdminSidebar accessLevel={accessLevel} clubRole={admin.clubRole} />
 
       <div className={styles.content}>
         <AdminTopbar adminName={admin.fullName} />

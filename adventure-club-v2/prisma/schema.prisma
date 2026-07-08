@@ -615,3 +615,40 @@ model TripAnnouncement {
 
   createdAt DateTime @default(now())
 }
+
+model CoreTeamElection {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  status String @default("DRAFT") // DRAFT | PUBLISHED | CLOSED
+
+  roster String[]
+
+  positions String[]
+
+  createdAt DateTime @default(now())
+
+  publishedAt DateTime?
+
+  closedAt DateTime?
+
+  ballots CoreTeamBallot[]
+}
+
+model CoreTeamBallot {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  electionId String           @db.ObjectId
+  election   CoreTeamElection @relation(fields: [electionId], references: [id])
+
+  voterId String @db.ObjectId
+
+  voterName String
+
+  selections Json // Record<position, name> — blanks omitted
+
+  submittedAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([electionId, voterId])
+}

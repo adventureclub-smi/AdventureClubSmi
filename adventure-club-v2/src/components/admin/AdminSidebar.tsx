@@ -18,12 +18,14 @@ import {
   ImageIcon,
   Settings,
   Ticket,
+  Vote,
   LogOut,
   Menu,
   X,
 } from "lucide-react";
 
 import type { AdminAccessLevel } from "@/lib/admin-access";
+import { isCoreTeamRole } from "@/lib/core-team-roles";
 import styles from "./AdminSidebar.module.scss";
 
 const links = [
@@ -42,26 +44,49 @@ const links = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
+// Kept out of `links`/LINKS_BY_ACCESS deliberately — visibility of this one
+// item is governed by club role, not by operational access tier (see
+// src/lib/core-team.ts), so it's appended separately below rather than
+// through the tier-based filtering every other link goes through.
+const CORE_TEAM_LINK = {
+  href: "/admin/core-team-restructure",
+  label: "Core Team Restructure",
+  icon: Vote,
+};
+
 // Restricted access tiers only ever see the single nav item matching the
 // one area they're scoped to; FULL (and legacy admins with no tier set)
-// keeps today's complete nav.
+// keeps today's complete nav. CORE has no tier-based link of its own — its
+// only capability is the club-role-gated Core Team Restructure link below.
 const LINKS_BY_ACCESS: Record<AdminAccessLevel, string[] | null> = {
   FULL: null,
   FINANCE: ["/admin/payments"],
   VISUAL: ["/admin/gallery"],
   BOOKING: ["/admin/booking"],
+  CORE: [],
   NONE: [],
 };
 
-export default function AdminSidebar({ accessLevel }: { accessLevel: AdminAccessLevel }) {
+export default function AdminSidebar({
+  accessLevel,
+  clubRole,
+}: {
+  accessLevel: AdminAccessLevel;
+  clubRole: string;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const allowedHrefs = LINKS_BY_ACCESS[accessLevel];
-  const visibleLinks = allowedHrefs
+  const tierLinks = allowedHrefs
     ? links.filter((link) => allowedHrefs.includes(link.href))
     : links;
+
+  const visibleLinks =
+    clubRole === "Admin" || isCoreTeamRole(clubRole)
+      ? [...tierLinks, CORE_TEAM_LINK]
+      : tierLinks;
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
