@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/admin/certificates/generate": ["./src/lib/certificate/**"],
   },
+  // @sparticuz/chromium resolves its own bundled Chromium binary via a path
+  // relative to its own package folder at runtime — if Next's bundler
+  // (Turbopack) rewrites/relocates that folder like normal application code,
+  // the binary ends up missing at that path in production ("input directory
+  // .../@sparticuz/chromium/bin does not exist"). Marking both packages
+  // external keeps them as plain node_modules requires instead, so their
+  // non-JS assets stay put and get traced/copied as a whole dependency.
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
   images: {
     remotePatterns: [
       {
