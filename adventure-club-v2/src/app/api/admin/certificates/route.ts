@@ -28,12 +28,14 @@ export async function GET() {
       candidates: candidates.map((r) => ({
         id: r.id,
         participant: r.user?.fullName || r.guestName || "Unknown",
+        trekId: r.trekId,
         trekTitle: r.trek.title,
       })),
 
       issued: issued.map((r) => ({
         id: r.id,
         participant: r.user?.fullName || r.guestName || "Unknown",
+        trekId: r.trekId,
         trekTitle: r.trek.title,
         certificateUrl: r.certificate?.certificateUrl || null,
         issuedAt: r.certificateIssuedAt,
