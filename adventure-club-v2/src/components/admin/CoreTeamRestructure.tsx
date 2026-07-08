@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Vote, Plus, X, Crown, Send, Radio, Lock, RefreshCw } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
-import { ELECTABLE_POSITIONS } from "@/lib/core-team-roles";
+import { ELECTABLE_POSITIONS, MULTI_SELECT_POSITIONS } from "@/lib/core-team-roles";
 import styles from "./CoreTeamRestructure.module.scss";
 
 type Election = {
@@ -29,7 +29,7 @@ export default function CoreTeamRestructure({ isOrganizer }: { isOrganizer: bool
   const [election, setElection] = useState<Election | null>(null);
   const [results, setResults] = useState<ResultRow[]>([]);
   const [ballotCount, setBallotCount] = useState(0);
-  const [myBallot, setMyBallot] = useState<Record<string, string>>({});
+  const [myBallot, setMyBallot] = useState<Record<string, string | string[]>>({});
   const [status, setStatus] = useState("");
 
   // Draft-setup form state (Admin only)
@@ -184,6 +184,20 @@ export default function CoreTeamRestructure({ isOrganizer }: { isOrganizer: bool
 
   function handleSelect(position: string, name: string) {
     setMyBallot((prev) => ({ ...prev, [position]: name }));
+  }
+
+  function handleAddMulti(position: string, name: string) {
+    setMyBallot((prev) => {
+      const current = Array.isArray(prev[position]) ? (prev[position] as string[]) : [];
+      return { ...prev, [position]: [...current, name] };
+    });
+  }
+
+  function handleRemoveMulti(position: string, name: string) {
+    setMyBallot((prev) => {
+      const current = Array.isArray(prev[position]) ? (prev[position] as string[]) : [];
+      return { ...prev, [position]: current.filter((n) => n !== name) };
+    });
   }
 
   async function handleSubmitBallot() {
@@ -371,7 +385,8 @@ export default function CoreTeamRestructure({ isOrganizer }: { isOrganizer: bool
               </h2>
 
               <p className={styles.subtle}>
-                Pick who you think fits each position best. One person can only be picked once —
+                Pick who you think fits each position best. Team positions let you pick more than
+                one person. One person can only be picked once anywhere on your ballot —
                 already-picked names are removed from the other dropdowns. You can come back and
                 change your answers any time before the election closes.
               </p>
@@ -382,25 +397,79 @@ export default function CoreTeamRestructure({ isOrganizer }: { isOrganizer: bool
 
               <div className={styles.ballotList}>
                 {election.positions.map((position) => {
-                  const usedElsewhere = new Set(
+                  const otherNames = new Set(
                     Object.entries(myBallot)
                       .filter(([p]) => p !== position)
-                      .map(([, name]) => name)
-                      .filter(Boolean)
+                      .flatMap(([, value]) => (Array.isArray(value) ? value : value ? [value] : []))
                   );
+
+                  if (MULTI_SELECT_POSITIONS.has(position)) {
+                    const current = Array.isArray(myBallot[position])
+                      ? (myBallot[position] as string[])
+                      : [];
+
+                    const available = election.roster.filter(
+                      (name) => !otherNames.has(name) && !current.includes(name)
+                    );
+
+                    return (
+                      <div key={position} className={styles.ballotRow}>
+                        <label>{position}</label>
+
+                        <div className={styles.multiSelectBody}>
+                          <select
+                            value=""
+                            disabled={election.status === "CLOSED"}
+                            onChange={(e) => {
+                              if (e.target.value) handleAddMulti(position, e.target.value);
+                            }}
+                          >
+                            <option value="">+ Add person</option>
+                            {available.map((name) => (
+                              <option key={name} value={name}>
+                                {name}
+                              </option>
+                            ))}
+                          </select>
+
+                          {current.length > 0 && (
+                            <div className={styles.chips}>
+                              {current.map((name) => (
+                                <span key={name} className={styles.chip}>
+                                  {name}
+                                  {election.status !== "CLOSED" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveMulti(position, name)}
+                                      aria-label={`Remove ${name}`}
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const currentSingle =
+                    typeof myBallot[position] === "string" ? (myBallot[position] as string) : "";
 
                   return (
                     <div key={position} className={styles.ballotRow}>
                       <label>{position}</label>
 
                       <select
-                        value={myBallot[position] ?? ""}
+                        value={currentSingle}
                         disabled={election.status === "CLOSED"}
                         onChange={(e) => handleSelect(position, e.target.value)}
                       >
                         <option value="">— Select —</option>
                         {election.roster
-                          .filter((name) => !usedElsewhere.has(name))
+                          .filter((name) => !otherNames.has(name))
                           .map((name) => (
                             <option key={name} value={name}>
                               {name}

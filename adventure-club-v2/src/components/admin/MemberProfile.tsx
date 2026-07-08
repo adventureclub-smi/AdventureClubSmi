@@ -193,6 +193,7 @@ export default function MemberProfile({
                 <option>Visual Team Head</option>
                 <option>Visual Team</option>
                 <option>Marketing Head</option>
+                <option>Marketing Team</option>
                 <option>Web & Tech Team</option>
               </select>
             </div>

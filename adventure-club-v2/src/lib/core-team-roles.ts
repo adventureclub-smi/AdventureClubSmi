@@ -24,6 +24,7 @@ export const PLAIN_CORE_CLUB_ROLES = new Set([
   "Visual Team Head",
   "Visual Team",
   "Marketing Head",
+  "Marketing Team",
   "Web & Tech Team",
 ]);
 
@@ -40,8 +41,22 @@ export const ELECTABLE_POSITIONS = [
   "Visual Team Head",
   "Visual Team",
   "Marketing Head",
+  "Marketing Team",
   "Web & Tech Team",
 ];
+
+// "Team" positions can have more than one person elected to them — voters
+// pick 2+ names instead of a single one. The Head/lead counterpart of each
+// (Logistics Head, Event Head, Visual Team Head, Marketing Head) stays a
+// single pick.
+export const MULTI_SELECT_POSITIONS = new Set([
+  "Guides",
+  "Logistics Team",
+  "Event Team",
+  "Visual Team",
+  "Marketing Team",
+  "Web & Tech Team",
+]);
 
 export function clubRoleBucket(clubRole: string): "ELEVATED" | "CORE" | "NONE" {
   if (ELEVATED_CLUB_ROLES.has(clubRole)) return "ELEVATED";

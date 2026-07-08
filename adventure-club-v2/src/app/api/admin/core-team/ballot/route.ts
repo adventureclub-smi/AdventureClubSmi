@@ -28,9 +28,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const filledNames = Object.values(selections).filter(
-      (name): name is string => typeof name === "string" && name.length > 0
-    );
+    // Each position's value is either a single name (single-select
+    // positions) or an array of names (multi-select "team" positions) —
+    // flatten everything to check that no one is picked twice anywhere on
+    // the ballot, whether that's across two positions or twice within the
+    // same multi-select position.
+    const filledNames = Object.values(selections).flatMap((value) => {
+      if (typeof value === "string") return value.length > 0 ? [value] : [];
+      if (Array.isArray(value)) return value.filter((v): v is string => typeof v === "string" && v.length > 0);
+      return [];
+    });
 
     const uniqueNames = new Set(filledNames);
 

@@ -10,10 +10,13 @@ function tallyResults(
     const counts = new Map<string, number>();
 
     ballots.forEach((ballot) => {
-      const selections = ballot.selections as Record<string, string> | null;
-      const name = selections?.[position];
-      if (!name) return;
-      counts.set(name, (counts.get(name) ?? 0) + 1);
+      const selections = ballot.selections as Record<string, string | string[]> | null;
+      const value = selections?.[position];
+      // A position's value is a single name (single-select) or an array of
+      // names (multi-select "team" positions) — either way, each name
+      // present gets one vote in this position's tally.
+      const names = Array.isArray(value) ? value : value ? [value] : [];
+      names.forEach((name) => counts.set(name, (counts.get(name) ?? 0) + 1));
     });
 
     const tally = Array.from(counts.entries())
