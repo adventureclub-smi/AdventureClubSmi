@@ -176,6 +176,18 @@ model Trek {
   tripCentrePublishedAt DateTime?
 
   // =========================
+  // College Reimbursement
+  // =========================
+
+  expectedReimbursementMin Int?
+
+  expectedReimbursementMax Int?
+
+  reimbursementDone Boolean @default(false)
+
+  reimbursementDoneAt DateTime?
+
+  // =========================
 
   refundPercentage Int?
 
@@ -263,6 +275,14 @@ model Registration {
   finalPaymentPaidAt DateTime?
 
   finalPaymentId String?
+
+  // ===== College Reimbursement =====
+
+  reimbursementAmount Int?
+
+  reimbursementReceived Boolean @default(false)
+
+  reimbursementReceivedAt DateTime?
 
   // ===== Certificate =====
 
