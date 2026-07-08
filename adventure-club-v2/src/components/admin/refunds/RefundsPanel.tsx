@@ -197,6 +197,44 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
     }
   }
 
+  async function handleUndoReceived(registration: RefundRegistration) {
+    const confirmUndo = confirm(
+      "Undo this student's \"received\" confirmation? Their card will show Reimbursement Done again until they confirm it once more."
+    );
+
+    if (!confirmUndo) return;
+
+    setRowSavingId(registration.id);
+
+    try {
+      const res = await fetch(`/api/admin/refunds/${trekId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updates: [
+            {
+              registrationId: registration.id,
+              amount: amounts[registration.id] ? parseInt(amounts[registration.id], 10) : null,
+              received: false,
+            },
+          ],
+        }),
+      });
+
+      if (res.ok) {
+        setRegistrations((prev) =>
+          prev.map((r) =>
+            r.id === registration.id ? { ...r, reimbursementReceived: false } : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRowSavingId(null);
+    }
+  }
+
   function renderRow(r: RefundRegistration) {
     return (
       <div key={r.id} className={styles.row}>
@@ -226,14 +264,26 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
             />
           </div>
 
-          <button
-            className={r.reimbursementDone ? styles.undoRowButton : styles.doneRowButton}
-            disabled={rowSavingId === r.id}
-            onClick={() => handleToggleRowDone(r)}
-          >
-            {r.reimbursementDone ? <Undo2 size={13} /> : <CheckCircle2 size={13} />}
-            {rowSavingId === r.id ? "Saving..." : r.reimbursementDone ? "Undo" : "Mark Done"}
-          </button>
+          {r.reimbursementReceived ? (
+            <button
+              className={styles.undoRowButton}
+              disabled={rowSavingId === r.id}
+              onClick={() => handleUndoReceived(r)}
+              title="If a student clicked Received by mistake, undo it here."
+            >
+              <Undo2 size={13} />
+              {rowSavingId === r.id ? "Saving..." : "Undo Received"}
+            </button>
+          ) : (
+            <button
+              className={r.reimbursementDone ? styles.undoRowButton : styles.doneRowButton}
+              disabled={rowSavingId === r.id}
+              onClick={() => handleToggleRowDone(r)}
+            >
+              {r.reimbursementDone ? <Undo2 size={13} /> : <CheckCircle2 size={13} />}
+              {rowSavingId === r.id ? "Saving..." : r.reimbursementDone ? "Undo" : "Mark Done"}
+            </button>
+          )}
         </div>
       </div>
     );

@@ -38,7 +38,7 @@ export default function ReimbursementStatus({
 
   if (!reimbursementDone) {
     return (
-      <p className={styles.pending}>
+      <div className={styles.pending}>
         Reimbursement Pending
         {(expectedMin != null || expectedMax != null) && (
           <span>
@@ -46,15 +46,15 @@ export default function ReimbursementStatus({
             · Expected ₹{expectedMin ?? "?"}–{expectedMax ?? "?"}
           </span>
         )}
-      </p>
+      </div>
     );
   }
 
   if (received) {
     return (
-      <p className={styles.received}>
+      <div className={styles.received}>
         <CheckCircle2 size={14} /> Reimbursement Received — ₹{reimbursementAmount ?? 0}
-      </p>
+      </div>
     );
   }
 

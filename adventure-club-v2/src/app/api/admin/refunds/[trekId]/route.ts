@@ -87,6 +87,7 @@ export async function PATCH(
           registrationId: string;
           amount: number | null;
           done?: boolean;
+          received?: boolean;
         }) =>
           prisma.registration.updateMany({
             where: { id: update.registrationId, trekId },
@@ -96,6 +97,12 @@ export async function PATCH(
                 ? {
                     reimbursementDone: update.done,
                     reimbursementDoneAt: update.done ? new Date() : null,
+                  }
+                : {}),
+              ...(update.received !== undefined
+                ? {
+                    reimbursementReceived: update.received,
+                    reimbursementReceivedAt: update.received ? new Date() : null,
                   }
                 : {}),
             },
