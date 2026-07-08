@@ -145,6 +145,17 @@
   border-color: rgba(34, 197, 94, 0.5);
 }
 
+.fields select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.accessNote {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
 .trekRow {
   margin-bottom: 14px;
 

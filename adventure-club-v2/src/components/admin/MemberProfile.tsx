@@ -24,6 +24,7 @@ type Member = {
   year: string;
   membershipStatus: string;
   clubRole: string;
+  adminAccessLevel: string;
   emergencyContactName: string | null;
   emergencyContactRelation: string | null;
   emergencyContactPhone: string | null;
@@ -35,7 +36,13 @@ type Member = {
   govtIdLocked: boolean;
 };
 
-export default function MemberProfile({ userId }: { userId: string }) {
+export default function MemberProfile({
+  userId,
+  canEditAccess,
+}: {
+  userId: string;
+  canEditAccess: boolean;
+}) {
   const [user, setUser] = useState<Member | null>(null);
   const [status, setStatus] = useState("");
 
@@ -68,6 +75,7 @@ export default function MemberProfile({ userId }: { userId: string }) {
       body: JSON.stringify({
         membershipStatus: user.membershipStatus,
         clubRole: user.clubRole,
+        adminAccessLevel: user.adminAccessLevel,
       }),
     });
 
@@ -172,15 +180,42 @@ export default function MemberProfile({ userId }: { userId: string }) {
                 value={user.clubRole}
                 onChange={(e) => setUser({ ...user, clubRole: e.target.value })}
               >
-                <option>Member</option>
-                <option>Volunteer</option>
-                <option>Logistics Head</option>
-                <option>Marketing Head</option>
-                <option>Treasurer</option>
-                <option>Photographer</option>
-                <option>Vice President</option>
                 <option>President</option>
+                <option>Treasurer</option>
+                <option>Member</option>
+                <option>Participant</option>
+                <option>Guides</option>
+                <option>Logistics Head</option>
+                <option>Logistics Team</option>
+                <option>Event Head</option>
+                <option>Event Team</option>
+                <option>Visual Team Head</option>
+                <option>Visual Team</option>
+                <option>Marketing Head</option>
+                <option>Web & Tech Team</option>
               </select>
+            </div>
+
+            <div>
+              <label>Access</label>
+
+              <select
+                value={user.adminAccessLevel}
+                disabled={!canEditAccess}
+                onChange={(e) => setUser({ ...user, adminAccessLevel: e.target.value })}
+              >
+                <option value="NONE">No Admin Access</option>
+                <option value="FULL">Full Admin Access</option>
+                <option value="FINANCE">Only Finance Access</option>
+                <option value="VISUAL">Visual Access</option>
+                <option value="BOOKING">Booking Access</option>
+              </select>
+
+              {!canEditAccess && (
+                <p className={styles.accessNote}>
+                  Only the President or Treasurer can edit this.
+                </p>
+              )}
             </div>
           </div>
         </section>

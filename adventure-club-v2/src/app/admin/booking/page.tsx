@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { ImageIcon, ArrowRight } from "lucide-react";
+import { Ticket, ArrowRight } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAccess } from "@/lib/admin-access";
 import styles from "./page.module.scss";
 
 export default async function Page() {
-  await requireAdminAccess(["FULL", "VISUAL"]);
+  await requireAdminAccess(["FULL", "BOOKING"]);
 
   const treks = await prisma.trek.findMany({
     orderBy: { date: "desc" },
@@ -16,22 +16,22 @@ export default async function Page() {
   return (
     <div>
       <PageHeader
-        title="Gallery"
-        breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Gallery" }]}
+        title="Booking"
+        breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Booking" }]}
       />
 
       {treks.length === 0 ? (
         <div className={styles.empty}>
-          <ImageIcon size={28} />
+          <Ticket size={28} />
           <h2>No treks yet</h2>
-          <p>Create a trek first, then manage its gallery from here.</p>
+          <p>Create a trek first, then manage its bookings from here.</p>
         </div>
       ) : (
         <div className={styles.grid}>
           {treks.map((trek) => (
             <Link
               key={trek.id}
-              href={`/admin/treks/${trek.id}/gallery`}
+              href={`/admin/treks/${trek.id}/booking`}
               className={styles.trekCard}
             >
               <div>

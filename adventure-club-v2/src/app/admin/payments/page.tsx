@@ -1,5 +1,8 @@
 import PaymentsOverview from "@/components/admin/PaymentsOverview";
+import { requireAdminAccess } from "@/lib/admin-access";
 
-export default function Page() {
+export default async function Page() {
+  await requireAdminAccess(["FULL", "FINANCE"]);
+
   return <PaymentsOverview />;
 }

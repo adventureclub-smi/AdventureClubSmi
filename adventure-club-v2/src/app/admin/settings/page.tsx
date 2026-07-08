@@ -1,10 +1,11 @@
-"use client";
-
 import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import QuickActionCard from "@/components/dashboard/shared/QuickActionCard";
+import { requireAdminAccess } from "@/lib/admin-access";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await requireAdminAccess(["FULL", "VISUAL"]);
+
   return (
     <div>
       <PageHeader

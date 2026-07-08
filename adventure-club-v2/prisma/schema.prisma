@@ -68,6 +68,9 @@ model User {
 
   clubRole String @default("Member")
 
+  // Admin panel sub-permission tier: NONE | FULL | FINANCE | VISUAL | BOOKING
+  adminAccessLevel String @default("NONE")
+
   bloodGroup String?
 
   dateOfBirth DateTime?

@@ -4,6 +4,19 @@ import styles from "./layout.module.scss";
 import TrekTabs from "@/components/admin/TrekTabs";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import { CalendarDays, Mountain, Wallet, Users } from "lucide-react";
+import { getCurrentUser } from "@/lib/current-user";
+import { getAdminAccessLevel, type AdminAccessLevel } from "@/lib/admin-access";
+
+// Mirrors the sidebar's per-tier filtering, but keyed by tab title since a
+// trek's tabs all share one URL prefix (/admin/treks/[id]/...) rather than
+// each having its own top-level sidebar href.
+const TABS_BY_ACCESS: Record<AdminAccessLevel, string[] | null> = {
+  FULL: null,
+  FINANCE: ["Finance", "Reports", "Refunds", "Booking", "Payments"],
+  VISUAL: ["Booking", "Gallery"],
+  BOOKING: ["Booking"],
+  NONE: [],
+};
 
 export default async function TrekLayout({
   children,
@@ -22,6 +35,10 @@ export default async function TrekLayout({
     return <h1>Trek not found.</h1>;
   }
 
+  const user = await getCurrentUser();
+  const accessLevel = user ? getAdminAccessLevel(user) : "NONE";
+  const allowedTabs = TABS_BY_ACCESS[accessLevel];
+
   const tabs = [
     { title: "Overview", href: `/admin/treks/${id}` },
     { title: "Registrations", href: `/admin/treks/${id}/registrations` },
@@ -33,7 +50,7 @@ export default async function TrekLayout({
     { title: "Finance", href: `/admin/treks/${id}/finance` },
     { title: "Gallery", href: `/admin/treks/${id}/gallery` },
     { title: "Reports", href: `/admin/treks/${id}/reports` },
-  ];
+  ].filter((tab) => !allowedTabs || allowedTabs.includes(tab.title));
 
   return (
     <div className={styles.container}>

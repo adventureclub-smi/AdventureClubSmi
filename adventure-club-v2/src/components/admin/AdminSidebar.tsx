@@ -17,11 +17,13 @@ import {
   BarChart3,
   ImageIcon,
   Settings,
+  Ticket,
   LogOut,
   Menu,
   X,
 } from "lucide-react";
 
+import type { AdminAccessLevel } from "@/lib/admin-access";
 import styles from "./AdminSidebar.module.scss";
 
 const links = [
@@ -36,13 +38,30 @@ const links = [
   { href: "/admin/portfolio", label: "Portfolio", icon: Sparkles },
   { href: "/admin/reports", label: "Reports", icon: BarChart3 },
   { href: "/admin/gallery", label: "Gallery", icon: ImageIcon },
+  { href: "/admin/booking", label: "Booking", icon: Ticket },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export default function AdminSidebar() {
+// Restricted access tiers only ever see the single nav item matching the
+// one area they're scoped to; FULL (and legacy admins with no tier set)
+// keeps today's complete nav.
+const LINKS_BY_ACCESS: Record<AdminAccessLevel, string[] | null> = {
+  FULL: null,
+  FINANCE: ["/admin/payments"],
+  VISUAL: ["/admin/gallery"],
+  BOOKING: ["/admin/booking"],
+  NONE: [],
+};
+
+export default function AdminSidebar({ accessLevel }: { accessLevel: AdminAccessLevel }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  const allowedHrefs = LINKS_BY_ACCESS[accessLevel];
+  const visibleLinks = allowedHrefs
+    ? links.filter((link) => allowedHrefs.includes(link.href))
+    : links;
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -65,7 +84,7 @@ export default function AdminSidebar() {
 
   const nav = (
     <nav className={styles.nav}>
-      {links.map((link) => (
+      {visibleLinks.map((link) => (
         <Link
           key={link.href}
           href={link.href}
