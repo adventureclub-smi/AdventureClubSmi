@@ -29,10 +29,7 @@ export default function AuthLayout({
         playsInline
         className={styles.video}
       >
-        <source
-          src="https://res.cloudinary.com/ix7lwsey/video/upload/q_auto,f_auto,w_1280/v1783360653/AdventureClub/Videos/hero.mp4"
-          type="video/mp4"
-        />
+        <source src="/videos/hero-compressed.mp4" type="video/mp4" />
       </video>
 
       <div className={styles.overlay} />

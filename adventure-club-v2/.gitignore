@@ -42,8 +42,11 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# large raw video assets — hero/drone are served from Cloudinary in
-# production; the rest is unused raw footage. Never commit videos here.
-/public/videos
+# large raw video assets — everything in here is unused raw footage
+# except the two web-optimized files below, which are the actual hero
+# and drone background videos served in production.
+/public/videos/*
+!/public/videos/hero-compressed.mp4
+!/public/videos/drone-compressed.mp4
 
 .vercel

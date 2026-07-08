@@ -27,8 +27,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
 
 const homepageContent: HomepageContent = {
   hero: {
-    videoUrl:
-      "https://res.cloudinary.com/ix7lwsey/video/upload/q_auto,f_auto,w_1280/v1783360653/AdventureClub/Videos/hero.mp4",
+    videoUrl: "/videos/hero-compressed.mp4",
     tagline: "ADVENTURE CLUB",
     titleWords: ["EXPLORE.", "BEYOND.", "LIMITS."],
     leadLine: "Every summit begins with one step.",
@@ -197,8 +196,7 @@ const homepageContent: HomepageContent = {
   stories: [],
 
   finalSection: {
-    videoUrl:
-      "https://res.cloudinary.com/ix7lwsey/video/upload/q_auto,f_auto,w_1280/v1783360663/AdventureClub/Videos/drone.mp4",
+    videoUrl: "/videos/drone-compressed.mp4",
     imageUrl: "/images/about/about-5.JPG",
     heading: ["YOUR NEXT", "ADVENTURE", "STARTS HERE."],
     description:
