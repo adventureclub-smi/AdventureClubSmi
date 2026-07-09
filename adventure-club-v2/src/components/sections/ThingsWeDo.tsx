@@ -132,6 +132,27 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
 
   return (
     <section className={styles.section} id="things-we-do">
+      {/* Warms the browser's (and Next's image-optimizer) cache for every
+          *other* activity's full-size 100vw variant up front — without
+          this, clicking a card for the first time meant waiting on a fresh
+          fetch of a size Next had never generated before, which is exactly
+          what made switching cards feel laggy. Zero-size and inert so it
+          never affects layout or interaction. */}
+      <div aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>
+        {sorted
+          .filter((activity) => activity.id !== active.id)
+          .map((activity) => (
+            <Image
+              key={activity.id}
+              src={activity.backgroundImage}
+              alt=""
+              width={1920}
+              height={1080}
+              sizes="100vw"
+            />
+          ))}
+      </div>
+
       {/* The fullscreen hero image — shares a layoutId with whichever row
           card is clicked, so framer-motion morphs the clicked thumbnail
           into this exact box instead of a plain crossfade. This has to be a
