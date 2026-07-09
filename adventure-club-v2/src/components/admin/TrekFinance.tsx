@@ -67,6 +67,7 @@ type Totals = {
   totalExpenses: number;
   totalRefund: number;
   net: number;
+  studentProfitLoss: number;
   participantCount: number;
 };
 
@@ -78,6 +79,7 @@ const emptyTotals: Totals = {
   totalExpenses: 0,
   totalRefund: 0,
   net: 0,
+  studentProfitLoss: 0,
   participantCount: 0,
 };
 
@@ -303,6 +305,14 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
           <div>
             <strong>₹{totals.totalExpenses}</strong>
             <span>Total Expenses</span>
+          </div>
+        </div>
+
+        <div className={`${styles.summaryCard} ${totals.studentProfitLoss < 0 ? styles.loss : ""}`}>
+          {totals.studentProfitLoss < 0 ? <TrendingDown size={18} /> : <TrendingUp size={18} />}
+          <div>
+            <strong>₹{totals.studentProfitLoss}</strong>
+            <span>Student Profit/Loss (collected − expenses)</span>
           </div>
         </div>
 

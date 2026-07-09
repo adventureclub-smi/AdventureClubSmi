@@ -73,6 +73,12 @@ export async function GET(
     const revenueCollected = initialCollected + finalCollected;
     const net = revenueCollected + totalIncome - totalExpenses - totalRefund;
 
+    // Student-money-only profit/loss: what's left of what students paid
+    // after just the trek's own expenses (bus, food, etc.) — deliberately
+    // excludes other income, college reimbursement, and refunds to
+    // students, unlike Net above.
+    const studentProfitLoss = revenueCollected - totalExpenses;
+
     return NextResponse.json({
       participants,
       expenses,
@@ -85,6 +91,7 @@ export async function GET(
         totalExpenses,
         totalRefund,
         net,
+        studentProfitLoss,
         participantCount: participants.length,
       },
     });
