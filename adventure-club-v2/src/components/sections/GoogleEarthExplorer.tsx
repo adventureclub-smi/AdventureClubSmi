@@ -1,16 +1,20 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { Radar, Satellite } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Globe2, Radar, Satellite } from "lucide-react";
 
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import styles from "./GoogleEarthExplorer.module.scss";
 
 // ===== EDIT ME: your Google Earth project link =====
 // Share a Google Earth "My Maps"/project link (Earth Web → Present →
-// Share) and drop it in here. Opens in a new tab after the loading
-// sequence below.
+// Share) and drop it in here. Google Earth Web sends
+// `X-Frame-Options: SAMEORIGIN` (confirmed directly against the real
+// URL), so it can never be embedded in an <iframe> on this site — the
+// browser enforces that from Google's side, not ours. It opens in a
+// new tab instead, behind a full-screen "launch" takeover so it still
+// feels like a single continuous moment rather than an abrupt tab switch.
 const GOOGLE_EARTH_URL =
   "https://earth.google.com/earth/d/1z46-fpwZCjtVgQ_L0pUMVTx18ZedN8LI?usp=sharing";
 
@@ -32,17 +36,23 @@ const TRAIL_STATS = [
   { label: "Best Season", value: "Oct – Feb", tooltip: "Anything else and you're just suffering." },
 ];
 
+type Phase = "idle" | "loading" | "launched";
+
 export default function GoogleEarthExplorer() {
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
 
-  const [launching, setLaunching] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [stepIndex, setStepIndex] = useState(0);
 
-  function handleLaunch() {
-    if (launching) return;
+  function openEarth() {
+    window.open(GOOGLE_EARTH_URL, "_blank", "noopener,noreferrer");
+  }
 
-    setLaunching(true);
+  function handleLaunch() {
+    if (phase !== "idle") return;
+
+    setPhase("loading");
     setStepIndex(0);
 
     const stepDuration = 500;
@@ -53,10 +63,14 @@ export default function GoogleEarthExplorer() {
     });
 
     setTimeout(() => {
-      window.open(GOOGLE_EARTH_URL, "_blank", "noopener,noreferrer");
-      setLaunching(false);
-      setStepIndex(0);
+      setPhase("launched");
+      openEarth();
     }, stepDuration * LOADING_STEPS.length);
+  }
+
+  function handleClose() {
+    setPhase("idle");
+    setStepIndex(0);
   }
 
   return (
@@ -78,42 +92,91 @@ export default function GoogleEarthExplorer() {
           <div className={styles.cardBg} />
           <div className={styles.cardScrim} />
 
-          <div className={styles.cardContent}>
-            <div className={styles.radarBadge}>
-              <span className={styles.radarDot} />
-              3D TRAIL RADAR ACTIVE
-            </div>
-
-            <button
-              type="button"
-              className={styles.launchButton}
-              onClick={handleLaunch}
-              disabled={launching}
-            >
-              <Satellite size={18} />
-              {launching ? "Launching..." : "Launch 3D Fly-Through"}
-            </button>
-
-            <div className={styles.statsGrid}>
-              {TRAIL_STATS.map((stat) => (
-                <div key={stat.label} className={styles.statBlock} data-tooltip={stat.tooltip}>
-                  <span className={styles.statValue}>{stat.value}</span>
-                  <span className={styles.statLabel}>{stat.label}</span>
+          <AnimatePresence>
+            {phase === "idle" && (
+              <motion.div
+                className={styles.cardContent}
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.4 } }}
+              >
+                <div className={styles.radarBadge}>
+                  <span className={styles.radarDot} />
+                  3D TRAIL RADAR ACTIVE
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {launching && (
-            <div className={styles.loadingOverlay}>
-              <div className={styles.radarSweep}>
-                <Radar size={28} />
-              </div>
-              <p className={styles.loadingText}>{LOADING_STEPS[stepIndex]}</p>
-            </div>
-          )}
+                <button type="button" className={styles.launchButton} onClick={handleLaunch}>
+                  <Satellite size={18} />
+                  Launch 3D Fly-Through
+                </button>
+
+                <div className={styles.statsGrid}>
+                  {TRAIL_STATS.map((stat) => (
+                    <div key={stat.label} className={styles.statBlock} data-tooltip={stat.tooltip}>
+                      <span className={styles.statValue}>{stat.value}</span>
+                      <span className={styles.statLabel}>{stat.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {phase === "loading" && (
+              <motion.div
+                className={styles.loadingOverlay}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className={styles.radarSweep}>
+                  <Radar size={28} />
+                </div>
+                <p className={styles.loadingText}>{LOADING_STEPS[stepIndex]}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {phase === "launched" && (
+          <motion.div
+            className={styles.launchedOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className={styles.launchedCard}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.94 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className={styles.launchedGlobe}>
+                <Globe2 size={32} />
+              </div>
+
+              <h3>Fly-Through Launched</h3>
+              <p>
+                Your 3D route opened in a new tab. Didn&apos;t see it? Your browser may have
+                blocked the popup.
+              </p>
+
+              <div className={styles.launchedActions}>
+                <button type="button" className={styles.relaunchButton} onClick={openEarth}>
+                  Relaunch In New Tab
+                </button>
+
+                <button type="button" className={styles.closeButton} onClick={handleClose}>
+                  Return To Base
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

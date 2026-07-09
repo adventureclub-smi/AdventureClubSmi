@@ -116,14 +116,9 @@
   animation: launchGlow 2.4s ease-in-out infinite;
 }
 
-.launchButton:hover:not(:disabled) {
+.launchButton:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 0 40px rgba(34, 197, 94, 0.55);
-}
-
-.launchButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.85;
 }
 
 @keyframes launchGlow {
@@ -245,6 +240,97 @@
   letter-spacing: 1px;
   color: var(--color-text);
   text-transform: uppercase;
+}
+
+.launchedOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 5, 5, 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.launchedCard {
+  width: min(460px, 100%);
+  text-align: center;
+  padding: 48px 36px;
+  border-radius: 20px;
+  background: var(--color-charcoal);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 0 60px rgba(34, 197, 94, 0.15);
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    color: var(--color-text);
+    margin: 20px 0 12px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    margin-bottom: 28px;
+  }
+}
+
+.launchedGlobe {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  animation: radarPulse 1.6s infinite;
+}
+
+.launchedActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.relaunchButton {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-accent), #38bdf8);
+  color: var(--color-midnight);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.relaunchButton:hover {
+  transform: translateY(-2px);
+}
+
+.closeButton {
+  padding: 14px 24px;
+  border: 1px solid rgba(245, 245, 245, 0.15);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.closeButton:hover {
+  color: var(--color-text);
+  border-color: rgba(245, 245, 245, 0.3);
 }
 
 @media (max-width: 700px) {
