@@ -5,7 +5,7 @@ import ThingsWeDo from "@/components/sections/ThingsWeDo";
 import ClubVibeCheck from "@/components/sections/ClubVibeCheck";
 import UpcomingTreks from "@/components/sections/UpcomingTreks";
 import TrekMap from "@/components/sections/TrekMap";
-import TrekRoute3D from "@/components/sections/TrekRoute3D";
+import GoogleEarthExplorer from "@/components/sections/GoogleEarthExplorer";
 import Gallery from "@/components/sections/Gallery";
 import Stories from "@/components/sections/Stories";
 import FinalCTA from "@/components/sections/FinalCTA";
@@ -57,7 +57,7 @@ export default async function Home() {
         config={content.upcomingTreks}
       />
       <TrekMap pins={mapPins} />
-      <TrekRoute3D />
+      <GoogleEarthExplorer />
       <Gallery items={content.gallery} />
       <Stories stories={content.stories} />
       <FinalCTA content={content.finalSection} />
