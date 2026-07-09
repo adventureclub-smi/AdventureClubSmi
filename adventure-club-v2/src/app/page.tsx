@@ -4,6 +4,7 @@ import AdventureStats from "@/components/sections/AdventureStats";
 import ThingsWeDo from "@/components/sections/ThingsWeDo";
 import ClubVibeCheck from "@/components/sections/ClubVibeCheck";
 import UpcomingTreks from "@/components/sections/UpcomingTreks";
+import TrekMap from "@/components/sections/TrekMap";
 import Gallery from "@/components/sections/Gallery";
 import Stories from "@/components/sections/Stories";
 import FinalCTA from "@/components/sections/FinalCTA";
@@ -11,7 +12,7 @@ import InstagramFeed from "@/components/sections/InstagramFeed";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import { getHomepageContent } from "@/data/homepage-content";
-import { getUpcomingTreks } from "@/data/treks";
+import { getUpcomingTreks, getTrekMapPins } from "@/data/treks";
 import { getSongs } from "@/data/songs";
 import { getInstagramPosts } from "@/data/instagram";
 
@@ -30,11 +31,12 @@ import { getInstagramPosts } from "@/data/instagram";
 export const revalidate = 30;
 
 export default async function Home() {
-  const [content, treks, songs, instagramPosts] = await Promise.all([
+  const [content, treks, songs, instagramPosts, mapPins] = await Promise.all([
     getHomepageContent(),
     getUpcomingTreks(),
     getSongs(),
     getInstagramPosts(),
+    getTrekMapPins(),
   ]);
 
   return (
@@ -53,6 +55,7 @@ export default async function Home() {
         treks={treks}
         config={content.upcomingTreks}
       />
+      <TrekMap pins={mapPins} />
       <Gallery items={content.gallery} />
       <Stories stories={content.stories} />
       <FinalCTA content={content.finalSection} />

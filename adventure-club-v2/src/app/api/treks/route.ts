@@ -38,6 +38,10 @@ export async function POST(req: Request) {
       altitudeMeters,
       campNights,
       countsAsPeak,
+
+      // Map Location
+      latitude,
+      longitude,
     } = body;
 
     if (
@@ -118,6 +122,14 @@ export async function POST(req: Request) {
         campNights: campNights !== undefined ? Number(campNights) : 0,
 
         countsAsPeak: countsAsPeak !== undefined ? Boolean(countsAsPeak) : true,
+
+        // -------------------------
+        // Map Location
+        // -------------------------
+
+        latitude: latitude !== undefined && latitude !== "" ? Number(latitude) : null,
+
+        longitude: longitude !== undefined && longitude !== "" ? Number(longitude) : null,
       },
     });
 

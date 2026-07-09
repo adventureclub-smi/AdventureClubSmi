@@ -24,6 +24,8 @@ export async function POST(req: Request) {
       finalPayment,
       seats,
       description,
+      latitude,
+      longitude,
     } = body;
 
     if (
@@ -73,6 +75,10 @@ export async function POST(req: Request) {
 
         isHistorical: true,
         season,
+
+        latitude: latitude !== undefined && latitude !== "" ? Number(latitude) : null,
+
+        longitude: longitude !== undefined && longitude !== "" ? Number(longitude) : null,
       },
     });
 

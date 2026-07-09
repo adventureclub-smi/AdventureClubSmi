@@ -106,3 +106,16 @@ export interface TrekSummary {
   seatsLeft: number;
   registrationOpensAt: string | null;
 }
+
+export interface TrekMapPin {
+  id: string;
+  title: string;
+  destination: string;
+  difficulty: string;
+  date: string;
+  coverImage: string;
+  description: string;
+  isHistorical: boolean;
+  latitude: number;
+  longitude: number;
+}

@@ -19,6 +19,8 @@ type FormState = {
   finalPayment: string;
   participants: string;
   description: string;
+  latitude: string;
+  longitude: string;
 };
 
 const emptyForm: FormState = {
@@ -33,6 +35,8 @@ const emptyForm: FormState = {
   finalPayment: "",
   participants: "",
   description: "",
+  latitude: "",
+  longitude: "",
 };
 
 export default function CreateHistoricalTrekForm() {
@@ -222,6 +226,40 @@ export default function CreateHistoricalTrekForm() {
                 name="participants"
                 placeholder="e.g. 24"
                 value={form.participants}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Map Location</div>
+          <p className={styles.sectionHint}>
+            Coordinates for this trek&apos;s pin on the homepage trek map.
+            Leave blank if you don&apos;t have them yet.
+          </p>
+
+          <div className={styles.sectionGrid}>
+            <label className={styles.field}>
+              <span>Latitude</span>
+              <input
+                type="number"
+                step="any"
+                name="latitude"
+                placeholder="e.g. 13.3702"
+                value={form.latitude}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span>Longitude</span>
+              <input
+                type="number"
+                step="any"
+                name="longitude"
+                placeholder="e.g. 77.6835"
+                value={form.longitude}
                 onChange={handleChange}
               />
             </label>

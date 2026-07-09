@@ -145,6 +145,14 @@ model Trek {
 
   season String?
 
+  // ===== Map Location =====
+  // Optional coordinates for the homepage trek map — treks without these
+  // simply don't render a pin, no backfill required.
+
+  latitude Float?
+
+  longitude Float?
+
   price Int
 
   initialPayment Int

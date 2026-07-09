@@ -28,6 +28,8 @@ type FormState = {
   altitudeMeters: string;
   campNights: string;
   countsAsPeak: boolean;
+  latitude: string;
+  longitude: string;
 };
 
 const emptyForm: FormState = {
@@ -51,6 +53,8 @@ const emptyForm: FormState = {
   altitudeMeters: "",
   campNights: "",
   countsAsPeak: true,
+  latitude: "",
+  longitude: "",
 };
 
 // `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
@@ -123,6 +127,8 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           altitudeMeters: String(trek.altitudeMeters ?? ""),
           campNights: String(trek.campNights ?? ""),
           countsAsPeak: trek.countsAsPeak ?? true,
+          latitude: trek.latitude != null ? String(trek.latitude) : "",
+          longitude: trek.longitude != null ? String(trek.longitude) : "",
         });
 
         if (trek.coverImage) setPreview(trek.coverImage);
@@ -544,6 +550,41 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
                 onChange={handleChange}
               />
               Counts as Peak
+            </label>
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Map Location</div>
+          <p className={styles.sectionHint}>
+            Coordinates for this trek&apos;s pin on the homepage trek map.
+            Leave blank if you don&apos;t have them yet — the trek just
+            won&apos;t show a pin until they&apos;re added.
+          </p>
+
+          <div className={styles.sectionGrid}>
+            <label className={styles.field}>
+              <span>Latitude</span>
+              <input
+                type="number"
+                step="any"
+                name="latitude"
+                placeholder="e.g. 13.3702"
+                value={form.latitude}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span>Longitude</span>
+              <input
+                type="number"
+                step="any"
+                name="longitude"
+                placeholder="e.g. 77.6835"
+                value={form.longitude}
+                onChange={handleChange}
+              />
             </label>
           </div>
         </div>

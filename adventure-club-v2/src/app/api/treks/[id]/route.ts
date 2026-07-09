@@ -93,6 +93,17 @@ export async function PUT(
 
         countsAsPeak:
           body.countsAsPeak !== undefined ? Boolean(body.countsAsPeak) : undefined,
+
+        // Map Location
+        latitude:
+          body.latitude !== undefined && body.latitude !== ""
+            ? Number(body.latitude)
+            : null,
+
+        longitude:
+          body.longitude !== undefined && body.longitude !== ""
+            ? Number(body.longitude)
+            : null,
       },
     });
 
