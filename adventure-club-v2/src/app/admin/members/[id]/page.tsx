@@ -11,7 +11,9 @@ export default async function Page({
   const { id } = await params;
 
   const canEditAccess =
-    admin?.clubRole === "President" || admin?.clubRole === "Treasurer";
+    admin?.clubRole === "Admin" ||
+    admin?.clubRole === "President" ||
+    admin?.clubRole === "Treasurer";
 
   return <MemberProfile userId={id} canEditAccess={canEditAccess} />;
 }

@@ -215,7 +215,7 @@ export default function MemberProfile({
 
               {!canEditAccess && (
                 <p className={styles.accessNote}>
-                  Only the President or Treasurer can edit this.
+                  Only Admin, President, or Treasurer can edit this.
                 </p>
               )}
             </div>

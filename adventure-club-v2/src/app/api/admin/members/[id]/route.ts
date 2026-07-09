@@ -86,10 +86,13 @@ export async function PUT(
   if (oldBucket !== newBucket) {
     nextAccessLevel = ACCESS_LEVEL_BY_BUCKET[newBucket];
   } else {
-    // No club-role-driven transition — only President/Treasurer may set the
-    // Access dropdown manually. Anyone else's requested value is dropped
-    // silently rather than trusted from the client.
-    const canEditAccess = admin.clubRole === "President" || admin.clubRole === "Treasurer";
+    // No club-role-driven transition — only Admin/President/Treasurer may
+    // set the Access dropdown manually. Anyone else's requested value is
+    // dropped silently rather than trusted from the client.
+    const canEditAccess =
+      admin.clubRole === "Admin" ||
+      admin.clubRole === "President" ||
+      admin.clubRole === "Treasurer";
 
     if (canEditAccess && VALID_ACCESS_LEVELS.has(body.adminAccessLevel)) {
       nextAccessLevel = body.adminAccessLevel;
