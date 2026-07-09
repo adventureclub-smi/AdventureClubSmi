@@ -113,10 +113,10 @@ async function main() {
     const finalAmount = finalPaid ? Number(finalRaw) || 0 : 0;
     const refundGiven = !isSupraj && refundRaw !== "" && refundRaw !== null && refundRaw !== undefined && !isNaN(Number(refundRaw));
     const refundAmount = refundGiven ? Number(refundRaw) || 0 : 0;
-    const initialAmount = isSupraj ? 0 : Number(initialRaw) || 0;
+    const initialAmount = isSupraj ? 550 : Number(initialRaw) || 0;
 
-    // Core team went on this trek for free — no payment, no refund, but
-    // they did attend.
+    // Core team attended but skipped the final payment/refund — the
+    // initial payment was still made normally (₹550), confirmed 2026-07-09.
     const attended = isSupraj ? true : finalPaid;
 
     const strayNote = row
@@ -126,7 +126,7 @@ async function main() {
 
     const remarksParts = [`Email: ${email || "N/A"}`];
     if (isSupraj) {
-      remarksParts.push("Core team member — trek free, no payment/refund");
+      remarksParts.push("Core team member — paid initial (₹550), no final payment");
     } else if (PROXY_REFUND_NAMES[name]) {
       remarksParts.push(`Refund collected via: ${PROXY_REFUND_NAMES[name]}`);
     } else if (strayNote) {
