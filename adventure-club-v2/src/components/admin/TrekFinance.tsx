@@ -10,6 +10,7 @@ import {
   Trash2,
   Filter,
   ArrowUpDown,
+  Receipt,
 } from "lucide-react";
 
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
@@ -64,6 +65,7 @@ type Totals = {
   finalCollected: number;
   totalIncome: number;
   totalExpenses: number;
+  totalRefund: number;
   net: number;
   participantCount: number;
 };
@@ -74,6 +76,7 @@ const emptyTotals: Totals = {
   finalCollected: 0,
   totalIncome: 0,
   totalExpenses: 0,
+  totalRefund: 0,
   net: 0,
   participantCount: 0,
 };
@@ -300,6 +303,14 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
           <div>
             <strong>₹{totals.totalExpenses}</strong>
             <span>Total Expenses</span>
+          </div>
+        </div>
+
+        <div className={styles.summaryCard}>
+          <Receipt size={18} />
+          <div>
+            <strong>₹{totals.totalRefund}</strong>
+            <span>Total Refund</span>
           </div>
         </div>
 

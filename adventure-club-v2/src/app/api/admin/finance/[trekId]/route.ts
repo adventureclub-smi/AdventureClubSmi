@@ -15,7 +15,7 @@ export async function GET(
   try {
     const { trekId } = await params;
 
-    const [registrations, expenses, incomes] = await Promise.all([
+    const [registrations, expenses, incomes, refundRegistrations] = await Promise.all([
       prisma.registration.findMany({
         where: { trekId, status: { notIn: ["WAITING", "REJECTED", "WAITLIST"] } },
         include: {
@@ -27,6 +27,13 @@ export async function GET(
 
       prisma.expense.findMany({ where: { trekId }, orderBy: { createdAt: "desc" } }),
       prisma.income.findMany({ where: { trekId }, orderBy: { createdAt: "desc" } }),
+
+      // Same filter as the Refunds tab's own query, so this trek's "Total
+      // Refund" always matches that tab's Grand Total exactly.
+      prisma.registration.findMany({
+        where: { trekId, OR: [{ finalPaymentPaid: true }, { initialPaymentPaid: true }] },
+        select: { reimbursementAmount: true },
+      }),
     ]);
 
     const participants = registrations.map((r) => {
@@ -59,8 +66,12 @@ export async function GET(
 
     const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
     const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalRefund = refundRegistrations.reduce(
+      (sum, r) => sum + (r.reimbursementAmount ?? 0),
+      0
+    );
     const revenueCollected = initialCollected + finalCollected;
-    const net = revenueCollected + totalIncome - totalExpenses;
+    const net = revenueCollected + totalIncome - totalExpenses - totalRefund;
 
     return NextResponse.json({
       participants,
@@ -72,6 +83,7 @@ export async function GET(
         finalCollected,
         totalIncome,
         totalExpenses,
+        totalRefund,
         net,
         participantCount: participants.length,
       },
