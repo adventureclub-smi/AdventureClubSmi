@@ -50,3 +50,8 @@ next-env.d.ts
 !/public/videos/drone-compressed.mp4
 
 .vercel
+
+# raw trek Excel sheets used for one-off historical-data imports — contain
+# real student names/phone numbers, kept local only, never committed
+/trek-data/*.xlsx
+/trek-data/*.xls
