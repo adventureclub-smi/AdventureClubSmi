@@ -8,13 +8,17 @@ type Student = {
   id: string;
   attendanceMarked: boolean;
   createdAt: string;
+  guestName: string | null;
+  guestPhoneNumber: string | null;
+  guestDepartment: string | null;
+  guestYear: string | null;
   user: {
     fullName: string;
     clubId: string;
     phoneNumber: string;
     department: string;
     year: string;
-  };
+  } | null;
 };
 
 export default function AttendanceTable({ trekId }: { trekId: string }) {
@@ -57,21 +61,23 @@ export default function AttendanceTable({ trekId }: { trekId: string }) {
   const filtered = useMemo(() => {
     let data = [...students];
 
-    data = data.filter((student) =>
-      (student.user?.fullName || "").toLowerCase().includes(search.toLowerCase())
-    );
+    const name = (s: Student) => s.user?.fullName ?? s.guestName ?? "";
+    const year = (s: Student) => s.user?.year ?? s.guestYear ?? "";
+    const department = (s: Student) => s.user?.department ?? s.guestDepartment ?? "";
+
+    data = data.filter((student) => name(student).toLowerCase().includes(search.toLowerCase()));
 
     switch (sortBy) {
       case "az":
-        data.sort((a, b) => a.user.fullName.localeCompare(b.user.fullName));
+        data.sort((a, b) => name(a).localeCompare(name(b)));
         break;
 
       case "year":
-        data.sort((a, b) => (a.user.year || "").localeCompare(b.user.year || ""));
+        data.sort((a, b) => year(a).localeCompare(year(b)));
         break;
 
       case "course":
-        data.sort((a, b) => (a.user.department || "").localeCompare(b.user.department || ""));
+        data.sort((a, b) => department(a).localeCompare(department(b)));
         break;
 
       default:
@@ -109,11 +115,12 @@ export default function AttendanceTable({ trekId }: { trekId: string }) {
         filtered.map((student) => (
           <div key={student.id} className={styles.card}>
             <div>
-              <h3>{student.user.fullName}</h3>
-              <p>{student.user.clubId}</p>
-              <p>{student.user.phoneNumber}</p>
+              <h3>{student.user?.fullName ?? student.guestName ?? "Unknown"}</h3>
+              <p>{student.user?.clubId ?? "Guest record"}</p>
+              <p>{student.user?.phoneNumber ?? student.guestPhoneNumber ?? "-"}</p>
               <p>
-                {student.user.department} • {student.user.year}
+                {student.user?.department ?? student.guestDepartment ?? "-"} •{" "}
+                {student.user?.year ?? student.guestYear ?? "-"}
               </p>
             </div>
 

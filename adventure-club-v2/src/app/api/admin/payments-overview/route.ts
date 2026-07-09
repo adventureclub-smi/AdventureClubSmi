@@ -12,13 +12,17 @@ export async function GET() {
   try {
     const [pending, treks] = await Promise.all([
       prisma.registration.findMany({
-        where: { offlinePaymentCreated: true, offlinePaymentVerified: false },
+        where: {
+          offlinePaymentCreated: true,
+          offlinePaymentVerified: false,
+          trek: { isHistorical: false },
+        },
         include: { user: true, trek: true },
         orderBy: { createdAt: "desc" },
       }),
 
       prisma.trek.findMany({
-        where: { date: { gte: new Date() } },
+        where: { date: { gte: new Date() }, isHistorical: false },
         orderBy: { date: "asc" },
         include: { registrations: true },
       }),

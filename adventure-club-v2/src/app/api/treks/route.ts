@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 
@@ -144,9 +144,17 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const season = searchParams.get("season");
+
+    // Historical/archived treks are opt-in only (?season=2025-26) — every
+    // existing consumer of this route (public trek browsing, admin trek
+    // list, announcement/portfolio pickers) should keep seeing only current
+    // treks by default, the same as before this field existed.
     const treks = await prisma.trek.findMany({
+      where: season ? { isHistorical: true, season } : { isHistorical: false },
       orderBy: {
         createdAt: "desc",
       },

@@ -15,7 +15,7 @@ export async function GET() {
 
   try {
     const treks = await prisma.trek.findMany({
-      where: { date: { gte: new Date() } },
+      where: { date: { gte: new Date() }, isHistorical: false },
       orderBy: { date: "asc" },
       take: 6,
       include: { registrations: true },

@@ -27,42 +27,55 @@ export async function GET() {
     ] = await Promise.all([
       prisma.user.count(),
 
-      prisma.trek.count(),
+      prisma.trek.count({ where: { isHistorical: false } }),
 
       prisma.registration.count({
         where: {
           attendanceMarked: true,
+          trek: { isHistorical: false },
         },
       }),
 
-      prisma.registration.count(),
+      prisma.registration.count({ where: { trek: { isHistorical: false } } }),
 
-      prisma.trek.count({ where: { date: { gte: new Date() } } }),
+      prisma.trek.count({ where: { date: { gte: new Date() }, isHistorical: false } }),
 
       prisma.payment.findMany({
-        where: { status: "PAID" },
+        where: { status: "PAID", registration: { trek: { isHistorical: false } } },
         select: { amount: true },
       }),
 
       prisma.registration.count({
-        where: { offlinePaymentCreated: true, offlinePaymentVerified: false },
+        where: {
+          offlinePaymentCreated: true,
+          offlinePaymentVerified: false,
+          trek: { isHistorical: false },
+        },
       }),
 
       prisma.registration.count({
-        where: { initialPaymentPaid: true, attendanceMarked: false },
+        where: {
+          initialPaymentPaid: true,
+          attendanceMarked: false,
+          trek: { isHistorical: false },
+        },
       }),
 
-      prisma.registration.count({ where: { certificateIssued: true } }),
+      prisma.registration.count({
+        where: { certificateIssued: true, trek: { isHistorical: false } },
+      }),
 
       prisma.registration.count({
         where: {
           initialPaymentPaid: false,
           initialPaymentDeadline: { lte: in7Days, gte: new Date() },
+          trek: { isHistorical: false },
         },
       }),
 
       prisma.trek.count({
         where: {
+          isHistorical: false,
           OR: [
             { distanceKm: { gt: 0 } },
             { altitudeMeters: { gt: 0 } },

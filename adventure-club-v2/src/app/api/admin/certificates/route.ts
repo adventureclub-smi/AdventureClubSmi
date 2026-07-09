@@ -12,13 +12,17 @@ export async function GET() {
   try {
     const [candidates, issued] = await Promise.all([
       prisma.registration.findMany({
-        where: { attendanceMarked: true, certificateIssued: false },
+        where: {
+          attendanceMarked: true,
+          certificateIssued: false,
+          trek: { isHistorical: false },
+        },
         include: { user: true, trek: true },
         orderBy: { createdAt: "desc" },
       }),
 
       prisma.registration.findMany({
-        where: { certificateIssued: true },
+        where: { certificateIssued: true, trek: { isHistorical: false } },
         include: { user: true, trek: true, certificate: true },
         orderBy: { certificateIssuedAt: "desc" },
       }),

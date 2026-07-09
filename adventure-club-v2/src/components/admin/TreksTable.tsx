@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus } from "lucide-react";
+import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./TreksTable.module.scss";
@@ -18,54 +18,44 @@ type Trek = {
   seats: number;
   description: string;
   coverImage?: string | null;
+  isHistorical?: boolean;
+  season?: string | null;
 };
+
+// Archived seasons that have historical data imported. Add the next
+// season here once its treks are backfilled.
+const HISTORICAL_SEASONS = ["2025-26"];
 
 export default function TreksTable() {
   const [treks, setTreks] = useState<Trek[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("current");
 
-  async function fetchTreks() {
+  async function fetchTreks(tab: string) {
+    setLoading(true);
+
     try {
-      const res = await fetch("/api/treks");
+      const url = tab === "current" ? "/api/treks" : `/api/treks?season=${encodeURIComponent(tab)}`;
+      const res = await fetch(url);
       const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setTreks(data);
-      } else {
-        setTreks([]);
-      }
+      setTreks(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch treks:", error);
       setTreks([]);
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   }
 
   useEffect(() => {
-    let active = true;
-
-    async function load() {
-      try {
-        const res = await fetch("/api/treks");
-        const data = await res.json();
-        if (!active) return;
-        setTreks(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Failed to fetch treks:", error);
-        if (active) setTreks([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    load();
-
-    return () => {
-      active = false;
-    };
+    fetchTreks("current");
   }, []);
+
+  function switchTab(tab: string) {
+    setActiveTab(tab);
+    fetchTreks(tab);
+  }
 
   async function deleteTrek(id: string) {
     const confirmDelete = confirm("Are you sure you want to delete this trek?");
@@ -81,7 +71,7 @@ export default function TreksTable() {
       }
 
       setStatus("Trek deleted.");
-      fetchTreks();
+      fetchTreks(activeTab);
     } catch (error) {
       console.error(error);
       setStatus("Something went wrong.");
@@ -94,18 +84,47 @@ export default function TreksTable() {
         title="Treks"
         breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Treks" }]}
         quickActions={
-          <Link href="/admin/create-trek" className={styles.createButton}>
-            <Plus size={16} /> Create Trek
-          </Link>
+          activeTab === "current" ? (
+            <Link href="/admin/create-trek" className={styles.createButton}>
+              <Plus size={16} /> Create Trek
+            </Link>
+          ) : (
+            <Link href="/admin/create-historical-trek" className={styles.createButton}>
+              <Plus size={16} /> Add Historical Trek
+            </Link>
+          )
         }
       />
+
+      <div className={styles.tabs}>
+        <button
+          className={activeTab === "current" ? styles.tabActive : styles.tab}
+          onClick={() => switchTab("current")}
+        >
+          Current
+        </button>
+
+        {HISTORICAL_SEASONS.map((season) => (
+          <button
+            key={season}
+            className={activeTab === season ? styles.tabActive : styles.tab}
+            onClick={() => switchTab(season)}
+          >
+            <Archive size={13} /> {season} Archive
+          </button>
+        ))}
+      </div>
 
       {status && <p className={styles.status}>{status}</p>}
 
       {loading ? (
         <p className={styles.hint}>Loading treks...</p>
       ) : treks.length === 0 ? (
-        <div className={styles.empty}>No treks available yet.</div>
+        <div className={styles.empty}>
+          {activeTab === "current"
+            ? "No treks available yet."
+            : `No treks archived for ${activeTab} yet.`}
+        </div>
       ) : (
         <div className={styles.grid}>
           {treks.map((trek) => (
@@ -118,6 +137,12 @@ export default function TreksTable() {
                   sizes="(max-width: 700px) 100vw, 340px"
                   className={styles.image}
                 />
+
+                {trek.isHistorical && (
+                  <span className={styles.archivedBadge}>
+                    <Archive size={12} /> Archived
+                  </span>
+                )}
               </div>
 
               <div className={styles.content}>

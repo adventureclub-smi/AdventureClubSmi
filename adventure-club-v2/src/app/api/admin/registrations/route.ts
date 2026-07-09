@@ -11,6 +11,7 @@ export async function GET() {
 
   try {
     const registrations = await prisma.registration.findMany({
+      where: { trek: { isHistorical: false } },
       include: { user: true, trek: true },
       orderBy: { createdAt: "desc" },
       take: 300,

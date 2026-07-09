@@ -72,12 +72,16 @@ export async function GET() {
     const [registrations, payments, users, treksCompleted, certificates] =
       await Promise.all([
         prisma.registration.findMany({
-          where: { createdAt: { gte: rangeStart } },
+          where: { createdAt: { gte: rangeStart }, trek: { isHistorical: false } },
           select: { createdAt: true },
         }),
 
         prisma.payment.findMany({
-          where: { status: "PAID", paidAt: { gte: rangeStart } },
+          where: {
+            status: "PAID",
+            paidAt: { gte: rangeStart },
+            registration: { trek: { isHistorical: false } },
+          },
           select: { paidAt: true, amount: true },
         }),
 
@@ -86,11 +90,15 @@ export async function GET() {
         }),
 
         prisma.trek.count({
-          where: { date: { lt: new Date() } },
+          where: { date: { lt: new Date() }, isHistorical: false },
         }),
 
         prisma.registration.findMany({
-          where: { certificateIssued: true, certificateIssuedAt: { gte: rangeStart } },
+          where: {
+            certificateIssued: true,
+            certificateIssuedAt: { gte: rangeStart },
+            trek: { isHistorical: false },
+          },
           select: { certificateIssuedAt: true },
         }),
       ]);

@@ -136,6 +136,15 @@ model Trek {
 
   date DateTime
 
+  // ===== Historical Archive =====
+  // Past treks backfilled from pre-website records — kept out of the
+  // current/live trek views and every global cross-trek admin page, only
+  // visible in their own season's archive section and their own tabs.
+
+  isHistorical Boolean @default(false)
+
+  season String?
+
   price Int
 
   initialPayment Int
