@@ -8,6 +8,12 @@ import type { TrekMapPin } from "@/types/homepage";
 
 const MARKER_STYLE_ID = "trek-map-marker-styles";
 
+const COLLEGE = {
+  name: "Srishti Manipal Institute of Art, Design and Technology (New Campus, Bangalore)",
+  latitude: 13.1257435,
+  longitude: 77.591569,
+};
+
 // Injected once into <head> rather than per-marker — this CSS backs the
 // plain HTML strings handed to L.divIcon/bindPopup below, since Leaflet
 // mounts that markup outside React's tree (CSS Modules can't reach it).
@@ -36,12 +42,20 @@ function ensureMarkerStyles() {
       animation: trekPinPulse 2s infinite;
     }
     .trek-pin--completed {
-      background: rgba(245, 245, 245, 0.55);
+      background: var(--color-accent, #22c55e);
     }
     @keyframes trekPinPulse {
       0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
       70% { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
       100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    .college-pin {
+      width: 20px;
+      height: 20px;
+      background: var(--color-accent, #22c55e);
+      border: 2px solid var(--color-midnight, #0d0d0d);
+      transform: rotate(45deg);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
     }
     .leaflet-popup-content-wrapper {
       background: var(--color-charcoal, #1b1b1b);
@@ -67,7 +81,7 @@ function popupHtml(pin: TrekMapPin) {
   });
 
   const actionHtml = pin.isHistorical
-    ? `<span style="display:inline-block;padding:6px 14px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(79,111,82,0.3);color:#9fd6a8;">Completed</span>`
+    ? `<span style="display:inline-block;padding:6px 14px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(34,197,94,0.18);color:var(--color-accent, #22c55e);">Completed</span>`
     : `<a href="/treks/${pin.id}" style="font-size:13px;font-weight:600;color:var(--color-accent, #22c55e);text-decoration:none;">View Trek &rarr;</a>`;
 
   return `
@@ -123,10 +137,28 @@ export default function TrekMapCanvas({ pins }: { pins: TrekMapPin[] }) {
         .bindPopup(popupHtml(pin));
     });
 
-    if (markers.length === 1) {
-      map.setView(markers[0].getLatLng(), 11);
-    } else if (markers.length > 1) {
-      const bounds = L.latLngBounds(markers.map((m) => m.getLatLng()));
+    const collegeIcon = L.divIcon({
+      className: "",
+      html: `<div class="college-pin"></div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10],
+    });
+
+    const collegeMarker = L.marker([COLLEGE.latitude, COLLEGE.longitude], {
+      icon: collegeIcon,
+    })
+      .addTo(map)
+      .bindPopup(
+        `<div style="padding:14px 16px;"><h4 style="font-family:var(--font-display, inherit);font-size:16px;color:var(--color-text, #f5f5f5);margin:0;">${COLLEGE.name}</h4></div>`
+      );
+
+    const allPoints = [...markers.map((m) => m.getLatLng()), collegeMarker.getLatLng()];
+
+    if (allPoints.length === 1) {
+      map.setView(allPoints[0], 11);
+    } else {
+      const bounds = L.latLngBounds(allPoints);
       map.fitBounds(bounds.pad(0.25));
     }
 
