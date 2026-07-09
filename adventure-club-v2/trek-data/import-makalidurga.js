@@ -18,11 +18,13 @@ const TREK_DURATION = "1 Day";
 
 const SUPRAJ_PHONE = "9632227797";
 
-// The sheet's Initial column (550) was wrong for these people — corrected
-// 2026-07-10 based on what actually happened.
-const INITIAL_AMOUNT_OVERRIDES = {
-  "9884305561": 220, // Siddharth A.L
-};
+// The sheet showed a Final payment for these people, but it was never
+// actually paid — corrected 2026-07-10 based on what actually happened.
+// Their existing Refund record (from the sheet's REFUND column) is kept
+// as-is regardless of this.
+const FINAL_NOT_ACTUALLY_PAID = new Set([
+  "9884305561", // Siddharth A.L — paid the full ₹550 initial, final still pending
+]);
 
 // Remarks that are actually a proxy person's name (who physically received
 // the refund), not a genuine free-text note.
@@ -115,17 +117,23 @@ async function main() {
     const isSupraj = phone === SUPRAJ_PHONE;
 
     const formSubmitted = String(formRaw).trim().toUpperCase() === "YES";
-    const finalPaid = !isSupraj && finalRaw !== "" && finalRaw !== null && finalRaw !== undefined && !isNaN(Number(finalRaw));
+    const finalPaid =
+      !isSupraj &&
+      !FINAL_NOT_ACTUALLY_PAID.has(phone) &&
+      finalRaw !== "" &&
+      finalRaw !== null &&
+      finalRaw !== undefined &&
+      !isNaN(Number(finalRaw));
     const finalAmount = finalPaid ? Number(finalRaw) || 0 : 0;
     const refundGiven = !isSupraj && refundRaw !== "" && refundRaw !== null && refundRaw !== undefined && !isNaN(Number(refundRaw));
     const refundAmount = refundGiven ? Number(refundRaw) || 0 : 0;
-    const initialAmount = isSupraj
-      ? 550
-      : INITIAL_AMOUNT_OVERRIDES[phone] ?? (Number(initialRaw) || 0);
+    const initialAmount = isSupraj ? 550 : Number(initialRaw) || 0;
 
     // Core team attended but skipped the final payment/refund — the
     // initial payment was still made normally (₹550), confirmed 2026-07-09.
-    const attended = isSupraj ? true : finalPaid;
+    // Attendance still counts for anyone marked final-pending above, since
+    // that's an open payment item, not a no-show.
+    const attended = isSupraj || FINAL_NOT_ACTUALLY_PAID.has(phone) ? true : finalPaid;
 
     const strayNote = row
       .slice(8)
