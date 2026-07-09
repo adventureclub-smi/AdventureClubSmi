@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
     const perTrek = await Promise.all(
       treks.map(async (trek) => {
-        const [registrations, expenses, incomes, refunds] = await Promise.all([
+        const [registrations, expenses, incomes, refundRegistrations] = await Promise.all([
           prisma.registration.findMany({
             where: { trekId: trek.id, status: { notIn: ["WAITING", "REJECTED", "WAITLIST"] } },
             include: { payments: true },
@@ -32,9 +32,11 @@ export async function GET(req: NextRequest) {
           prisma.expense.findMany({ where: { trekId: trek.id } }),
           prisma.income.findMany({ where: { trekId: trek.id } }),
 
-          prisma.refund.findMany({
-            where: { registration: { trekId: trek.id } },
-            select: { amount: true },
+          // Same reimbursementAmount figure as the trek's own Finance tab
+          // "Total Refund" card, so College Fund Remaining always matches it.
+          prisma.registration.findMany({
+            where: { trekId: trek.id, OR: [{ finalPaymentPaid: true }, { initialPaymentPaid: true }] },
+            select: { reimbursementAmount: true },
           }),
         ]);
 
@@ -50,10 +52,13 @@ export async function GET(req: NextRequest) {
 
         const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
         const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
-        const refundsGiven = refunds.reduce((sum, r) => sum + r.amount, 0);
+        const totalRefund = refundRegistrations.reduce(
+          (sum, r) => sum + (r.reimbursementAmount ?? 0),
+          0
+        );
 
         const studentProfitLoss = revenueCollected - totalExpenses;
-        const collegeFundRemaining = totalIncome - refundsGiven;
+        const collegeFundRemaining = totalIncome - totalRefund;
 
         return {
           trekId: trek.id,
