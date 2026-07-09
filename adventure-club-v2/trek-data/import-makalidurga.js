@@ -18,6 +18,12 @@ const TREK_DURATION = "1 Day";
 
 const SUPRAJ_PHONE = "9632227797";
 
+// The sheet's Initial column (550) was wrong for these people — corrected
+// 2026-07-10 based on what actually happened.
+const INITIAL_AMOUNT_OVERRIDES = {
+  "9884305561": 220, // Siddharth A.L
+};
+
 // Remarks that are actually a proxy person's name (who physically received
 // the refund), not a genuine free-text note.
 const PROXY_REFUND_NAMES = {
@@ -113,7 +119,9 @@ async function main() {
     const finalAmount = finalPaid ? Number(finalRaw) || 0 : 0;
     const refundGiven = !isSupraj && refundRaw !== "" && refundRaw !== null && refundRaw !== undefined && !isNaN(Number(refundRaw));
     const refundAmount = refundGiven ? Number(refundRaw) || 0 : 0;
-    const initialAmount = isSupraj ? 550 : Number(initialRaw) || 0;
+    const initialAmount = isSupraj
+      ? 550
+      : INITIAL_AMOUNT_OVERRIDES[phone] ?? (Number(initialRaw) || 0);
 
     // Core team attended but skipped the final payment/refund — the
     // initial payment was still made normally (₹550), confirmed 2026-07-09.
