@@ -15,7 +15,7 @@ export async function GET(
   try {
     const { trekId } = await params;
 
-    const [registrations, expenses, incomes, refundRegistrations] = await Promise.all([
+    const [registrations, expenses, incomes, refundRegistrations, refunds] = await Promise.all([
       prisma.registration.findMany({
         where: { trekId, status: { notIn: ["WAITING", "REJECTED", "WAITLIST"] } },
         include: {
@@ -33,6 +33,14 @@ export async function GET(
       prisma.registration.findMany({
         where: { trekId, OR: [{ finalPaymentPaid: true }, { initialPaymentPaid: true }] },
         select: { reimbursementAmount: true },
+      }),
+
+      // Money actually handed back to students (the Refund model — distinct
+      // from reimbursementAmount above), used only for College Fund
+      // Remaining, not for Net.
+      prisma.refund.findMany({
+        where: { registration: { trekId } },
+        select: { amount: true },
       }),
     ]);
 
@@ -79,6 +87,13 @@ export async function GET(
     // students, unlike Net above.
     const studentProfitLoss = revenueCollected - totalExpenses;
 
+    // College Fund Remaining: lump-sum college reimbursement (tracked as
+    // Income) minus what's actually been handed back to students (the
+    // Refund model) — a separate pool from Net/Total Refund above, which
+    // track per-student reimbursement (reimbursementAmount) instead.
+    const refundsGiven = refunds.reduce((sum, r) => sum + r.amount, 0);
+    const collegeFundRemaining = totalIncome - refundsGiven;
+
     return NextResponse.json({
       participants,
       expenses,
@@ -92,6 +107,8 @@ export async function GET(
         totalRefund,
         net,
         studentProfitLoss,
+        refundsGiven,
+        collegeFundRemaining,
         participantCount: participants.length,
       },
     });

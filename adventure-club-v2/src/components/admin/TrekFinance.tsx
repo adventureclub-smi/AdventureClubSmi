@@ -11,6 +11,7 @@ import {
   Filter,
   ArrowUpDown,
   Receipt,
+  PiggyBank,
 } from "lucide-react";
 
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
@@ -68,6 +69,8 @@ type Totals = {
   totalRefund: number;
   net: number;
   studentProfitLoss: number;
+  refundsGiven: number;
+  collegeFundRemaining: number;
   participantCount: number;
 };
 
@@ -80,6 +83,8 @@ const emptyTotals: Totals = {
   totalRefund: 0,
   net: 0,
   studentProfitLoss: 0,
+  refundsGiven: 0,
+  collegeFundRemaining: 0,
   participantCount: 0,
 };
 
@@ -329,6 +334,14 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
           <div>
             <strong>₹{totals.net}</strong>
             <span>Net</span>
+          </div>
+        </div>
+
+        <div className={styles.summaryCard}>
+          <PiggyBank size={18} />
+          <div>
+            <strong>₹{totals.collegeFundRemaining}</strong>
+            <span>College Fund Remaining ({totals.totalIncome} received − {totals.refundsGiven} refunded)</span>
           </div>
         </div>
       </div>

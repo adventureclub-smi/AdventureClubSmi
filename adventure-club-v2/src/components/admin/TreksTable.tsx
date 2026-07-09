@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive } from "lucide-react";
+import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./TreksTable.module.scss";
@@ -22,6 +22,18 @@ type Trek = {
   season?: string | null;
 };
 
+type FinanceSummary = {
+  totalStudentProfitLoss: number;
+  totalCollegeFundRemaining: number;
+  grandTotal: number;
+};
+
+const emptyFinanceSummary: FinanceSummary = {
+  totalStudentProfitLoss: 0,
+  totalCollegeFundRemaining: 0,
+  grandTotal: 0,
+};
+
 // Archived seasons that have historical data imported. Add the next
 // season here once its treks are backfilled.
 const HISTORICAL_SEASONS = ["2025-26"];
@@ -31,6 +43,8 @@ export default function TreksTable() {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
   const [activeTab, setActiveTab] = useState<string>("current");
+  const [financeSummary, setFinanceSummary] = useState<FinanceSummary>(emptyFinanceSummary);
+  const [financeSummaryLoading, setFinanceSummaryLoading] = useState(false);
 
   async function fetchTreks(tab: string) {
     setLoading(true);
@@ -48,6 +62,21 @@ export default function TreksTable() {
     setLoading(false);
   }
 
+  async function fetchFinanceSummary(season: string) {
+    setFinanceSummaryLoading(true);
+
+    try {
+      const res = await fetch(`/api/admin/historical-treks/finance-summary?season=${encodeURIComponent(season)}`);
+      const data = await res.json();
+      setFinanceSummary(data.totals ?? emptyFinanceSummary);
+    } catch (error) {
+      console.error("Failed to fetch finance summary:", error);
+      setFinanceSummary(emptyFinanceSummary);
+    }
+
+    setFinanceSummaryLoading(false);
+  }
+
   useEffect(() => {
     fetchTreks("current");
   }, []);
@@ -55,6 +84,10 @@ export default function TreksTable() {
   function switchTab(tab: string) {
     setActiveTab(tab);
     fetchTreks(tab);
+
+    if (tab !== "current") {
+      fetchFinanceSummary(tab);
+    }
   }
 
   async function deleteTrek(id: string) {
@@ -114,6 +147,40 @@ export default function TreksTable() {
           </button>
         ))}
       </div>
+
+      {activeTab !== "current" && (
+        <div className={styles.financeSummary}>
+          {financeSummaryLoading ? (
+            <p className={styles.hint}>Loading finance summary...</p>
+          ) : (
+            <>
+              <div className={styles.financeSummaryCard}>
+                <TrendingUp size={18} />
+                <div>
+                  <strong>₹{financeSummary.totalStudentProfitLoss}</strong>
+                  <span>Total Student Profit/Loss</span>
+                </div>
+              </div>
+
+              <div className={styles.financeSummaryCard}>
+                <PiggyBank size={18} />
+                <div>
+                  <strong>₹{financeSummary.totalCollegeFundRemaining}</strong>
+                  <span>Total College Fund Remaining</span>
+                </div>
+              </div>
+
+              <div className={`${styles.financeSummaryCard} ${styles.grandTotal}`}>
+                <Landmark size={18} />
+                <div>
+                  <strong>₹{financeSummary.grandTotal}</strong>
+                  <span>Grand Total ({activeTab})</span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {status && <p className={styles.status}>{status}</p>}
 
