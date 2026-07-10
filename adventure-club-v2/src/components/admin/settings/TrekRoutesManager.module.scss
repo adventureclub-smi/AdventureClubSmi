@@ -1,0 +1,184 @@
+.container {
+  max-width: 1100px;
+  color: var(--color-text);
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+.status {
+  color: var(--color-accent);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.trekPicker {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 18px;
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.trekPicker label {
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.trekPicker select,
+.waypointRow select,
+.addForm select {
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(245, 245, 245, 0.05);
+  color: var(--color-text);
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+.waypointRow input,
+.addForm input {
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(245, 245, 245, 0.05);
+  color: var(--color-text);
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+.waypointRow input:focus,
+.addForm input:focus,
+.trekPicker select:focus,
+.waypointRow select:focus,
+.addForm select:focus {
+  outline: none;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.waypointsSection {
+  h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+}
+
+.waypointsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.waypointRow {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 0.8fr 0.8fr 1.2fr 0.8fr auto;
+  gap: 10px;
+  align-items: center;
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.waypointRowActions {
+  display: flex;
+  gap: 8px;
+}
+
+.saveRowButton {
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.saveRowButton:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.saveRowButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deleteRowButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--color-danger);
+  transition: 0.2s;
+}
+
+.deleteRowButton:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.deleteRowButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.addForm {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 0.8fr 0.8fr 1.2fr 0.8fr auto;
+  gap: 10px;
+  align-items: center;
+
+  button {
+    height: 46px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 10px;
+    background: var(--color-accent);
+    color: var(--color-midnight);
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: var(--color-accent-hover);
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 1100px) {
+  .waypointRow,
+  .addForm {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .waypointRowActions {
+    justify-content: flex-end;
+    grid-column: 1 / -1;
+  }
+}

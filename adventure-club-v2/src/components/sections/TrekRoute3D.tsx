@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import type { TrailStat } from "@/types/homepage";
+import type { UpcomingTrekRoute } from "@/types/homepage";
 import styles from "./TrekRoute3D.module.scss";
 
 // MapLibre touches window/document/WebGL directly — never render it on the
@@ -16,9 +16,14 @@ const TrekRoute3DCanvas = dynamic(() => import("@/components/map/TrekRoute3DCanv
   ssr: false,
 });
 
-export default function TrekRoute3D({ trailStats }: { trailStats: TrailStat[] }) {
+export default function TrekRoute3D({ routes }: { routes: UpcomingTrekRoute[] }) {
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
+  const [selectedTrekId, setSelectedTrekId] = useState(routes[0]?.trekId ?? "");
+
+  if (routes.length === 0) return null;
+
+  const selectedRoute = routes.find((r) => r.trekId === selectedTrekId) ?? routes[0];
 
   return (
     <section className={styles.explorer} id="trek-route-3d">
@@ -30,25 +35,29 @@ export default function TrekRoute3D({ trailStats }: { trailStats: TrailStat[] })
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <span className={styles.eyebrow}>SIGNATURE ROUTE</span>
-            <h2>Fly The Route Before You Hike It.</h2>
+            <span className={styles.eyebrow}>UPCOMING TERRAIN</span>
+            <h2>Preview The Ground Before You Cover It.</h2>
           </motion.div>
         </div>
 
-        <div className={styles.mapWrap}>
-          <TrekRoute3DCanvas />
-        </div>
-
-        {trailStats.length > 0 && (
-          <div className={styles.statsGrid}>
-            {trailStats.map((stat) => (
-              <div key={stat.id} className={styles.statBlock} data-tooltip={stat.tooltip}>
-                <span className={styles.statValue}>{stat.value}</span>
-                <span className={styles.statLabel}>{stat.label}</span>
-              </div>
+        {routes.length > 1 && (
+          <div className={styles.trekTabs}>
+            {routes.map((route) => (
+              <button
+                key={route.trekId}
+                type="button"
+                className={route.trekId === selectedRoute.trekId ? styles.trekTabActive : styles.trekTab}
+                onClick={() => setSelectedTrekId(route.trekId)}
+              >
+                {route.title}
+              </button>
             ))}
           </div>
         )}
+
+        <div className={styles.mapWrap}>
+          <TrekRoute3DCanvas key={selectedRoute.trekId} waypoints={selectedRoute.waypoints} />
+        </div>
       </motion.div>
     </section>
   );

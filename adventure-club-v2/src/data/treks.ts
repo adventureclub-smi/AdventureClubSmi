@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { RegistrationLike } from "@/lib/registration-journey";
-import type { TrekSummary, TrekMapPin } from "@/types/homepage";
+import type { TrekSummary, TrekMapPin, UpcomingTrekRoute } from "@/types/homepage";
 
 export async function getUpcomingTreks(): Promise<TrekSummary[]> {
   const treks = await prisma.trek.findMany({
@@ -58,5 +58,39 @@ export async function getTrekMapPins(): Promise<TrekMapPin[]> {
     isHistorical: trek.isHistorical,
     latitude: trek.latitude as number,
     longitude: trek.longitude as number,
+  }));
+}
+
+// Same "upcoming" definition as getUpcomingTreks() — these are the exact
+// treks listed in the Upcoming Treks section above the 3D route preview, so
+// only ones an admin has actually set waypoints for show up in the picker.
+export async function getUpcomingTrekRoutes(): Promise<UpcomingTrekRoute[]> {
+  const treks = await prisma.trek.findMany({
+    where: {
+      date: { gte: new Date() },
+      status: "Registration Open",
+      waypoints: { some: {} },
+    },
+    orderBy: { date: "asc" },
+    include: {
+      waypoints: { orderBy: { order: "asc" } },
+    },
+  });
+
+  return treks.map((trek) => ({
+    trekId: trek.id,
+    title: trek.title,
+    destination: trek.destination,
+    date: trek.date.toISOString(),
+    waypoints: trek.waypoints.map((w) => ({
+      id: w.id,
+      label: w.label,
+      description: w.description || "",
+      latitude: w.latitude,
+      longitude: w.longitude,
+      mediaUrl: w.mediaUrl || "",
+      mediaType: w.mediaType === "video" ? "video" : ("image" as const),
+      order: w.order,
+    })),
   }));
 }

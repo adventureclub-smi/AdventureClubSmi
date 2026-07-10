@@ -228,6 +228,34 @@ model Trek {
   incomes Income[]
 
   announcements TripAnnouncement[]
+
+  waypoints TrekWaypoint[]
+}
+
+// Admin-editable waypoints (trailhead, halfway point, summit, etc.) that
+// drive the homepage's in-page 3D terrain preview for upcoming treks — a
+// trek only appears in that picker once it has at least one waypoint set.
+model TrekWaypoint {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  label String
+
+  description String?
+
+  latitude Float
+
+  longitude Float
+
+  mediaUrl String?
+
+  mediaType String @default("image")
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
 }
 
 model Registration {

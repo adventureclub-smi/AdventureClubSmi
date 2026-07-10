@@ -4,8 +4,9 @@ import AdventureStats from "@/components/sections/AdventureStats";
 import ThingsWeDo from "@/components/sections/ThingsWeDo";
 import ClubVibeCheck from "@/components/sections/ClubVibeCheck";
 import UpcomingTreks from "@/components/sections/UpcomingTreks";
-import TrekMap from "@/components/sections/TrekMap";
 import TrekRoute3D from "@/components/sections/TrekRoute3D";
+import TrekMap from "@/components/sections/TrekMap";
+import GoogleEarthExplorer from "@/components/sections/GoogleEarthExplorer";
 import Gallery from "@/components/sections/Gallery";
 import Stories from "@/components/sections/Stories";
 import FinalCTA from "@/components/sections/FinalCTA";
@@ -13,7 +14,7 @@ import InstagramFeed from "@/components/sections/InstagramFeed";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import { getHomepageContent } from "@/data/homepage-content";
-import { getUpcomingTreks, getTrekMapPins } from "@/data/treks";
+import { getUpcomingTreks, getTrekMapPins, getUpcomingTrekRoutes } from "@/data/treks";
 import { getSongs } from "@/data/songs";
 import { getInstagramPosts } from "@/data/instagram";
 
@@ -32,12 +33,13 @@ import { getInstagramPosts } from "@/data/instagram";
 export const revalidate = 30;
 
 export default async function Home() {
-  const [content, treks, songs, instagramPosts, mapPins] = await Promise.all([
+  const [content, treks, songs, instagramPosts, mapPins, trekRoutes] = await Promise.all([
     getHomepageContent(),
     getUpcomingTreks(),
     getSongs(),
     getInstagramPosts(),
     getTrekMapPins(),
+    getUpcomingTrekRoutes(),
   ]);
 
   return (
@@ -56,8 +58,12 @@ export default async function Home() {
         treks={treks}
         config={content.upcomingTreks}
       />
+      <TrekRoute3D routes={trekRoutes} />
       <TrekMap pins={mapPins} />
-      <TrekRoute3D trailStats={content.googleEarth.trailStats} />
+      <GoogleEarthExplorer
+        earthUrl={content.googleEarth.earthUrl}
+        trailStats={content.googleEarth.trailStats}
+      />
       <Gallery items={content.gallery} />
       <Stories stories={content.stories} />
       <FinalCTA content={content.finalSection} />

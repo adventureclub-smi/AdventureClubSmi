@@ -133,3 +133,22 @@ export interface TrekMapPin {
   latitude: number;
   longitude: number;
 }
+
+export interface TrekWaypoint {
+  id: string;
+  label: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  mediaUrl: string;
+  mediaType: "image" | "video";
+  order: number;
+}
+
+export interface UpcomingTrekRoute {
+  trekId: string;
+  title: string;
+  destination: string;
+  date: string;
+  waypoints: TrekWaypoint[];
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2 } from "lucide-react";
+import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2, Mountain } from "lucide-react";
 import QuickActionCard from "@/components/dashboard/shared/QuickActionCard";
 
 export default function SettingsQuickLinks() {
@@ -64,6 +64,12 @@ export default function SettingsQuickLinks() {
         icon={Globe2}
         label="3D Explorer"
         href="/admin/settings/google-earth"
+      />
+
+      <QuickActionCard
+        icon={Mountain}
+        label="3D Route Waypoints"
+        href="/admin/settings/trek-routes"
       />
     </div>
   );

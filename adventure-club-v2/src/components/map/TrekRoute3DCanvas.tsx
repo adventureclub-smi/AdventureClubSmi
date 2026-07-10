@@ -4,53 +4,7 @@ import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-type Waypoint = {
-  id: string;
-  name: string;
-  description: string;
-  coordinates: [number, number]; // [lng, lat]
-  mediaType: "image" | "video";
-  mediaUrl: string;
-};
-
-// ===== EDIT ME: real route + real media =====
-// These 3 waypoints are placeholder positions near Skandagiri Hills'
-// summit (13.4180902, 77.6829599) — approximate, not a real GPS track.
-// Replace coordinates with an actual recorded route, and mediaUrl with
-// a real photo/video taken at that exact spot. To use a video instead
-// of a photo for a waypoint, set mediaType: "video" and point mediaUrl
-// at an .mp4 — the canvas below already renders either one correctly.
-const WAYPOINTS: Waypoint[] = [
-  {
-    id: "trailhead",
-    name: "Trailhead",
-    description: "Where the climb begins — the last flat ground before the ascent.",
-    coordinates: [77.679, 13.413],
-    mediaType: "image",
-    mediaUrl:
-      "https://res.cloudinary.com/ix7lwsey/image/upload/v1782942257/AdventureClub/Treks/f3qo54zo9juqby8qqo4u.jpg",
-  },
-  {
-    id: "midpoint",
-    name: "Halfway Point",
-    description: "The steepest stretch of the trail, with the first real view back down the valley.",
-    coordinates: [77.681, 13.4155],
-    mediaType: "image",
-    mediaUrl:
-      "https://res.cloudinary.com/ix7lwsey/image/upload/v1782942257/AdventureClub/Treks/f3qo54zo9juqby8qqo4u.jpg",
-  },
-  {
-    id: "summit",
-    name: "The Summit",
-    description: "Skandagiri's peak — sunrise here is the whole reason for the climb.",
-    coordinates: [77.6829599, 13.4180902],
-    mediaType: "image",
-    mediaUrl:
-      "https://res.cloudinary.com/ix7lwsey/image/upload/v1782942257/AdventureClub/Treks/f3qo54zo9juqby8qqo4u.jpg",
-  },
-];
-
-const ROUTE_CENTER: [number, number] = [77.681, 13.416];
+import type { TrekWaypoint } from "@/types/homepage";
 
 // Free, no-account-needed sources — no Mapbox/Google token involved:
 // - Esri World Imagery for the satellite basemap.
@@ -158,33 +112,36 @@ function ensureRoute3DStyles() {
   document.head.appendChild(style);
 }
 
-function popupHtml(point: Waypoint) {
-  const mediaHtml =
-    point.mediaType === "video"
-      ? `<video src="${point.mediaUrl}" autoplay loop muted playsinline style="width:100%;height:140px;object-fit:cover;display:block;"></video>`
-      : `<img src="${point.mediaUrl}" alt="${point.name}" style="width:100%;height:140px;object-fit:cover;display:block;" />`;
+function popupHtml(point: TrekWaypoint) {
+  const mediaHtml = !point.mediaUrl
+    ? ""
+    : point.mediaType === "video"
+    ? `<video src="${point.mediaUrl}" autoplay loop muted playsinline style="width:100%;height:140px;object-fit:cover;display:block;"></video>`
+    : `<img src="${point.mediaUrl}" alt="${point.label}" style="width:100%;height:140px;object-fit:cover;display:block;" />`;
 
   return `
     <div style="font-family:inherit;">
-      <div style="border-radius:12px 12px 0 0;overflow:hidden;">${mediaHtml}</div>
+      ${mediaHtml ? `<div style="border-radius:12px 12px 0 0;overflow:hidden;">${mediaHtml}</div>` : ""}
       <div style="padding:14px 16px;">
-        <h4 style="font-family:var(--font-display, inherit);font-size:18px;color:var(--color-text, #f5f5f5);margin:0 0 8px;">${point.name}</h4>
-        <p style="font-size:13px;line-height:1.5;color:var(--color-text-muted, #9ca3af);margin:0;">${point.description}</p>
+        <h4 style="font-family:var(--font-display, inherit);font-size:18px;color:var(--color-text, #f5f5f5);margin:0 0 8px;">${point.label}</h4>
+        ${point.description ? `<p style="font-size:13px;line-height:1.5;color:var(--color-text-muted, #9ca3af);margin:0;">${point.description}</p>` : ""}
       </div>
     </div>
   `;
 }
 
-export default function TrekRoute3DCanvas() {
+export default function TrekRoute3DCanvas({ waypoints }: { waypoints: TrekWaypoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
 
-  function flyToWaypoint(point: Waypoint, bearing: number) {
+  function flyToWaypoint(point: TrekWaypoint, bearing: number) {
     const map = mapRef.current;
     if (!map) return;
 
+    const center: [number, number] = [point.longitude, point.latitude];
+
     map.flyTo({
-      center: point.coordinates,
+      center,
       zoom: 15.5,
       pitch: 70,
       bearing,
@@ -193,20 +150,25 @@ export default function TrekRoute3DCanvas() {
     });
 
     new maplibregl.Popup({ offset: 25, closeButton: true, className: "route3d-popup" })
-      .setLngLat(point.coordinates)
+      .setLngLat(center)
       .setHTML(popupHtml(point))
       .addTo(map);
   }
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || waypoints.length === 0) return;
 
     ensureRoute3DStyles();
+
+    const centerLng =
+      waypoints.reduce((sum, w) => sum + w.longitude, 0) / waypoints.length;
+    const centerLat =
+      waypoints.reduce((sum, w) => sum + w.latitude, 0) / waypoints.length;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_STYLE,
-      center: ROUTE_CENTER,
+      center: [centerLng, centerLat],
       zoom: 13,
       pitch: 60,
       bearing: 30,
@@ -229,7 +191,7 @@ export default function TrekRoute3DCanvas() {
         "fog-ground-blend": 0.5,
       });
 
-      WAYPOINTS.forEach((point, i) => {
+      waypoints.forEach((point, i) => {
         const el = document.createElement("div");
         el.className = "route3d-marker";
         el.textContent = String(i + 1);
@@ -237,7 +199,7 @@ export default function TrekRoute3DCanvas() {
         el.addEventListener("click", () => flyToWaypoint(point, 30 + i * 40));
 
         new maplibregl.Marker({ element: el })
-          .setLngLat(point.coordinates)
+          .setLngLat([point.longitude, point.latitude])
           .addTo(map);
       });
     });
@@ -246,20 +208,20 @@ export default function TrekRoute3DCanvas() {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [waypoints]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
 
       <div className="route3d-panel">
-        {WAYPOINTS.map((point, i) => (
+        {waypoints.map((point, i) => (
           <button
             key={point.id}
             type="button"
             onClick={() => flyToWaypoint(point, 30 + i * 40)}
           >
-            {point.name}
+            {point.label}
           </button>
         ))}
       </div>
