@@ -84,6 +84,19 @@ export interface SocialLinks {
   phone?: string;
 }
 
+export interface TrailStat {
+  id: string;
+  label: string;
+  value: string;
+  tooltip: string;
+  order: number;
+}
+
+export interface GoogleEarthContent {
+  earthUrl: string;
+  trailStats: TrailStat[];
+}
+
 export interface HomepageContent {
   hero: HeroContent;
   stats: StatItem[];
@@ -93,6 +106,7 @@ export interface HomepageContent {
   stories: Story[];
   finalSection: FinalSectionContent;
   socials: SocialLinks;
+  googleEarth: GoogleEarthContent;
 }
 
 export interface TrekSummary {

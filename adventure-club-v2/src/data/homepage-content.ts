@@ -2,6 +2,7 @@ import type { HomepageContent } from "@/types/homepage";
 import { getSocialSettings } from "@/data/social-settings";
 import { getGalleryPhotos } from "@/data/gallery-photos";
 import { getStories } from "@/data/stories";
+import { getGoogleEarthSettings } from "@/data/google-earth-settings";
 
 /**
  * Single centralized source for all non-database homepage content.
@@ -10,19 +11,20 @@ import { getStories } from "@/data/stories";
  * or Prisma model) — every homepage component already consumes this
  * shape via props, so no component changes will be required.
  *
- * `socials`, `gallery`, and `stories` already come from the database
- * (admin-editable Instagram/LinkedIn links, homepage gallery photos, and
- * homepage stories) — everything else here is still static placeholder
- * content.
+ * `socials`, `gallery`, `stories`, and `googleEarth` already come from the
+ * database (admin-editable Instagram/LinkedIn links, homepage gallery
+ * photos, homepage stories, and the 3D explorer's link/trail stats) —
+ * everything else here is still static placeholder content.
  */
 export async function getHomepageContent(): Promise<HomepageContent> {
-  const [socials, gallery, stories] = await Promise.all([
+  const [socials, gallery, stories, googleEarth] = await Promise.all([
     getSocialSettings(),
     getGalleryPhotos(),
     getStories(),
+    getGoogleEarthSettings(),
   ]);
 
-  return { ...homepageContent, socials, gallery, stories };
+  return { ...homepageContent, socials, gallery, stories, googleEarth };
 }
 
 const homepageContent: HomepageContent = {
@@ -208,4 +210,8 @@ const homepageContent: HomepageContent = {
   // Always overridden by getSocialSettings() in getHomepageContent() above —
   // kept here only to satisfy the HomepageContent type.
   socials: {},
+
+  // Always overridden by getGoogleEarthSettings() in getHomepageContent()
+  // above — kept here only to satisfy the HomepageContent type.
+  googleEarth: { earthUrl: "", trailStats: [] },
 };

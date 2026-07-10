@@ -57,7 +57,10 @@ export default async function Home() {
         config={content.upcomingTreks}
       />
       <TrekMap pins={mapPins} />
-      <GoogleEarthExplorer />
+      <GoogleEarthExplorer
+        earthUrl={content.googleEarth.earthUrl}
+        trailStats={content.googleEarth.trailStats}
+      />
       <Gallery items={content.gallery} />
       <Stories stories={content.stories} />
       <FinalCTA content={content.finalSection} />

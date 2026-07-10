@@ -116,9 +116,15 @@
   animation: launchGlow 2.4s ease-in-out infinite;
 }
 
-.launchButton:hover {
+.launchButton:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 0 40px rgba(34, 197, 94, 0.55);
+}
+
+.launchButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  animation: none;
 }
 
 @keyframes launchGlow {

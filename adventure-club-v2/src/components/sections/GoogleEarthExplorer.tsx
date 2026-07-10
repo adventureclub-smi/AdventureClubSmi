@@ -5,18 +5,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Globe2, Radar, Satellite } from "lucide-react";
 
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import type { TrailStat } from "@/types/homepage";
 import styles from "./GoogleEarthExplorer.module.scss";
 
-// ===== EDIT ME: your Google Earth project link =====
-// Share a Google Earth "My Maps"/project link (Earth Web → Present →
-// Share) and drop it in here. Google Earth Web sends
-// `X-Frame-Options: SAMEORIGIN` (confirmed directly against the real
-// URL), so it can never be embedded in an <iframe> on this site — the
-// browser enforces that from Google's side, not ours. It opens in a
-// new tab instead, behind a full-screen "launch" takeover so it still
+// Google Earth Web sends `X-Frame-Options: SAMEORIGIN` (confirmed directly
+// against the real URL), so it can never be embedded in an <iframe> on this
+// site — the browser enforces that from Google's side, not ours. It opens
+// in a new tab instead, behind a full-screen "launch" takeover so it still
 // feels like a single continuous moment rather than an abrupt tab switch.
-const GOOGLE_EARTH_URL =
-  "https://earth.google.com/earth/d/1z46-fpwZCjtVgQ_L0pUMVTx18ZedN8LI?usp=sharing";
+// The link and trail stats below are admin-editable — see Admin →
+// Settings → 3D Explorer.
 
 const LOADING_STEPS = [
   "Initializing Satellite Data...",
@@ -24,21 +22,15 @@ const LOADING_STEPS = [
   "Ready to Fly!",
 ];
 
-// ===== EDIT ME: trail stats =====
-// Quirky, real-ish trail stats for the tactical grid. Swap in real
-// numbers for whichever trek this launch card is fronting.
-const TRAIL_STATS = [
-  { label: "Max Elevation", value: "1,450m", tooltip: "Higher than your motivation at 6am." },
-  { label: "Maggi Points En Route", value: "2", tooltip: "The real summit, if we're honest." },
-  { label: "Cellular Signal", value: "Patchy at Best", tooltip: "Peace of mind, whether you want it or not." },
-  { label: "Sunrise Views", value: "Guaranteed", tooltip: "Weather gods permitting." },
-  { label: "Descent Time", value: "~45 min", tooltip: "Faster if your knees still work." },
-  { label: "Best Season", value: "Oct – Feb", tooltip: "Anything else and you're just suffering." },
-];
-
 type Phase = "idle" | "loading" | "launched";
 
-export default function GoogleEarthExplorer() {
+export default function GoogleEarthExplorer({
+  earthUrl,
+  trailStats,
+}: {
+  earthUrl: string;
+  trailStats: TrailStat[];
+}) {
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
 
@@ -46,11 +38,12 @@ export default function GoogleEarthExplorer() {
   const [stepIndex, setStepIndex] = useState(0);
 
   function openEarth() {
-    window.open(GOOGLE_EARTH_URL, "_blank", "noopener,noreferrer");
+    if (!earthUrl) return;
+    window.open(earthUrl, "_blank", "noopener,noreferrer");
   }
 
   function handleLaunch() {
-    if (phase !== "idle") return;
+    if (phase !== "idle" || !earthUrl) return;
 
     setPhase("loading");
     setStepIndex(0);
@@ -104,19 +97,26 @@ export default function GoogleEarthExplorer() {
                   3D TRAIL RADAR ACTIVE
                 </div>
 
-                <button type="button" className={styles.launchButton} onClick={handleLaunch}>
+                <button
+                  type="button"
+                  className={styles.launchButton}
+                  onClick={handleLaunch}
+                  disabled={!earthUrl}
+                >
                   <Satellite size={18} />
-                  Launch 3D Fly-Through
+                  {earthUrl ? "Launch 3D Fly-Through" : "Link Not Set Yet"}
                 </button>
 
-                <div className={styles.statsGrid}>
-                  {TRAIL_STATS.map((stat) => (
-                    <div key={stat.label} className={styles.statBlock} data-tooltip={stat.tooltip}>
-                      <span className={styles.statValue}>{stat.value}</span>
-                      <span className={styles.statLabel}>{stat.label}</span>
-                    </div>
-                  ))}
-                </div>
+                {trailStats.length > 0 && (
+                  <div className={styles.statsGrid}>
+                    {trailStats.map((stat) => (
+                      <div key={stat.id} className={styles.statBlock} data-tooltip={stat.tooltip}>
+                        <span className={styles.statValue}>{stat.value}</span>
+                        <span className={styles.statLabel}>{stat.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

@@ -567,6 +567,28 @@ model SocialSettings {
   updatedAt DateTime @updatedAt
 }
 
+model GoogleEarthSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  earthUrl String
+
+  updatedAt DateTime @updatedAt
+}
+
+model TrailStat {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  label String
+
+  value String
+
+  tooltip String?
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+}
+
 model HomepageGalleryPhoto {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
