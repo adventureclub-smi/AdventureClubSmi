@@ -376,6 +376,11 @@ model Payment {
 
   notes String?
 
+  // When set, student-facing views show this text instead of "₹{amount}" —
+  // e.g. a historical trek paid as part of a combined package on a
+  // different trek, so this specific record's amount is 0 but not "unpaid".
+  displayOverride String?
+
   createdAt DateTime @default(now())
 }
 

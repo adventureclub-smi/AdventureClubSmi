@@ -24,6 +24,7 @@ type Payment = {
   paymentMethod?: string | null;
   reference?: string | null;
   paidAt?: string | null;
+  displayOverride?: string | null;
 };
 
 type Registration = {
@@ -157,7 +158,7 @@ export default function MyRegistrations() {
                         </div>
 
                         <div className={styles.paymentRowValue}>
-                          <strong>₹{row.amount}</strong>
+                          <strong>{row.displayOverride ?? `₹${row.amount}`}</strong>
                           <StatusBadge text={row.text} tone={row.tone} />
                         </div>
 

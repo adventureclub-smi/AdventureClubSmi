@@ -302,6 +302,7 @@ export type PaymentInfo = {
   amount: number;
   status: "LOCKED" | "PENDING" | "PAID";
   paidAt?: string | null;
+  displayOverride?: string | null;
 };
 
 export type PaymentRow = {
@@ -310,6 +311,7 @@ export type PaymentRow = {
   text: string;
   tone: StatusTone;
   paidAt?: string | null;
+  displayOverride?: string | null;
 };
 
 export type PaymentRegistrationLike = RegistrationLike & {
@@ -339,6 +341,7 @@ export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
           text: "Paid & Verified",
           tone: "success",
           paidAt: initial.paidAt,
+          displayOverride: initial.displayOverride,
         }
       : initial?.status === "PENDING"
       ? {
@@ -364,6 +367,7 @@ export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
             text: "Paid & Verified",
             tone: "success",
             paidAt: final.paidAt,
+            displayOverride: final.displayOverride,
           }
         : final?.status === "PENDING"
         ? {
