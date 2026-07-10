@@ -16,12 +16,14 @@ const TrekRoute3DCanvas = dynamic(() => import("@/components/map/TrekRoute3DCanv
   ssr: false,
 });
 
+// Callers must only render this when routes.length > 0 — the reveal
+// animation's ref has to actually mount to a DOM node for Framer Motion's
+// useScroll to hydrate against, so this can't itself bail out to null after
+// wiring the hook up.
 export default function TrekRoute3D({ routes }: { routes: UpcomingTrekRoute[] }) {
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
-  const [selectedTrekId, setSelectedTrekId] = useState(routes[0]?.trekId ?? "");
-
-  if (routes.length === 0) return null;
+  const [selectedTrekId, setSelectedTrekId] = useState(routes[0].trekId);
 
   const selectedRoute = routes.find((r) => r.trekId === selectedTrekId) ?? routes[0];
 

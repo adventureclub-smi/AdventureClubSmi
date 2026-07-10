@@ -58,7 +58,7 @@ export default async function Home() {
         treks={treks}
         config={content.upcomingTreks}
       />
-      <TrekRoute3D routes={trekRoutes} />
+      {trekRoutes.length > 0 && <TrekRoute3D routes={trekRoutes} />}
       <TrekMap pins={mapPins} />
       <GoogleEarthExplorer
         earthUrl={content.googleEarth.earthUrl}
