@@ -142,8 +142,8 @@ export default function TrekRoute3DCanvas({ waypoints }: { waypoints: TrekWaypoi
 
     map.flyTo({
       center,
-      zoom: 15.5,
-      pitch: 70,
+      zoom: 14.5,
+      pitch: 60,
       bearing,
       duration: 2500,
       essential: true,
@@ -180,7 +180,7 @@ export default function TrekRoute3DCanvas({ waypoints }: { waypoints: TrekWaypoi
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
     map.on("load", () => {
-      map.setTerrain({ source: "terrain-dem", exaggeration: 1.4 });
+      map.setTerrain({ source: "terrain-dem", exaggeration: 1.2 });
 
       map.setSky({
         "sky-color": "#0d0d0d",
