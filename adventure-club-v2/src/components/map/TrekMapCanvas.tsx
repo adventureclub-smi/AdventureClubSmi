@@ -42,7 +42,8 @@ function ensureMarkerStyles() {
       animation: trekPinPulse 2s infinite;
     }
     .trek-pin--completed {
-      background: var(--color-accent, #22c55e);
+      background: #3b82f6;
+      border-color: var(--color-midnight, #0d0d0d);
     }
     @keyframes trekPinPulse {
       0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
