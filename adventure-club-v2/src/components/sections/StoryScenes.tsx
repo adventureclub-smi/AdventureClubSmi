@@ -44,6 +44,14 @@ const SCENES: Scene[] = [
     height: 1024,
     caption: "We reached the top but still couldn't climb the tree",
   },
+  {
+    id: "slide",
+    image: "/images/stories/slide.png",
+    alt: "Someone laughing while sliding down a mossy rock slope",
+    width: 1122,
+    height: 1402,
+    caption: "WEEE",
+  },
 ];
 
 const EMBER_OFFSETS = [-18, -6, 4, 14, 24];
