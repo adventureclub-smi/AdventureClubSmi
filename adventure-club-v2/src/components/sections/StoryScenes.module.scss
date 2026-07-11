@@ -39,47 +39,14 @@
 .frame {
   position: relative;
   width: 100%;
-  height: 520px;
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(34, 197, 94, 0.08);
-  background: var(--color-midnight);
+  display: flex;
+  justify-content: center;
 }
 
 .image {
-  object-fit: cover;
-}
-
-.bubbleAnchor {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  z-index: 2;
-}
-
-.bubble {
-  position: relative;
-  padding: 12px 20px;
-  border-radius: 999px;
-  background: var(--color-charcoal);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  color: var(--color-text);
-  font-size: 15px;
-  font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-.bubble::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 28px;
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid var(--color-charcoal);
+  width: 100%;
+  height: auto;
+  max-width: 100%;
 }
 
 .dots {
@@ -120,15 +87,5 @@
   .navButton {
     width: 36px;
     height: 36px;
-  }
-
-  .frame {
-    height: 360px;
-    border-radius: 16px;
-  }
-
-  .bubble {
-    font-size: 13px;
-    padding: 10px 16px;
   }
 }

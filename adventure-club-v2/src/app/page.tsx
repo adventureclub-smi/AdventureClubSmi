@@ -65,7 +65,7 @@ export default async function Home() {
         trailStats={content.googleEarth.trailStats}
       />
       <Gallery items={content.gallery} />
-      <Stories stories={content.stories} />
+      <Stories />
       <FinalCTA content={content.finalSection} />
       <InstagramFeed posts={instagramPosts} />
       <Footer socials={content.socials} />

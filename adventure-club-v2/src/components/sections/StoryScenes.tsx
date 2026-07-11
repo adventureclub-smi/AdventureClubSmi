@@ -12,17 +12,23 @@ type Scene = {
   id: string;
   image: string;
   alt: string;
-  caption: string;
+  width: number;
+  height: number;
 };
 
 // ===== EDIT ME: drop new scene art in /public/images/stories and add it
-// here.
+// here. Captions are drawn directly into the artwork itself, so there's no
+// separate text overlay to keep in sync. width/height should match the
+// source file's real pixel dimensions (Next.js needs them to avoid layout
+// shift) — these are transparent PNGs rendered at their natural size, not
+// cropped into a fixed frame.
 const SCENES: Scene[] = [
   {
     id: "campfire",
     image: "/images/stories/campfire.png",
-    alt: "The group sitting around a campfire at night, lit by the fire's glow",
-    caption: "Cold cup noodles?",
+    alt: "The group sitting around a glowing campfire at night, one person holding a cup of cold noodles",
+    width: 1536,
+    height: 1024,
   },
 ];
 
@@ -72,21 +78,12 @@ export default function StoryScenes() {
             <Image
               src={scene.image}
               alt={scene.alt}
-              fill
+              width={scene.width}
+              height={scene.height}
               sizes="(max-width: 700px) 100vw, 900px"
               className={styles.image}
               priority
             />
-
-            <div className={styles.bubbleAnchor}>
-              <motion.div
-                className={styles.bubble}
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                {scene.caption}
-              </motion.div>
-            </div>
           </motion.div>
         </AnimatePresence>
 
