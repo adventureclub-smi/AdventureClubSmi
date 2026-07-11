@@ -49,6 +49,36 @@
   max-width: 100%;
 }
 
+.fireGlow {
+  position: absolute;
+  width: 14%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(190, 255, 170, 0.9) 0%,
+    rgba(120, 230, 110, 0.5) 35%,
+    rgba(60, 180, 70, 0.15) 65%,
+    transparent 75%
+  );
+  mix-blend-mode: screen;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.ember {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #d4ffb8;
+  box-shadow: 0 0 6px 2px rgba(180, 255, 140, 0.8);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 .dots {
   display: flex;
   gap: 8px;
