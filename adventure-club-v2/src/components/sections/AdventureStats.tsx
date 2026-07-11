@@ -59,6 +59,7 @@ export default function AdventureStats({ stats }: { stats: StatItem[] }) {
           {stats.map((stat, i) => (
             <motion.div
               key={stat.id}
+              className={styles.statWrap}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

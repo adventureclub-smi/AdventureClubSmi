@@ -37,9 +37,13 @@
   gap: 0 40px;
 }
 
-.stat {
-  flex: 1 1 160px;
+.statWrap {
+  flex: 1 1 200px;
   max-width: 220px;
+  min-width: 0;
+}
+
+.stat {
   text-align: center;
   padding: 32px 16px;
   border-left: 1px solid rgba(245, 245, 245, 0.1);
@@ -74,8 +78,11 @@
     align-items: stretch;
   }
 
-  .stat {
+  .statWrap {
     max-width: none;
+  }
+
+  .stat {
     border-left: none !important;
     border-top: 1px solid rgba(245, 245, 245, 0.1);
   }
