@@ -51,19 +51,20 @@
 
 .fireGlow {
   position: absolute;
-  width: 14%;
+  width: 20%;
   aspect-ratio: 1 / 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(190, 255, 170, 0.9) 0%,
-    rgba(120, 230, 110, 0.5) 35%,
-    rgba(60, 180, 70, 0.15) 65%,
-    transparent 75%
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(200, 255, 180, 0.85) 20%,
+    rgba(140, 240, 120, 0.6) 45%,
+    rgba(70, 190, 80, 0.25) 68%,
+    transparent 78%
   );
   mix-blend-mode: screen;
-  filter: blur(2px);
+  filter: blur(1px);
   pointer-events: none;
 }
 

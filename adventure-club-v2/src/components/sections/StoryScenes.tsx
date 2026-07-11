@@ -33,7 +33,7 @@ const SCENES: Scene[] = [
     alt: "The group sitting around a glowing campfire at night, one person holding a cup of cold noodles",
     width: 1536,
     height: 1024,
-    firePosition: { xPct: 50, yPct: 74 },
+    firePosition: { xPct: 50, yPct: 62 },
   },
 ];
 
@@ -100,7 +100,7 @@ export default function StoryScenes() {
                 <motion.div
                   className={styles.fireGlow}
                   style={{ left: `${scene.firePosition.xPct}%`, top: `${scene.firePosition.yPct}%` }}
-                  animate={{ opacity: [0.6, 1, 0.7, 0.95, 0.6], scale: [1, 1.12, 0.96, 1.08, 1] }}
+                  animate={{ opacity: [0.85, 1, 0.9, 1, 0.85], scale: [1, 1.15, 1, 1.1, 1] }}
                   transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
                 />
 
