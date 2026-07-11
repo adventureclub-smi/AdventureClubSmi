@@ -1,0 +1,41 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  width: 900px;
+  height: 900px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(34, 197, 94, 0.1) 0%,
+    rgba(34, 197, 94, 0.03) 45%,
+    transparent 70%
+  );
+  filter: blur(10px);
+}
+
+.wake {
+  position: absolute;
+  bottom: -10%;
+  width: 1400px;
+  height: 1400px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(34, 197, 94, 0.28) 0%,
+    rgba(34, 197, 94, 0.12) 35%,
+    rgba(34, 197, 94, 0.03) 60%,
+    transparent 75%
+  );
+  filter: blur(6px);
+}

@@ -60,15 +60,17 @@ export default function StoryScenes({ scenes }: { scenes: StoryScene[] }) {
               scale: { duration: 7, repeat: Infinity, ease: "easeInOut" },
             }}
           >
-            <Image
-              src={scene.imageUrl}
-              alt={scene.caption || "Trek story scene"}
-              width={scene.imageWidth}
-              height={scene.imageHeight}
-              sizes="(max-width: 700px) 100vw, 900px"
-              className={styles.image}
-              priority
-            />
+            <div className={styles.imageBackdrop}>
+              <Image
+                src={scene.imageUrl}
+                alt={scene.caption || "Trek story scene"}
+                width={scene.imageWidth}
+                height={scene.imageHeight}
+                sizes="(max-width: 700px) 100vw, 900px"
+                className={styles.image}
+                priority
+              />
+            </div>
           </motion.div>
         </AnimatePresence>
 
