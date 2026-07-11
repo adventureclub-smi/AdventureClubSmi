@@ -1,136 +1,184 @@
 .stage {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: min(1100px, calc(100% - 48px));
+  width: min(1000px, calc(100% - 48px));
   margin: 0 auto 64px;
+  padding-top: 28px;
 }
 
-.navButton {
+.branch {
+  height: 6px;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4a3120, #7a5230, #4a3120);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  margin-bottom: 40px;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 32px 28px;
+}
+
+.hangItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -34px;
+}
+
+.clip {
+  width: 20px;
+  height: 13px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #8a5a34, #6b4527);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  margin-bottom: 2px;
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid rgba(245, 245, 245, 0.15);
-  background: rgba(245, 245, 245, 0.05);
-  color: var(--color-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: 0.2s;
 }
 
-.navButton:hover {
-  background: var(--color-accent);
-  color: var(--color-midnight);
-  border-color: var(--color-accent);
+.swayWrap {
+  transform-origin: top center;
 }
 
-.frameWrap {
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-
-.frame {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.imageWrap {
-  position: relative;
-  width: 100%;
-  max-width: 720px;
-}
-
-.image {
-  width: 100%;
-  height: auto;
+.polaroid {
   display: block;
-  filter: brightness(0.8);
-  opacity: 0.85;
+  width: 190px;
+  background: #f4f4f2;
+  padding: 10px 10px 20px;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 0.25s ease, filter 0.25s ease;
 }
 
-.textOverlay {
+.polaroid:hover {
+  transform: translateY(-8px);
+  filter: drop-shadow(0 0 18px rgba(34, 197, 94, 0.4));
+}
+
+.polaroidPlaceholder {
+  width: 190px;
+  height: 220px;
+}
+
+.photoArea {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #111;
+}
+
+.headline {
   position: absolute;
-  inset: 0;
-  padding: 32px 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 22px 10px 10px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.7) 100%);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   text-align: center;
 }
 
-.caption {
-  font-family: var(--font-display);
-  color: #fdfdfd;
-  font-size: clamp(28px, 4.2vw, 42px);
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.7);
-}
-
-.description {
-  color: rgba(245, 245, 245, 0.85);
-  font-size: clamp(13px, 1.6vw, 16px);
-  max-width: 560px;
-  margin: 0 auto;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
-}
-
-.dots {
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 5, 5, 0.82);
+  backdrop-filter: blur(8px);
 }
 
-.dot,
-.dotActive {
-  height: 8px;
+.polaroidLarge {
+  position: relative;
+  width: min(480px, 100%);
+  background: #f4f4f2;
+  padding: 18px 18px 28px;
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.closeButton {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   border: none;
-  background: rgba(245, 245, 245, 0.25);
-  cursor: pointer;
-  padding: 0;
-  transition: 0.2s;
-}
-
-.dot {
-  width: 8px;
-}
-
-.dot:hover {
-  background: rgba(245, 245, 245, 0.5);
-}
-
-.dotActive {
-  width: 22px;
-  border-radius: 4px;
   background: var(--color-accent);
+  color: var(--color-midnight);
+  cursor: pointer;
+}
+
+.photoAreaLarge {
+  position: relative;
+  width: 100%;
+  height: min(60vh, 480px);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #111;
+}
+
+.headlineLarge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 48px 24px 20px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.75) 100%);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3.2vw, 32px);
+  font-weight: 700;
+  text-align: center;
+}
+
+.descriptionLarge {
+  margin: 16px 6px 0;
+  color: #4a4a4a;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
 }
 
 @media (max-width: 700px) {
-  .stage {
-    gap: 10px;
+  .row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 4px 8px;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .navButton {
-    width: 36px;
-    height: 36px;
+  .polaroid,
+  .polaroidPlaceholder {
+    width: 150px;
+    flex-shrink: 0;
   }
 
-  .imageWrap {
-    max-width: 100%;
+  .polaroidPlaceholder {
+    height: 180px;
   }
 
-  .textOverlay {
-    padding: 18px 18px 20px;
+  .photoArea {
+    height: 150px;
   }
 }
