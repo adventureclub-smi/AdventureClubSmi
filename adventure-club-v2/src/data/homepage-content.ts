@@ -3,6 +3,7 @@ import { getSocialSettings } from "@/data/social-settings";
 import { getGalleryPhotos } from "@/data/gallery-photos";
 import { getStories } from "@/data/stories";
 import { getGoogleEarthSettings } from "@/data/google-earth-settings";
+import { getHomepageStats } from "@/data/homepage-stats";
 
 /**
  * Single centralized source for all non-database homepage content.
@@ -11,20 +12,22 @@ import { getGoogleEarthSettings } from "@/data/google-earth-settings";
  * or Prisma model) — every homepage component already consumes this
  * shape via props, so no component changes will be required.
  *
- * `socials`, `gallery`, `stories`, and `googleEarth` already come from the
- * database (admin-editable Instagram/LinkedIn links, homepage gallery
- * photos, homepage stories, and the 3D explorer's link/trail stats) —
- * everything else here is still static placeholder content.
+ * `socials`, `gallery`, `stories`, `googleEarth`, and `stats` already come
+ * from the database (admin-editable Instagram/LinkedIn links, homepage
+ * gallery photos, homepage stories, the 3D explorer's link/trail stats, and
+ * the "By The Numbers" stat cards) — everything else here is still static
+ * placeholder content.
  */
 export async function getHomepageContent(): Promise<HomepageContent> {
-  const [socials, gallery, stories, googleEarth] = await Promise.all([
+  const [socials, gallery, stories, googleEarth, stats] = await Promise.all([
     getSocialSettings(),
     getGalleryPhotos(),
     getStories(),
     getGoogleEarthSettings(),
+    getHomepageStats(),
   ]);
 
-  return { ...homepageContent, socials, gallery, stories, googleEarth };
+  return { ...homepageContent, socials, gallery, stories, googleEarth, stats };
 }
 
 const homepageContent: HomepageContent = {
@@ -42,12 +45,11 @@ const homepageContent: HomepageContent = {
     showCountdown: true,
   },
 
-  stats: [
-    { id: "students", value: 650, suffix: "+", label: "Students" },
-    { id: "treks", value: 40, suffix: "+", label: "Treks" },
-    { id: "kilometres", value: 1500, suffix: "+", label: "Kilometres" },
-    { id: "peaks", value: 20, suffix: "+", label: "Peaks" },
-  ],
+  // Always overridden by getHomepageStats() in getHomepageContent() above —
+  // kept here only to satisfy the HomepageContent type. Seeded with the
+  // original 4 stats plus one extra card directly in the database (see
+  // admin Settings > By The Numbers to edit/add/remove them).
+  stats: [],
 
   activities: [
     {

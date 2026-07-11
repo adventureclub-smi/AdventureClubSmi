@@ -1,0 +1,144 @@
+.container {
+  max-width: 900px;
+  color: var(--color-text);
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+.status {
+  color: var(--color-accent);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.statRow input,
+.addForm input {
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(245, 245, 245, 0.05);
+  color: var(--color-text);
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+.statRow input:focus,
+.addForm input:focus {
+  outline: none;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.addForm button {
+  margin-top: 0;
+  height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 0 18px;
+  transition: 0.2s;
+}
+
+.addForm button:hover {
+  background: var(--color-accent-hover);
+}
+
+.addForm button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.statsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.statRowActions {
+  display: flex;
+  gap: 8px;
+}
+
+.saveRowButton {
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.saveRowButton:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.saveRowButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deleteRowButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--color-danger);
+  transition: 0.2s;
+}
+
+.deleteRowButton:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.deleteRowButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.addForm {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .statRow,
+  .addForm {
+    grid-template-columns: 1fr;
+  }
+
+  .statRowActions {
+    justify-content: flex-end;
+  }
+}

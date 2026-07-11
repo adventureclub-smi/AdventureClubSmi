@@ -622,6 +622,22 @@ model TrailStat {
   createdAt DateTime @default(now())
 }
 
+// The "Adventure Begins By The Numbers" homepage stat cards — admin-editable
+// count-up tiles (e.g. "650+ Students").
+model HomepageStat {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  value Int
+
+  suffix String?
+
+  label String
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+}
+
 model HomepageGalleryPhoto {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
