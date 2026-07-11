@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { Story } from "@/types/homepage";
+import StoryScenes from "./StoryScenes";
 import styles from "./Stories.module.scss";
 
 const alignments = ["left", "center", "right"] as const;
@@ -34,6 +35,8 @@ export default function Stories({ stories }: { stories: Story[] }) {
           <span className={styles.eyebrow}>STORIES</span>
           <h2>Every Journey Leaves A Mark.</h2>
         </motion.div>
+
+        <StoryScenes />
 
         <div className={styles.list}>
           {visible.map((story, i) => {
