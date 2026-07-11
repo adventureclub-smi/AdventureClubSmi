@@ -49,6 +49,39 @@
   max-width: 100%;
 }
 
+.bubbleAnchor {
+  position: absolute;
+  top: 6%;
+  left: 6%;
+  z-index: 2;
+}
+
+.bubble {
+  position: relative;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--color-charcoal);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  max-width: 260px;
+  text-align: center;
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 28px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--color-charcoal);
+}
+
 .fireGlow {
   position: absolute;
   width: 10%;
@@ -117,5 +150,11 @@
   .navButton {
     width: 36px;
     height: 36px;
+  }
+
+  .bubble {
+    font-size: 13px;
+    padding: 10px 16px;
+    max-width: 190px;
   }
 }

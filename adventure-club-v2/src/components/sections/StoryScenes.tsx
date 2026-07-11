@@ -18,14 +18,15 @@ type Scene = {
   // scene should flicker and emit embers from — omit for scenes with no
   // such light source.
   firePosition?: { xPct: number; yPct: number };
+  // Only needed when the caption isn't already drawn into the artwork
+  // itself — rendered as a floating speech-bubble overlay instead.
+  caption?: string;
 };
 
 // ===== EDIT ME: drop new scene art in /public/images/stories and add it
-// here. Captions are drawn directly into the artwork itself, so there's no
-// separate text overlay to keep in sync. width/height should match the
-// source file's real pixel dimensions (Next.js needs them to avoid layout
-// shift) — these are transparent PNGs rendered at their natural size, not
-// cropped into a fixed frame.
+// here. width/height should match the source file's real pixel dimensions
+// (Next.js needs them to avoid layout shift) — these are transparent PNGs
+// rendered at their natural size, not cropped into a fixed frame.
 const SCENES: Scene[] = [
   {
     id: "campfire",
@@ -34,6 +35,14 @@ const SCENES: Scene[] = [
     width: 1536,
     height: 1024,
     firePosition: { xPct: 50, yPct: 58 },
+  },
+  {
+    id: "tree",
+    image: "/images/stories/tree.png",
+    alt: "One person hanging from a tree branch, still trying to climb the giant glowing tree",
+    width: 1536,
+    height: 1024,
+    caption: "We reached the top but still couldn't climb the tree",
   },
 ];
 
@@ -79,7 +88,7 @@ export default function StoryScenes() {
             className={styles.frame}
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: [1, 1.018, 1] }}
-            exit={{ opacity: 0, scale: 0.97 }}
+            exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.5 } }}
             transition={{
               opacity: { duration: 0.5 },
               scale: { duration: 7, repeat: Infinity, ease: "easeInOut" },
@@ -122,6 +131,18 @@ export default function StoryScenes() {
                   />
                 ))}
               </>
+            )}
+
+            {scene.caption && (
+              <div className={styles.bubbleAnchor}>
+                <motion.div
+                  className={styles.bubble}
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  {scene.caption}
+                </motion.div>
+              </div>
             )}
           </motion.div>
         </AnimatePresence>
