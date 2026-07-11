@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2, Mountain } from "lucide-react";
+import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2, Mountain, Film } from "lucide-react";
 import QuickActionCard from "@/components/dashboard/shared/QuickActionCard";
 
 export default function SettingsQuickLinks() {
@@ -58,6 +58,12 @@ export default function SettingsQuickLinks() {
         icon={BookOpen}
         label="Stories"
         href="/admin/settings/stories"
+      />
+
+      <QuickActionCard
+        icon={Film}
+        label="Story Scenes"
+        href="/admin/settings/story-scenes"
       />
 
       <QuickActionCard

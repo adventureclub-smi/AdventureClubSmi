@@ -650,6 +650,25 @@ model HomepageStory {
   createdAt DateTime @default(now())
 }
 
+// The animated image+caption carousel in the homepage Stories section
+// ("Every Journey Leaves A Mark.") — admin-uploaded PNGs, shown at their
+// natural size with the caption below, one at a time with auto-advance.
+model HomepageStoryScene {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  imageUrl String
+
+  imageWidth Int
+
+  imageHeight Int
+
+  caption String?
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+}
+
 model CertificateSettings {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 

@@ -3,10 +3,11 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import type { StoryScene } from "@/types/homepage";
 import StoryScenes from "./StoryScenes";
 import styles from "./Stories.module.scss";
 
-export default function Stories() {
+export default function Stories({ scenes }: { scenes: StoryScene[] }) {
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
 
@@ -28,7 +29,7 @@ export default function Stories() {
           <h2>Every Journey Leaves A Mark.</h2>
         </motion.div>
 
-        <StoryScenes />
+        <StoryScenes scenes={scenes} />
       </motion.div>
     </section>
   );

@@ -68,6 +68,15 @@ export interface Story {
   published: boolean;
 }
 
+export interface StoryScene {
+  id: string;
+  imageUrl: string;
+  imageWidth: number;
+  imageHeight: number;
+  caption: string;
+  order: number;
+}
+
 export interface FinalSectionContent {
   videoUrl?: string | null;
   imageUrl: string;

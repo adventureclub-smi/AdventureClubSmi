@@ -4,77 +4,35 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { StoryScene } from "@/types/homepage";
 import styles from "./StoryScenes.module.scss";
 
 const AUTO_ADVANCE_MS = 5500;
 
-type Scene = {
-  id: string;
-  image: string;
-  alt: string;
-  width: number;
-  height: number;
-  // Percent-of-image position of the light source (fire/lantern/etc.) this
-  // scene should flicker and emit embers from — omit for scenes with no
-  // such light source.
-  firePosition?: { xPct: number; yPct: number };
-  // Only needed when the caption isn't already drawn into the artwork
-  // itself — rendered as a floating speech-bubble overlay instead.
-  caption?: string;
-};
-
-// ===== EDIT ME: drop new scene art in /public/images/stories and add it
-// here. width/height should match the source file's real pixel dimensions
-// (Next.js needs them to avoid layout shift) — these are transparent PNGs
-// rendered at their natural size, not cropped into a fixed frame.
-const SCENES: Scene[] = [
-  {
-    id: "campfire",
-    image: "/images/stories/campfire.png",
-    alt: "The group sitting around a glowing campfire at night, one person holding a cup of cold noodles",
-    width: 1536,
-    height: 1024,
-    firePosition: { xPct: 50, yPct: 58 },
-  },
-  {
-    id: "tree",
-    image: "/images/stories/tree.png",
-    alt: "One person hanging from a tree branch, still trying to climb the giant glowing tree",
-    width: 1536,
-    height: 1024,
-    caption: "We reached the top but still couldn't climb the tree",
-  },
-  {
-    id: "slide",
-    image: "/images/stories/slide.png",
-    alt: "Someone laughing while sliding down a mossy rock slope",
-    width: 1122,
-    height: 1402,
-    caption: "WEEE",
-  },
-];
-
-const EMBER_OFFSETS = [-18, -6, 4, 14, 24];
-
-export default function StoryScenes() {
+export default function StoryScenes({ scenes }: { scenes: StoryScene[] }) {
   const [index, setIndex] = useState(0);
-  const hasMultiple = SCENES.length > 1;
+  const hasMultiple = scenes.length > 1;
 
-  const goTo = useCallback((i: number) => {
-    setIndex(((i % SCENES.length) + SCENES.length) % SCENES.length);
-  }, []);
+  const goTo = useCallback(
+    (i: number) => {
+      setIndex(((i % scenes.length) + scenes.length) % scenes.length);
+    },
+    [scenes.length]
+  );
 
   useEffect(() => {
     if (!hasMultiple) return;
 
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % SCENES.length);
+      setIndex((prev) => (prev + 1) % scenes.length);
     }, AUTO_ADVANCE_MS);
 
     return () => clearInterval(timer);
-  }, [index, hasMultiple]);
+  }, [index, hasMultiple, scenes.length]);
 
-  const scene = SCENES[index];
+  if (scenes.length === 0) return null;
+
+  const scene = scenes[index];
 
   return (
     <div className={styles.stage}>
@@ -103,61 +61,22 @@ export default function StoryScenes() {
             }}
           >
             <Image
-              src={scene.image}
-              alt={scene.alt}
-              width={scene.width}
-              height={scene.height}
+              src={scene.imageUrl}
+              alt={scene.caption || "Trek story scene"}
+              width={scene.imageWidth}
+              height={scene.imageHeight}
               sizes="(max-width: 700px) 100vw, 900px"
               className={styles.image}
               priority
             />
-
-            {scene.firePosition && (
-              <>
-                <motion.div
-                  className={styles.fireGlow}
-                  style={{ left: `${scene.firePosition.xPct}%`, top: `${scene.firePosition.yPct}%` }}
-                  animate={{ opacity: [0.85, 1, 0.9, 1, 0.85], scale: [1, 1.15, 1, 1.1, 1] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                />
-
-                {EMBER_OFFSETS.map((offsetX, i) => (
-                  <motion.div
-                    key={i}
-                    className={styles.ember}
-                    style={{
-                      left: `calc(${scene.firePosition!.xPct}% + ${offsetX}px)`,
-                      top: `${scene.firePosition!.yPct}%`,
-                    }}
-                    animate={{ y: [0, -90 - i * 8], opacity: [0, 0.9, 0], x: [0, i % 2 === 0 ? 14 : -14] }}
-                    transition={{
-                      duration: 2.6,
-                      repeat: Infinity,
-                      delay: i * 0.5,
-                      ease: "easeOut",
-                    }}
-                  />
-                ))}
-              </>
-            )}
-
-            {scene.caption && (
-              <div className={styles.bubbleAnchor}>
-                <motion.div
-                  className={styles.bubble}
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  {scene.caption}
-                </motion.div>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
 
+        {scene.caption && <p className={styles.caption}>{scene.caption}</p>}
+
         {hasMultiple && (
           <div className={styles.dots}>
-            {SCENES.map((s, i) => (
+            {scenes.map((s, i) => (
               <button
                 key={s.id}
                 type="button"

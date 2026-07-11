@@ -17,6 +17,7 @@ import { getHomepageContent } from "@/data/homepage-content";
 import { getUpcomingTreks, getTrekMapPins, getUpcomingTrekRoutes } from "@/data/treks";
 import { getSongs } from "@/data/songs";
 import { getInstagramPosts } from "@/data/instagram";
+import { getStoryScenes } from "@/data/story-scenes";
 
 // Trek listings and the music playlist can change any time from the admin
 // panel (a trek being marked completed, a song added/removed), so this can't
@@ -33,14 +34,16 @@ import { getInstagramPosts } from "@/data/instagram";
 export const revalidate = 30;
 
 export default async function Home() {
-  const [content, treks, songs, instagramPosts, mapPins, trekRoutes] = await Promise.all([
-    getHomepageContent(),
-    getUpcomingTreks(),
-    getSongs(),
-    getInstagramPosts(),
-    getTrekMapPins(),
-    getUpcomingTrekRoutes(),
-  ]);
+  const [content, treks, songs, instagramPosts, mapPins, trekRoutes, storyScenes] =
+    await Promise.all([
+      getHomepageContent(),
+      getUpcomingTreks(),
+      getSongs(),
+      getInstagramPosts(),
+      getTrekMapPins(),
+      getUpcomingTrekRoutes(),
+      getStoryScenes(),
+    ]);
 
   return (
     <SmoothScroll>
@@ -65,7 +68,7 @@ export default async function Home() {
         trailStats={content.googleEarth.trailStats}
       />
       <Gallery items={content.gallery} />
-      <Stories />
+      <Stories scenes={storyScenes} />
       <FinalCTA content={content.finalSection} />
       <InstagramFeed posts={instagramPosts} />
       <Footer socials={content.socials} />
