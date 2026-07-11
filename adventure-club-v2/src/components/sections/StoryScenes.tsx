@@ -33,7 +33,7 @@ const SCENES: Scene[] = [
     alt: "The group sitting around a glowing campfire at night, one person holding a cup of cold noodles",
     width: 1536,
     height: 1024,
-    firePosition: { xPct: 50, yPct: 62 },
+    firePosition: { xPct: 50, yPct: 58 },
   },
 ];
 
