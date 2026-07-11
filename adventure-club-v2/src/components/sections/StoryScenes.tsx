@@ -60,21 +60,32 @@ export default function StoryScenes({ scenes }: { scenes: StoryScene[] }) {
               scale: { duration: 7, repeat: Infinity, ease: "easeInOut" },
             }}
           >
-            <div className={styles.imageBackdrop}>
+            <div className={styles.imageWrap}>
               <Image
                 src={scene.imageUrl}
                 alt={scene.caption || "Trek story scene"}
                 width={scene.imageWidth}
                 height={scene.imageHeight}
-                sizes="(max-width: 700px) 100vw, 900px"
+                sizes="(max-width: 700px) 100vw, 1000px"
                 className={styles.image}
                 priority
               />
+
+              {(scene.caption || scene.description) && (
+                <div className={styles.scrim} aria-hidden="true" />
+              )}
+
+              {(scene.caption || scene.description) && (
+                <div className={styles.textOverlay}>
+                  {scene.caption && <p className={styles.caption}>{scene.caption}</p>}
+                  {scene.description && (
+                    <p className={styles.description}>{scene.description}</p>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
-
-        {scene.caption && <p className={styles.caption}>{scene.caption}</p>}
 
         {hasMultiple && (
           <div className={styles.dots}>

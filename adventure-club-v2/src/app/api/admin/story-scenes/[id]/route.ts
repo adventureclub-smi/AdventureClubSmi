@@ -14,11 +14,14 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const { caption } = await req.json();
+    const { caption, description } = await req.json();
 
     const scene = await prisma.homepageStoryScene.update({
       where: { id },
-      data: { caption: caption?.trim() || null },
+      data: {
+        caption: caption?.trim() || null,
+        description: description?.trim() || null,
+      },
     });
 
     return NextResponse.json(scene);

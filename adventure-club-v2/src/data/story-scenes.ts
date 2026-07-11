@@ -12,6 +12,7 @@ export async function getStoryScenes(): Promise<StoryScene[]> {
     imageWidth: scene.imageWidth,
     imageHeight: scene.imageHeight,
     caption: scene.caption || "",
+    description: scene.description || "",
     order: scene.order,
   }));
 }

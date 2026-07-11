@@ -12,6 +12,7 @@ type StoryScene = {
   imageWidth: number;
   imageHeight: number;
   caption: string | null;
+  description: string | null;
 };
 
 export default function StoryScenesManager({
@@ -23,8 +24,12 @@ export default function StoryScenesManager({
   const [captionDrafts, setCaptionDrafts] = useState<Record<string, string>>(
     Object.fromEntries(initialScenes.map((s) => [s.id, s.caption || ""]))
   );
+  const [descriptionDrafts, setDescriptionDrafts] = useState<Record<string, string>>(
+    Object.fromEntries(initialScenes.map((s) => [s.id, s.description || ""]))
+  );
 
   const [newCaption, setNewCaption] = useState("");
+  const [newDescription, setNewDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -62,6 +67,7 @@ export default function StoryScenesManager({
     try {
       const form = new FormData();
       form.append("caption", newCaption.trim());
+      form.append("description", newDescription.trim());
       form.append("imageFile", imageFile);
 
       const res = await fetch("/api/admin/story-scenes", {
@@ -78,7 +84,9 @@ export default function StoryScenesManager({
 
       setScenes((prev) => [...prev, data]);
       setCaptionDrafts((prev) => ({ ...prev, [data.id]: data.caption || "" }));
+      setDescriptionDrafts((prev) => ({ ...prev, [data.id]: data.description || "" }));
       setNewCaption("");
+      setNewDescription("");
       setImageFile(null);
       setImagePreview("");
       if (imageInputRef.current) imageInputRef.current.value = "";
@@ -88,7 +96,7 @@ export default function StoryScenesManager({
     }
   }
 
-  async function handleSaveCaption(id: string) {
+  async function handleSave(id: string) {
     setSavingId(id);
     setStatus("");
 
@@ -96,18 +104,21 @@ export default function StoryScenesManager({
       const res = await fetch(`/api/admin/story-scenes/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caption: captionDrafts[id] }),
+        body: JSON.stringify({
+          caption: captionDrafts[id],
+          description: descriptionDrafts[id],
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setStatus(data.message || "Failed to save caption.");
+        setStatus(data.message || "Failed to save scene.");
         return;
       }
 
       setScenes((prev) => prev.map((s) => (s.id === id ? data : s)));
-      setStatus("Caption saved.");
+      setStatus("Scene saved.");
     } finally {
       setSavingId("");
     }
@@ -124,6 +135,11 @@ export default function StoryScenesManager({
       if (res.ok) {
         setScenes((prev) => prev.filter((s) => s.id !== id));
         setCaptionDrafts((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setDescriptionDrafts((prev) => {
           const next = { ...prev };
           delete next[id];
           return next;
@@ -148,8 +164,8 @@ export default function StoryScenesManager({
       <p className={styles.subtitle}>
         Scenes added here appear one at a time (auto-advancing, with arrows to switch
         manually) in the &quot;Every Journey Leaves A Mark.&quot; section on the public
-        homepage. Each image is shown at its natural size with the caption underneath —
-        PNGs with a transparent background work best.
+        homepage. The image fills the frame with the tagline and description
+        overlaid on top, so a photo with a clear focal point works best.
       </p>
 
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -164,11 +180,20 @@ export default function StoryScenesManager({
         </div>
 
         <div>
-          <label>Caption (optional)</label>
+          <label>Tagline (optional)</label>
           <input
             value={newCaption}
             onChange={(e) => setNewCaption(e.target.value)}
             placeholder="e.g. Are we there yet?"
+          />
+        </div>
+
+        <div>
+          <label>Description line (optional)</label>
+          <input
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            placeholder="e.g. Somewhere past the third false summit."
           />
         </div>
 
@@ -198,18 +223,29 @@ export default function StoryScenesManager({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={scene.imageUrl} alt="" className={styles.thumb} />
 
-                <input
-                  className={styles.captionInput}
-                  value={captionDrafts[scene.id] ?? ""}
-                  onChange={(e) =>
-                    setCaptionDrafts((prev) => ({ ...prev, [scene.id]: e.target.value }))
-                  }
-                  placeholder="No caption"
-                />
+                <div className={styles.textInputs}>
+                  <input
+                    className={styles.captionInput}
+                    value={captionDrafts[scene.id] ?? ""}
+                    onChange={(e) =>
+                      setCaptionDrafts((prev) => ({ ...prev, [scene.id]: e.target.value }))
+                    }
+                    placeholder="No tagline"
+                  />
+
+                  <input
+                    className={styles.captionInput}
+                    value={descriptionDrafts[scene.id] ?? ""}
+                    onChange={(e) =>
+                      setDescriptionDrafts((prev) => ({ ...prev, [scene.id]: e.target.value }))
+                    }
+                    placeholder="No description"
+                  />
+                </div>
 
                 <button
                   className={styles.saveButton}
-                  onClick={() => handleSaveCaption(scene.id)}
+                  onClick={() => handleSave(scene.id)}
                   disabled={savingId === scene.id}
                 >
                   {savingId === scene.id ? "Saving..." : "Save"}

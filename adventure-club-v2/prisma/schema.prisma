@@ -651,8 +651,9 @@ model HomepageStory {
 }
 
 // The animated image+caption carousel in the homepage Stories section
-// ("Every Journey Leaves A Mark.") — admin-uploaded PNGs, shown at their
-// natural size with the caption below, one at a time with auto-advance.
+// ("Every Journey Leaves A Mark.") — admin-uploaded photos, shown big with
+// the tagline and a description line overlaid on the image itself, one at
+// a time with auto-advance.
 model HomepageStoryScene {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -663,6 +664,8 @@ model HomepageStoryScene {
   imageHeight Int
 
   caption String?
+
+  description String?
 
   order Int @default(0)
 

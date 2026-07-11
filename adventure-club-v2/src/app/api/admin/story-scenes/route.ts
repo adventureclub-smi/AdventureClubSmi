@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     const form = await req.formData();
 
     const caption = ((form.get("caption") as string) || "").trim();
+    const description = ((form.get("description") as string) || "").trim();
     const imageFile = form.get("imageFile");
 
     if (!(imageFile instanceof File)) {
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
         imageWidth: uploaded.width,
         imageHeight: uploaded.height,
         caption: caption || null,
+        description: description || null,
         order: count,
       },
     });

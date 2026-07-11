@@ -74,6 +74,7 @@ export interface StoryScene {
   imageWidth: number;
   imageHeight: number;
   caption: string;
+  description: string;
   order: number;
 }
 
