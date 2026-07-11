@@ -19,6 +19,7 @@ import {
   Settings,
   Ticket,
   Vote,
+  GraduationCap,
   LogOut,
   Menu,
   X,
@@ -30,6 +31,7 @@ import styles from "./AdminSidebar.module.scss";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Student Dashboard", icon: GraduationCap },
   { href: "/admin/treks", label: "Treks", icon: Mountain },
   { href: "/admin/members", label: "Students", icon: Users },
   { href: "/admin/registrations", label: "Registrations", icon: ClipboardList },
