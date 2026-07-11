@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { StoryScene } from "@/types/homepage";
 import styles from "./StoryScenes.module.scss";
 
-const AUTO_ADVANCE_MS = 5500;
+const AUTO_ADVANCE_MS = 7000;
 
 export default function StoryScenes({ scenes }: { scenes: StoryScene[] }) {
   const [index, setIndex] = useState(0);
@@ -54,9 +54,9 @@ export default function StoryScenes({ scenes }: { scenes: StoryScene[] }) {
             className={styles.frame}
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: [1, 1.018, 1] }}
-            exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.5 } }}
+            exit={{ opacity: 0, scale: 0.97, transition: { duration: 2.5, ease: "easeInOut" } }}
             transition={{
-              opacity: { duration: 0.5 },
+              opacity: { duration: 2.5, ease: "easeInOut" },
               scale: { duration: 7, repeat: Infinity, ease: "easeInOut" },
             }}
           >
