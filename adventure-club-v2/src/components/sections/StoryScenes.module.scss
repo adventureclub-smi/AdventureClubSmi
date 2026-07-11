@@ -47,9 +47,6 @@
   position: relative;
   width: 100%;
   max-width: 720px;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
 }
 
 .image {
@@ -57,18 +54,6 @@
   height: auto;
   display: block;
   filter: brightness(0.8);
-}
-
-.scrim {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0) 35%,
-    rgba(0, 0, 0, 0.55) 75%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
 }
 
 .textOverlay {
@@ -141,7 +126,6 @@
   }
 
   .imageWrap {
-    border-radius: 18px;
     max-width: 100%;
   }
 

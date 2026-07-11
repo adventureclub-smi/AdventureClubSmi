@@ -72,10 +72,6 @@ export default function StoryScenes({ scenes }: { scenes: StoryScene[] }) {
               />
 
               {(scene.caption || scene.description) && (
-                <div className={styles.scrim} aria-hidden="true" />
-              )}
-
-              {(scene.caption || scene.description) && (
                 <div className={styles.textOverlay}>
                   {scene.caption && <p className={styles.caption}>{scene.caption}</p>}
                   {scene.description && (
