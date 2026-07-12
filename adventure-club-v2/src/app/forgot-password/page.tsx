@@ -1,17 +1,13 @@
+import AuthLayout from "@/components/auth/AuthLayout";
+import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
+
 export default function ForgotPasswordPage() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#050505",
-        color: "white",
-        fontSize: "2rem",
-      }}
+    <AuthLayout
+      title="Forgot Password"
+      subtitle="No worries, we'll help you get back in."
     >
-      Forgot Password Page
-    </main>
+      <ForgotPasswordForm />
+    </AuthLayout>
   );
 }
