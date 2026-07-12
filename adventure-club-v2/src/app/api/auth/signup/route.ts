@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       phoneNumber,
       institution,
       department,
+      course,
       year,
       password,
     } = body;
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
         phoneNumber,
         institution,
         department,
+        course: course || null,
         year,
         password: hashedPassword,
       },

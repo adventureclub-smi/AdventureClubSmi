@@ -54,6 +54,8 @@ model User {
 
   department String
 
+  course String?
+
   year String
 
   password String
