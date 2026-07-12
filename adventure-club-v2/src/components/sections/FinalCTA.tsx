@@ -10,6 +10,7 @@ import {
   useMotionTemplate,
   useReducedMotion,
 } from "framer-motion";
+import { useLazyVideo } from "@/hooks/useLazyVideo";
 import type { FinalSectionContent } from "@/types/homepage";
 import styles from "./FinalCTA.module.scss";
 
@@ -19,6 +20,8 @@ export default function FinalCTA({
   content: FinalSectionContent;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useLazyVideo(videoRef);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end center"],
@@ -36,12 +39,13 @@ export default function FinalCTA({
       <motion.div className={styles.bg} style={{ filter }}>
         {content.videoUrl ? (
           <video
+            ref={videoRef}
             className={styles.image}
             src={content.videoUrl}
-            autoPlay
             muted
             loop
             playsInline
+            preload="none"
           />
         ) : (
           <Image

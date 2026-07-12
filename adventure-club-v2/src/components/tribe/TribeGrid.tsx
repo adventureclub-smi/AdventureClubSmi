@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Compass, Music } from "lucide-react";
 
+import { useLazyVideo } from "@/hooks/useLazyVideo";
 import type { TribeMemberSummary } from "@/data/tribe";
 import styles from "./TribeGrid.module.scss";
 
@@ -87,6 +88,8 @@ function TribeCard({
 export default function TribeGrid({ members }: { members: TribeMemberSummary[] }) {
   const [flippedId, setFlippedId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
+  useLazyVideo(bgVideoRef);
 
   const flippedMember = members.find((member) => member.id === flippedId) ?? null;
 
@@ -127,7 +130,7 @@ export default function TribeGrid({ members }: { members: TribeMemberSummary[] }
   return (
     <section className={styles.section}>
       <div className={styles.bgVideo}>
-        <video autoPlay muted loop playsInline className={styles.bgVideoEl}>
+        <video ref={bgVideoRef} muted loop playsInline preload="none" className={styles.bgVideoEl}>
           <source src="/videos/drone-compressed.mp4" type="video/mp4" />
         </video>
         <div className={styles.bgOverlay} />

@@ -14,6 +14,7 @@ import { ChevronDown } from "lucide-react";
 import HeroOverlay from "./HeroOverlay";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
+import { useLazyVideo } from "@/hooks/useLazyVideo";
 import type { HeroContent } from "@/types/homepage";
 import styles from "./Hero.module.scss";
 
@@ -94,6 +95,8 @@ export default function Hero({
   nextTrekRegistrationOpensAt?: string | null;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useLazyVideo(videoRef);
   const reducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   const [pointerFine, setPointerFine] = useState(false);
@@ -130,12 +133,12 @@ export default function Hero({
   return (
     <section className={styles.hero} id="home" ref={sectionRef}>
       <video
+        ref={videoRef}
         className={styles.video}
-        autoPlay
         muted
         loop
         playsInline
-        preload="auto"
+        preload="none"
       >
         <source src={content.videoUrl} type="video/mp4" />
       </video>

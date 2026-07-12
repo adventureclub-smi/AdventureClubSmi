@@ -1,10 +1,11 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useLazyVideo } from "@/hooks/useLazyVideo";
 import styles from "./AuthLayout.module.scss";
 
 interface Props {
@@ -18,15 +19,19 @@ export default function AuthLayout({
   title,
   subtitle,
 }: Props) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useLazyVideo(videoRef);
+
   return (
     <section className={styles.wrapper}>
       {/* Background Video */}
 
       <video
-        autoPlay
+        ref={videoRef}
         muted
         loop
         playsInline
+        preload="none"
         className={styles.video}
       >
         <source src="/videos/hero-compressed.mp4" type="video/mp4" />
