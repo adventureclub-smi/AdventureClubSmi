@@ -81,16 +81,17 @@ export default function TrekDetails({
 
         <div className={styles.overlay} />
 
-        <motion.div
-          className={styles.content}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <p>{trek.destination}</p>
-          <h1>{trek.title}</h1>
-          <span>{new Date(trek.date).toLocaleDateString("en-IN")}</span>
-        </motion.div>
+        <div className={styles.content}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <p>{trek.destination}</p>
+            <h1>{trek.title}</h1>
+            <span>{new Date(trek.date).toLocaleDateString("en-IN")}</span>
+          </motion.div>
+        </div>
       </section>
 
       <section className={styles.main}>
