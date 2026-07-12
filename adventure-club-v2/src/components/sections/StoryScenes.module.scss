@@ -4,21 +4,31 @@
   padding-top: 28px;
 }
 
-.branch {
-  height: 6px;
-  width: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #4a3120, #7a5230, #4a3120);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
-  margin-bottom: 40px;
+.row {
+  // On mobile this becomes the horizontal-scroll viewport; the branch lives
+  // inside .track (not here) so it scrolls together with the cards instead
+  // of staying fixed while they scroll out from under it.
 }
 
-.row {
+.track {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 32px 28px;
+  padding-top: 40px;
+}
+
+.branch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4a3120, #7a5230, #4a3120);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
 }
 
 .hangItem {
@@ -161,11 +171,18 @@
 
 @media (max-width: 700px) {
   .row {
-    flex-wrap: nowrap;
     overflow-x: auto;
-    justify-content: flex-start;
     padding: 0 4px 8px;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .track {
+    // Sized to its own content (rather than stretching to fill .row's
+    // visible width) so .branch's right:0 spans the *true* scrollable
+    // width, not just what's visible before scrolling.
+    width: max-content;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
   }
 
   .polaroid,
