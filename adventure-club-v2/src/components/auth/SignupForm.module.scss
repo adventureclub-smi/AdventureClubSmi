@@ -71,7 +71,12 @@
 }
 
 .inputGroup select option {
-  color: black;
+  background-color: var(--color-charcoal);
+  color: var(--color-text);
+}
+
+.inputGroup select option:disabled {
+  color: rgba(255, 255, 255, 0.35);
 }
 
 /* ---------- Eye Button ---------- */

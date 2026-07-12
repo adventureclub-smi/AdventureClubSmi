@@ -263,13 +263,14 @@ export default function SignupForm() {
         </div>
       )}
 
-      {/* Program / Course */}
+      {/* Program / Course — SMI gets the full structured picker; any other
+          department just needs a plain course field, no program step. */}
 
-      <div className={styles.row}>
-        <div className={styles.inputGroup}>
-          <GraduationCap size={20} className={styles.icon} />
+      {isSMI && (
+        <div className={styles.row}>
+          <div className={styles.inputGroup}>
+            <GraduationCap size={20} className={styles.icon} />
 
-          {isSMI ? (
             <select value={program} onChange={handleProgramSelectChange} required>
               <option value="" disabled>
                 Program
@@ -288,43 +289,35 @@ export default function SignupForm() {
               <option disabled>──────────</option>
               <option value="PhD">PhD</option>
             </select>
-          ) : (
-            <input
-              type="text"
-              placeholder="Program"
-              value={program}
-              onChange={(e) => setProgram(e.target.value)}
-              required
-            />
-          )}
-        </div>
+          </div>
 
-        <div className={styles.inputGroup}>
-          <BookOpen size={20} className={styles.icon} />
+          <div className={styles.inputGroup}>
+            <BookOpen size={20} className={styles.icon} />
 
-          {hasStructuredCourses ? (
-            <select value={course} onChange={handleCourseSelectChange} required>
-              <option value="" disabled>
-                Course
-              </option>
-              {(program === BDES ? BDES_COURSES : BFA_COURSES).map((c) => (
-                <option key={c} value={c}>
-                  {c}
+            {hasStructuredCourses ? (
+              <select value={course} onChange={handleCourseSelectChange} required>
+                <option value="" disabled>
+                  Course
                 </option>
-              ))}
-              <option value="Other">Other</option>
-            </select>
-          ) : (
-            <input
-              type="text"
-              placeholder="Course"
-              value={course}
-              onChange={(e) => setCourse(e.target.value)}
-              required
-            />
-          )}
+                {(program === BDES ? BDES_COURSES : BFA_COURSES).map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+                <option value="Other">Other</option>
+              </select>
+            ) : (
+              <input
+                type="text"
+                placeholder="Course"
+                value={course}
+                onChange={(e) => setCourse(e.target.value)}
+                required
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {hasStructuredCourses && course === "Other" && (
         <div className={styles.rowFull}>
@@ -336,6 +329,22 @@ export default function SignupForm() {
               placeholder="Enter your course"
               value={courseOther}
               onChange={(e) => setCourseOther(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+      )}
+
+      {!isSMI && institution !== "" && (
+        <div className={styles.rowFull}>
+          <div className={styles.inputGroup}>
+            <BookOpen size={20} className={styles.icon} />
+
+            <input
+              type="text"
+              placeholder="Course"
+              value={course}
+              onChange={(e) => setCourse(e.target.value)}
               required
             />
           </div>
