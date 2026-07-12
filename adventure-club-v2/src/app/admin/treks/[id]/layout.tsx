@@ -43,6 +43,7 @@ export default async function TrekLayout({
   const tabs = [
     { title: "Overview", href: `/admin/treks/${id}` },
     { title: "Registrations", href: `/admin/treks/${id}/registrations` },
+    { title: "Notify List", href: `/admin/treks/${id}/notify-list` },
     { title: "Payments", href: `/admin/treks/${id}/payments` },
     { title: "Attendance", href: `/admin/treks/${id}/attendance` },
     { title: "Trip Centre", href: `/admin/treks/${id}/trip-centre` },

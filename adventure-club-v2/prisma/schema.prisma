@@ -219,6 +219,11 @@ model Trek {
 
   registrationClosedManually Boolean @default(false)
 
+  // Set once the "registrations are open" email has been sent to everyone
+  // who clicked Notify Me for this trek — guards against re-sending on
+  // every subsequent page view that piggybacks the open-detection check.
+  registrationOpenNotifiedAt DateTime?
+
   createdAt DateTime @default(now())
 
   registrations Registration[]
@@ -779,4 +784,20 @@ model PasswordResetToken {
   usedAt DateTime?
 
   createdAt DateTime @default(now())
+}
+
+// Tracks who clicked "Notify Me" on a trek whose registration hasn't opened
+// yet. Read/written by plain userId/trekId lookups (same shape as
+// PasswordResetToken above) rather than Prisma relations, so this doesn't
+// require touching the User or Trek models' own field lists.
+model TrekNotifyRequest {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+
+  userId String @db.ObjectId
+
+  createdAt DateTime @default(now())
+
+  @@unique([trekId, userId])
 }

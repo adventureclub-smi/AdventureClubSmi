@@ -1,6 +1,6 @@
 import crypto from "crypto";
-import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
+import { sendEmail, emailButton, emailShell, getSiteUrl } from "@/lib/email";
 
 const RESET_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -45,36 +45,17 @@ export async function consumePasswordResetToken(rawToken: string) {
   return record.userId;
 }
 
-function getSiteUrl() {
-  return process.env.SITE_URL || "http://localhost:3000";
-}
-
 export async function sendPasswordResetEmail(email: string, rawToken: string) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
   const resetUrl = `${getSiteUrl()}/reset-password?token=${rawToken}`;
 
-  const result = await resend.emails.send({
-    from: "Adventure Club SMI <noreply@adventureclubsmi.com>",
+  await sendEmail({
     to: email,
     subject: "Reset your Adventure Club password",
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2 style="color: #16a34a;">Reset your password</h2>
-        <p>We received a request to reset your Adventure Club SMI password. This link expires in 15 minutes.</p>
-        <p>
-          <a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#22c55e;color:#0d0d0d;font-weight:700;text-decoration:none;border-radius:10px;">
-            Reset Password
-          </a>
-        </p>
-        <p style="color:#666;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
-      </div>
-    `,
+    html: emailShell(`
+      <h2 style="color: #16a34a;">Reset your password</h2>
+      <p>We received a request to reset your Adventure Club SMI password. This link expires in 15 minutes.</p>
+      ${emailButton(resetUrl, "Reset Password")}
+      <p style="color:#666;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
+    `),
   });
-
-  // The SDK returns { data, error } instead of throwing on API-level
-  // rejections (bad sender domain, sandbox recipient restrictions, etc.) —
-  // without this check a failed send looks identical to a successful one.
-  if (result.error) {
-    throw new Error(`Resend API error: ${result.error.message}`);
-  }
 }

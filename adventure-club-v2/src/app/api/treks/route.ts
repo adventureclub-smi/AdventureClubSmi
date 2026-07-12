@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { notifyTrekCreated } from "@/lib/notification-emails";
 
 export async function POST(req: Request) {
   const admin = await requireAdmin();
@@ -111,6 +112,12 @@ export async function POST(req: Request) {
 
         registrationClosedManually: false,
 
+        // Written explicitly (not left implicit/absent) so the "registration
+        // just opened" piggyback check's Mongo equality filter can match this
+        // trek later — an omitted optional field isn't the same as one
+        // explicitly set to null for Prisma's Mongo query translation.
+        registrationOpenNotifiedAt: null,
+
         // -------------------------
         // Portfolio Automation
         // -------------------------
@@ -132,6 +139,12 @@ export async function POST(req: Request) {
         longitude: longitude !== undefined && longitude !== "" ? Number(longitude) : null,
       },
     });
+
+    try {
+      await notifyTrekCreated(trek);
+    } catch (emailError) {
+      console.error("Failed to send trek-created emails:", emailError);
+    }
 
     return NextResponse.json(
       {

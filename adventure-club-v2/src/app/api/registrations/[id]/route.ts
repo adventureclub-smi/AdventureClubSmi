@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RegistrationStatus } from "@prisma/client";
 import { requireAdmin } from "@/lib/require-admin";
+import { notifyRegistrationStatus } from "@/lib/notification-emails";
 
 export async function PUT(
   req: NextRequest,
@@ -27,6 +28,11 @@ export async function PUT(
       remarks,
       paymentDays,
     } = body;
+
+    const existing = await prisma.registration.findUnique({
+      where: { id },
+      select: { status: true },
+    });
 
     const statusMap: Record<string, RegistrationStatus> = {
       Waiting: RegistrationStatus.WAITING,
@@ -77,6 +83,14 @@ export async function PUT(
         trek: true,
       },
     });
+
+    if (existing && existing.status !== registration.status) {
+      try {
+        await notifyRegistrationStatus(registration);
+      } catch (emailError) {
+        console.error("Failed to send registration status email:", emailError);
+      }
+    }
 
     return NextResponse.json({
       message: "Registration updated successfully.",

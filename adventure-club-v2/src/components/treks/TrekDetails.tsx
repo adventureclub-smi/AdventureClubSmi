@@ -10,6 +10,7 @@ import { CalendarDays, Mountain, MapPin, Clock, Wallet } from "lucide-react";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./TrekDetails.module.scss";
 import PaymentCountdown from "./PaymentCountdown";
+import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
 
 type Trek = {
   id: string;
@@ -24,6 +25,7 @@ type Trek = {
   difficulty: string;
   duration: string;
   registrationClosesAt?: string | Date | null;
+  registrationOpensAt?: string | Date | null;
 };
 
 type Registration = {
@@ -36,14 +38,38 @@ export default function TrekDetails({
   trek,
   user,
   registration,
+  notifyRequested,
 }: {
   trek: Trek;
   user: { id: string } | null;
   registration: Registration | null;
+  notifyRequested: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [notified, setNotified] = useState(notifyRequested);
+  const [notifyLoading, setNotifyLoading] = useState(false);
+
+  const { phase } = useRegistrationPhase(trek.date, trek.registrationOpensAt);
+
+  async function handleNotifyMe() {
+    setNotifyLoading(true);
+    setStatus(null);
+
+    try {
+      const res = await fetch(`/api/treks/${trek.id}/notify`, { method: "POST" });
+      const data = await res.json();
+
+      setStatus(data.message);
+      if (res.ok) setNotified(true);
+    } catch (error) {
+      console.error(error);
+      setStatus("Something went wrong.");
+    }
+
+    setNotifyLoading(false);
+  }
 
   async function handleRegister() {
     setLoading(true);
@@ -162,7 +188,49 @@ export default function TrekDetails({
 
           {status && <p className={styles.status}>{status}</p>}
 
-          {!user && (
+          {!registration && phase === "opensIn" && (
+            <>
+              {trek.registrationOpensAt && (
+                <PaymentCountdown
+                  deadline={trek.registrationOpensAt}
+                  heading="Registrations Open Soon"
+                  subheading="Registrations open in"
+                  expiredHeading="Registrations Opening"
+                  expiredMessage="Registrations are about to open — check back shortly."
+                />
+              )}
+
+              {!user ? (
+                <>
+                  <Link href="/login" className={styles.registerButton}>
+                    Login to Get Notified
+                  </Link>
+                  <p className={styles.note}>
+                    Login now so you&apos;re ready the moment registrations open.
+                  </p>
+                </>
+              ) : notified ? (
+                <div className={styles.badgeRow}>
+                  <StatusBadge text="We'll Email You" tone="waiting" />
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={handleNotifyMe}
+                    disabled={notifyLoading}
+                    className={styles.registerButton}
+                  >
+                    {notifyLoading ? "Saving..." : "Notify Me When Registrations Open"}
+                  </button>
+                  <p className={styles.note}>
+                    We&apos;ll email you as soon as registrations open.
+                  </p>
+                </>
+              )}
+            </>
+          )}
+
+          {!user && phase !== "opensIn" && (
             <>
               {trek.registrationClosesAt && (
                 <PaymentCountdown
@@ -181,7 +249,7 @@ export default function TrekDetails({
             </>
           )}
 
-          {user && !registration && (
+          {user && !registration && phase !== "opensIn" && (
             <>
               {trek.registrationClosesAt && (
                 <PaymentCountdown

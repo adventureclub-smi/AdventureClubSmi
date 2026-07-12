@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { notifyReimbursementDone } from "@/lib/notification-emails";
 
 export async function GET(
   req: NextRequest,
@@ -81,6 +82,16 @@ export async function PATCH(
       return NextResponse.json({ message: "Invalid payload." }, { status: 400 });
     }
 
+    // Fetched before applying updates so a `done: true` in the payload can be
+    // told apart from a genuine false -> true transition (re-saving an
+    // already-done row, e.g. just to tweak the amount, must not re-email).
+    const before = await prisma.registration.findMany({
+      where: { id: { in: updates.map((u) => u.registrationId) }, trekId },
+      select: { id: true, reimbursementDone: true },
+    });
+
+    const wasDone = new Map(before.map((r) => [r.id, r.reimbursementDone]));
+
     await Promise.all(
       updates.map(
         (update: {
@@ -109,6 +120,25 @@ export async function PATCH(
           })
       )
     );
+
+    const newlyDoneIds = updates
+      .filter((u) => u.done === true && !wasDone.get(u.registrationId))
+      .map((u) => u.registrationId);
+
+    if (newlyDoneIds.length > 0) {
+      const toNotify = await prisma.registration.findMany({
+        where: { id: { in: newlyDoneIds } },
+        include: { user: true, trek: true },
+      });
+
+      for (const registration of toNotify) {
+        try {
+          await notifyReimbursementDone(registration, registration.reimbursementAmount);
+        } catch (emailError) {
+          console.error("Failed to send reimbursement email:", emailError);
+        }
+      }
+    }
 
     return NextResponse.json({ message: "Reimbursement amounts saved." });
   } catch (error) {

@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import cloudinary from "@/lib/cloudinary";
 import { generateCertificateImage } from "@/lib/certificate/generate";
 import { getCertificateSettings } from "@/data/certificate-settings";
+import { notifyCertificateReady } from "@/lib/notification-emails";
 
 export async function POST(req: NextRequest) {
   const admin = await requireAdmin();
@@ -74,6 +75,14 @@ export async function POST(req: NextRequest) {
       where: { id: registrationId },
       data: { certificateIssued: true, certificateIssuedAt: new Date() },
     });
+
+    if (!registration.certificateIssued) {
+      try {
+        await notifyCertificateReady(registration, uploaded.secure_url);
+      } catch (emailError) {
+        console.error("Failed to send certificate-ready email:", emailError);
+      }
+    }
 
     return NextResponse.json({
       message: "Certificate generated and issued.",
