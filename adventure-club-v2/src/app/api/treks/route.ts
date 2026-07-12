@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { notifyTrekCreated } from "@/lib/notification-emails";
+import { parseIstDateTimeLocal } from "@/lib/ist-time";
 
 export async function POST(req: Request) {
   const admin = await requireAdmin();
@@ -100,13 +101,9 @@ export async function POST(req: Request) {
         // Registration Control
         // -------------------------
 
-        registrationOpensAt: registrationOpensAt
-          ? new Date(registrationOpensAt)
-          : null,
+        registrationOpensAt: parseIstDateTimeLocal(registrationOpensAt),
 
-        registrationClosesAt: registrationClosesAt
-          ? new Date(registrationClosesAt)
-          : null,
+        registrationClosesAt: parseIstDateTimeLocal(registrationClosesAt),
 
         registrationOpenedManually: false,
 

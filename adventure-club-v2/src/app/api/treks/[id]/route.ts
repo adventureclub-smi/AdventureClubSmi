@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { parseIstDateTimeLocal } from "@/lib/ist-time";
 
 type RouteContext = {
   params: Promise<{
@@ -73,13 +74,9 @@ export async function PUT(
 
         ...(body.coverImage ? { coverImage: body.coverImage } : {}),
 
-        registrationOpensAt: body.registrationOpensAt
-          ? new Date(body.registrationOpensAt)
-          : null,
+        registrationOpensAt: parseIstDateTimeLocal(body.registrationOpensAt),
 
-        registrationClosesAt: body.registrationClosesAt
-          ? new Date(body.registrationClosesAt)
-          : null,
+        registrationClosesAt: parseIstDateTimeLocal(body.registrationClosesAt),
 
         // Portfolio Automation
         distanceKm:

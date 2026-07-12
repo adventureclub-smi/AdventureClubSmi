@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/require-admin";
+import { parseIstDateTimeLocal } from "@/lib/ist-time";
 
 export async function GET(
   req: NextRequest,
@@ -64,9 +65,7 @@ export async function PUT(
     data: {
       meetingPoint: body.meetingPoint,
 
-      meetingTime: body.meetingTime
-        ? new Date(body.meetingTime)
-        : null,
+      meetingTime: parseIstDateTimeLocal(body.meetingTime),
 
       transportDetails: body.transportDetails,
 
