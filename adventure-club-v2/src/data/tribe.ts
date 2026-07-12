@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { toCdnUrl } from "@/lib/cdn-url";
+import { optimizeAudio, optimizeImage } from "@/lib/media-optimize";
 
 export type TribeMemberSummary = {
   id: string;
@@ -25,9 +27,9 @@ export async function getTribeMembers(): Promise<TribeMemberSummary[]> {
     tier: member.tier,
     year: member.year,
     course: member.course,
-    photoUrl: member.photoUrl,
+    photoUrl: toCdnUrl(optimizeImage(member.photoUrl)),
     bio: member.bio,
     songTitle: member.songTitle,
-    songUrl: member.songUrl,
+    songUrl: toCdnUrl(optimizeAudio(member.songUrl)),
   }));
 }

@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { toCdnUrl } from "@/lib/cdn-url";
+import { optimizeAudio, optimizeImage } from "@/lib/media-optimize";
 
 export type SongSummary = {
   id: string;
@@ -15,7 +17,7 @@ export async function getSongs(): Promise<SongSummary[]> {
   return songs.map((song) => ({
     id: song.id,
     title: song.title,
-    audioUrl: song.audioUrl,
-    thumbnailUrl: song.thumbnailUrl,
+    audioUrl: toCdnUrl(optimizeAudio(song.audioUrl)),
+    thumbnailUrl: toCdnUrl(optimizeImage(song.thumbnailUrl)),
   }));
 }

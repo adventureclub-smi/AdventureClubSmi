@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import type { RegistrationLike } from "@/lib/registration-journey";
 import type { TrekSummary, TrekMapPin, UpcomingTrekRoute } from "@/types/homepage";
+import { toCdnUrl } from "@/lib/cdn-url";
+import { optimizeImage, optimizeVideo } from "@/lib/media-optimize";
 
 export async function getUpcomingTreks(): Promise<TrekSummary[]> {
   const treks = await prisma.trek.findMany({
@@ -23,7 +25,7 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
     difficulty: trek.difficulty,
     date: trek.date.toISOString(),
     price: trek.price,
-    coverImage: trek.coverImage || "/images/default-trek.jpg",
+    coverImage: toCdnUrl(optimizeImage(trek.coverImage)) || "/images/default-trek.jpg",
     seatsLeft: Math.max(trek.seats - trek._count.registrations, 0),
     registrationOpensAt: trek.registrationOpensAt
       ? trek.registrationOpensAt.toISOString()
@@ -53,7 +55,7 @@ export async function getTrekMapPins(): Promise<TrekMapPin[]> {
     destination: trek.destination,
     difficulty: trek.difficulty,
     date: trek.date.toISOString(),
-    coverImage: trek.coverImage || "/images/default-trek.jpg",
+    coverImage: toCdnUrl(optimizeImage(trek.coverImage)) || "/images/default-trek.jpg",
     description: trek.description,
     isHistorical: trek.isHistorical,
     latitude: trek.latitude as number,
@@ -82,15 +84,20 @@ export async function getUpcomingTrekRoutes(): Promise<UpcomingTrekRoute[]> {
     title: trek.title,
     destination: trek.destination,
     date: trek.date.toISOString(),
-    waypoints: trek.waypoints.map((w) => ({
-      id: w.id,
-      label: w.label,
-      description: w.description || "",
-      latitude: w.latitude,
-      longitude: w.longitude,
-      mediaUrl: w.mediaUrl || "",
-      mediaType: w.mediaType === "video" ? "video" : ("image" as const),
-      order: w.order,
-    })),
+    waypoints: trek.waypoints.map((w) => {
+      const mediaType = w.mediaType === "video" ? "video" : ("image" as const);
+      const optimizedMedia = mediaType === "video" ? optimizeVideo(w.mediaUrl) : optimizeImage(w.mediaUrl);
+
+      return {
+        id: w.id,
+        label: w.label,
+        description: w.description || "",
+        latitude: w.latitude,
+        longitude: w.longitude,
+        mediaUrl: toCdnUrl(optimizedMedia) || "",
+        mediaType,
+        order: w.order,
+      };
+    }),
   }));
 }
