@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import type { Story } from "@/types/homepage";
-import { toCdnUrl } from "@/lib/cdn-url";
 import { optimizeImage } from "@/lib/media-optimize";
 
 export async function getStories(): Promise<Story[]> {
@@ -13,7 +12,7 @@ export async function getStories(): Promise<Story[]> {
     id: story.id,
     title: story.title,
     description: story.description,
-    media: [{ type: "image", src: toCdnUrl(optimizeImage(story.imageUrl)) }],
+    media: [{ type: "image", src: optimizeImage(story.imageUrl) }],
     order: story.order,
     published: story.published,
   }));

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { toCdnUrl } from "@/lib/cdn-url";
 import { optimizeImage } from "@/lib/media-optimize";
 
 export type InstagramPostSummary = {
@@ -17,7 +16,7 @@ export async function getInstagramPosts(): Promise<InstagramPostSummary[]> {
   return posts.map((post) => ({
     id: post.id,
     postUrl: post.postUrl,
-    thumbnailUrl: toCdnUrl(optimizeImage(post.thumbnailUrl)) || "/images/default-trek.jpg",
+    thumbnailUrl: optimizeImage(post.thumbnailUrl) || "/images/default-trek.jpg",
     caption: post.caption,
   }));
 }

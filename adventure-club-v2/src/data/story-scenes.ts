@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import type { StoryScene } from "@/types/homepage";
-import { toCdnUrl } from "@/lib/cdn-url";
 import { optimizeImage } from "@/lib/media-optimize";
 
 export async function getStoryScenes(): Promise<StoryScene[]> {
@@ -10,7 +9,7 @@ export async function getStoryScenes(): Promise<StoryScene[]> {
 
   return scenes.map((scene) => ({
     id: scene.id,
-    imageUrl: toCdnUrl(optimizeImage(scene.imageUrl)),
+    imageUrl: optimizeImage(scene.imageUrl),
     imageWidth: scene.imageWidth,
     imageHeight: scene.imageHeight,
     caption: scene.caption || "",
