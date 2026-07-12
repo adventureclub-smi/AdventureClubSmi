@@ -19,6 +19,7 @@ import styles from "./SignupForm.module.scss";
 const SMI = "Srishti Manipal Institute of Art, Design and Technology (SMI)";
 
 const OTHER_DEPARTMENTS = [
+  "Manipal Institute of Technology (MIT)",
   "Department of Commerce (DOC)",
   "T. A. Pai Management Institute (TAPMI)",
   "Manipal Law School (MLS)",
