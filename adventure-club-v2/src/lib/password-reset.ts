@@ -54,7 +54,7 @@ export async function sendPasswordResetEmail(email: string, rawToken: string) {
   const resetUrl = `${getSiteUrl()}/reset-password?token=${rawToken}`;
 
   const result = await resend.emails.send({
-    from: "Adventure Club SMI <onboarding@resend.dev>",
+    from: "Adventure Club SMI <noreply@adventureclubsmi.com>",
     to: email,
     subject: "Reset your Adventure Club password",
     html: `
