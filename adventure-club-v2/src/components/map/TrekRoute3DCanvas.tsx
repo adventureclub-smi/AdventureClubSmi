@@ -172,12 +172,15 @@ export default function TrekRoute3DCanvas({ waypoints }: { waypoints: TrekWaypoi
       zoom: 13,
       pitch: 60,
       bearing: 30,
+      // Free panning/zooming/rotating loads a fresh batch of satellite and
+      // terrain tiles every time (15+ image requests per gesture) — the
+      // camera should only move via the waypoint buttons/markers below,
+      // which fly to a fixed set of points instead of unbounded exploring.
+      interactive: false,
       canvasContextAttributes: { antialias: true },
     });
 
     mapRef.current = map;
-
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
     map.on("load", () => {
       map.setTerrain({ source: "terrain-dem", exaggeration: 1.2 });
