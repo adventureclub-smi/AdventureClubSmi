@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary";
+import { uploadBuffer } from "@/lib/storage";
 
 export async function POST(req: Request) {
   try {
@@ -18,16 +18,9 @@ export async function POST(req: Request) {
 
     const buffer = Buffer.from(bytes);
 
-    const base64 = `data:${file.type};base64,${buffer.toString(
-      "base64"
-    )}`;
-
-    const uploaded = await cloudinary.uploader.upload(
-      base64,
-      {
-        folder: "AdventureClub/Treks",
-      }
-    );
+    const uploaded = await uploadBuffer(buffer, file.type, {
+      folder: "AdventureClub/Treks",
+    });
 
     return NextResponse.json({
       url: uploaded.secure_url,

@@ -19,11 +19,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
-      },
-      {
-        protocol: "https",
-        hostname: "*.cloudfront.net",
+        hostname: "media.adventureclubsmi.com",
       },
     ],
   },

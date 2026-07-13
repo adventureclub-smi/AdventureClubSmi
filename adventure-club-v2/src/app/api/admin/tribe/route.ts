@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import cloudinary from "@/lib/cloudinary";
+import { uploadBuffer } from "@/lib/storage";
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -52,9 +52,8 @@ export async function POST(req: NextRequest) {
     }
 
     const photoBytes = Buffer.from(await photoFile.arrayBuffer());
-    const photoBase64 = `data:${photoFile.type};base64,${photoBytes.toString("base64")}`;
 
-    const uploadedPhoto = await cloudinary.uploader.upload(photoBase64, {
+    const uploadedPhoto = await uploadBuffer(photoBytes, photoFile.type, {
       folder: "AdventureClub/Tribe",
     });
 
@@ -62,11 +61,10 @@ export async function POST(req: NextRequest) {
 
     if (songFile instanceof File) {
       const songBytes = Buffer.from(await songFile.arrayBuffer());
-      const songBase64 = `data:${songFile.type};base64,${songBytes.toString("base64")}`;
 
-      const uploadedSong = await cloudinary.uploader.upload(songBase64, {
+      const uploadedSong = await uploadBuffer(songBytes, songFile.type, {
         folder: "AdventureClub/Tribe",
-        resource_type: "video", // Cloudinary buckets audio under "video"
+        resourceType: "video", // not actually video — just means "skip image processing"
       });
 
       songUrl = uploadedSong.secure_url;

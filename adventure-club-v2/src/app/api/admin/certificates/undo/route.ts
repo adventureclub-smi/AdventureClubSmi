@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import cloudinary from "@/lib/cloudinary";
+import { deleteFromStorage } from "@/lib/storage";
 
 export async function POST(req: NextRequest) {
   const admin = await requireAdmin();
@@ -32,15 +32,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Best-effort cleanup of the generated asset — the auto-generate route
-    // always uploads under this exact public_id, so this only actually
-    // deletes something for certificates that were auto-generated (a
-    // manually-pasted URL won't match and destroy() is a no-op for it).
+    // always uploads under this exact key, so this only actually deletes
+    // something for certificates that were auto-generated (a manually-pasted
+    // URL won't match anything and this is just a no-op miss for it).
     try {
-      await cloudinary.uploader.destroy(
-        `AdventureClub/Certificates/${registrationId}-certificate`
-      );
+      await deleteFromStorage(`AdventureClub/Certificates/${registrationId}-certificate.webp`);
     } catch (err) {
-      console.error("Failed to delete certificate asset from Cloudinary:", err);
+      console.error("Failed to delete certificate asset from storage:", err);
     }
 
     await prisma.certificate.deleteMany({ where: { registrationId } });

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import cloudinary from "@/lib/cloudinary";
+import { uploadBuffer } from "@/lib/storage";
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -39,9 +39,8 @@ export async function POST(req: NextRequest) {
     }
 
     const imageBytes = Buffer.from(await imageFile.arrayBuffer());
-    const imageBase64 = `data:${imageFile.type};base64,${imageBytes.toString("base64")}`;
 
-    const uploaded = await cloudinary.uploader.upload(imageBase64, {
+    const uploaded = await uploadBuffer(imageBytes, imageFile.type, {
       folder: "AdventureClub/StoryScenes",
     });
 
@@ -50,8 +49,8 @@ export async function POST(req: NextRequest) {
     const scene = await prisma.homepageStoryScene.create({
       data: {
         imageUrl: uploaded.secure_url,
-        imageWidth: uploaded.width,
-        imageHeight: uploaded.height,
+        imageWidth: uploaded.width || 0,
+        imageHeight: uploaded.height || 0,
         caption: caption || null,
         description: description || null,
         order: count,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import cloudinary from "@/lib/cloudinary";
+import { uploadBuffer } from "@/lib/storage";
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -53,8 +53,7 @@ export async function POST(req: NextRequest) {
 
     if (facultyHeadSignatureFile instanceof File) {
       const bytes = Buffer.from(await facultyHeadSignatureFile.arrayBuffer());
-      const base64 = `data:${facultyHeadSignatureFile.type};base64,${bytes.toString("base64")}`;
-      const uploaded = await cloudinary.uploader.upload(base64, {
+      const uploaded = await uploadBuffer(bytes, facultyHeadSignatureFile.type, {
         folder: "AdventureClub/CertificateSignatures",
       });
       facultyHeadSignatureUrl = uploaded.secure_url;
@@ -62,8 +61,7 @@ export async function POST(req: NextRequest) {
 
     if (presidentSignatureFile instanceof File) {
       const bytes = Buffer.from(await presidentSignatureFile.arrayBuffer());
-      const base64 = `data:${presidentSignatureFile.type};base64,${bytes.toString("base64")}`;
-      const uploaded = await cloudinary.uploader.upload(base64, {
+      const uploaded = await uploadBuffer(bytes, presidentSignatureFile.type, {
         folder: "AdventureClub/CertificateSignatures",
       });
       presidentSignatureUrl = uploaded.secure_url;

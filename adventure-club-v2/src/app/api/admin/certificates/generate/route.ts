@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import cloudinary from "@/lib/cloudinary";
+import { uploadBuffer } from "@/lib/storage";
 import { generateCertificateImage } from "@/lib/certificate/generate";
 import { getCertificateSettings } from "@/data/certificate-settings";
 import { notifyCertificateReady } from "@/lib/notification-emails";
@@ -55,15 +55,10 @@ export async function POST(req: NextRequest) {
       presidentSignatureUrl: settings.presidentSignatureUrl,
     });
 
-    // Plain image delivery (unlike "raw" PDF/ZIP) isn't subject to
-    // Cloudinary's default account-level delivery restriction.
-    const uploaded = await cloudinary.uploader.upload(
-      `data:image/png;base64,${image.toString("base64")}`,
-      {
-        folder: "AdventureClub/Certificates",
-        public_id: `${registration.id}-certificate`,
-      }
-    );
+    const uploaded = await uploadBuffer(image, "image/png", {
+      folder: "AdventureClub/Certificates",
+      key: `AdventureClub/Certificates/${registration.id}-certificate.webp`,
+    });
 
     await prisma.certificate.upsert({
       where: { registrationId },

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import cloudinary from "@/lib/cloudinary";
+import { uploadBuffer } from "@/lib/storage";
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -62,9 +62,8 @@ export async function POST(req: NextRequest) {
     }
 
     const thumbBytes = Buffer.from(await thumbnailFile.arrayBuffer());
-    const thumbBase64 = `data:${thumbnailFile.type};base64,${thumbBytes.toString("base64")}`;
 
-    const uploadedThumb = await cloudinary.uploader.upload(thumbBase64, {
+    const uploadedThumb = await uploadBuffer(thumbBytes, thumbnailFile.type, {
       folder: "AdventureClub/Instagram",
     });
 

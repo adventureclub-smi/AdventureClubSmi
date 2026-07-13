@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary";
+import { uploadBuffer } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
 import {
   PaymentMethod,
@@ -63,8 +63,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO:
-    // Upload screenshot to Cloudinary later.
     let screenshotUrl: string | null = null;
 
 if (screenshot instanceof File) {
@@ -72,24 +70,11 @@ if (screenshot instanceof File) {
 
   const buffer = Buffer.from(bytes);
 
-  screenshotUrl = await new Promise<string>(
-    (resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          {
-            folder: "payment-proofs",
-          },
-          (error, result) => {
-            if (error || !result)
-              reject(error);
+  const uploaded = await uploadBuffer(buffer, screenshot.type, {
+    folder: "payment-proofs",
+  });
 
-            else
-              resolve(result.secure_url);
-          }
-        )
-        .end(buffer);
-    }
-  );
+  screenshotUrl = uploaded.secure_url;
 }
 
     const amount =
