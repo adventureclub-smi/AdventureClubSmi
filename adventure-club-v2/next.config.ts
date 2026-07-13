@@ -4,8 +4,18 @@ const nextConfig: NextConfig = {
   // The certificate generator reads template.html/assets/logo.png via fs at
   // runtime (not import/require), so Next's production file tracing needs
   // an explicit hint to bundle them into a standalone/serverless output.
+  //
+  // sharp's actual native shared library (libvips-cpp.so, used by every
+  // route that uploads to R2 via src/lib/storage.ts) has the same problem —
+  // it's resolved by sharp's own runtime dlopen call, not a static
+  // require/import, so file tracing misses it unless told explicitly.
+  // Marking sharp external (below) fixes bundling; this fixes tracing.
   outputFileTracingIncludes: {
     "/api/admin/certificates/generate": ["./src/lib/certificate/**"],
+    "/api/**/*": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**",
+      "./node_modules/@img/sharp-linux-x64/**",
+    ],
   },
   // @sparticuz/chromium resolves its own bundled Chromium binary via a path
   // relative to its own package folder at runtime — if Next's bundler
