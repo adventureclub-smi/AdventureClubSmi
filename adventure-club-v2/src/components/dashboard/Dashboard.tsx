@@ -49,6 +49,8 @@ type NextTrekData = {
 
   registrationOpensAt?: string | null;
 
+  notifyRequested?: boolean;
+
 };
 
 type MyRegistration = RegistrationLike & { trek: { id: string } };
@@ -150,6 +152,7 @@ export default function Dashboard() {
           registration={nextTrek.registration}
           registrationState={nextTrek.registrationState}
           registrationOpensAt={nextTrek.registrationOpensAt}
+          notifyRequested={nextTrek.notifyRequested}
         />
       )}
 

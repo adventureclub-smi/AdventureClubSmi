@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -34,6 +35,7 @@ type Props = {
   registration: RegistrationLike | null;
   registrationState?: RegistrationState;
   registrationOpensAt?: string | null;
+  notifyRequested?: boolean;
 };
 
 export default function NextTrekCard({
@@ -41,7 +43,23 @@ export default function NextTrekCard({
   registration,
   registrationState,
   registrationOpensAt,
+  notifyRequested,
 }: Props) {
+  const [notified, setNotified] = useState(!!notifyRequested);
+  const [notifyLoading, setNotifyLoading] = useState(false);
+
+  async function handleNotifyMe() {
+    setNotifyLoading(true);
+
+    try {
+      const res = await fetch(`/api/treks/${trek.id}/notify`, { method: "POST" });
+      if (res.ok) setNotified(true);
+    } catch (error) {
+      console.error(error);
+    }
+
+    setNotifyLoading(false);
+  }
   // Same phase hook the homepage countdown uses — it ticks its own 1s
   // interval, so "Registrations Open In" flips live to "Next Adventure In"
   // (and the button unlocks) the instant registration opens, with no page
@@ -188,7 +206,21 @@ export default function NextTrekCard({
           </div>
         </div>
 
-        {action.href ? (
+        {!registration && effectiveRegistrationState === "NOT_OPEN" ? (
+          notified ? (
+            <button className={`${styles.action} ${styles.disabled}`} disabled>
+              We&apos;ll Email You
+            </button>
+          ) : (
+            <button
+              className={`${styles.action} ${styles.register}`}
+              onClick={handleNotifyMe}
+              disabled={notifyLoading}
+            >
+              {notifyLoading ? "Saving..." : "Notify Me When Registrations Open"}
+            </button>
+          )
+        ) : action.href ? (
           <Link href={action.href} className={`${styles.action} ${styles[action.variant]}`}>
             {action.text}
           </Link>

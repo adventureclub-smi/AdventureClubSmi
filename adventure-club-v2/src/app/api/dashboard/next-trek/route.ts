@@ -88,6 +88,12 @@ export async function GET() {
     if (openTrek) {
       openTrek.coverImage = optimizeImage(openTrek.coverImage);
 
+      const notifyRequested = await prisma.trekNotifyRequest
+        .findUnique({
+          where: { trekId_userId: { trekId: openTrek.id, userId: payload.id } },
+        })
+        .then(Boolean);
+
       return NextResponse.json({
         trek: openTrek,
         registration: null,
@@ -95,6 +101,7 @@ export async function GET() {
         serverTime: now,
         registrationOpensAt: openTrek.registrationOpensAt,
         registrationClosesAt: openTrek.registrationClosesAt,
+        notifyRequested,
       });
     }
 
@@ -140,6 +147,12 @@ export async function GET() {
 
     trek.coverImage = optimizeImage(trek.coverImage);
 
+    const notifyRequested = await prisma.trekNotifyRequest
+      .findUnique({
+        where: { trekId_userId: { trekId: trek.id, userId: payload.id } },
+      })
+      .then(Boolean);
+
     return NextResponse.json({
       trek,
       registration: null,
@@ -147,6 +160,7 @@ export async function GET() {
       serverTime: now,
       registrationOpensAt: trek.registrationOpensAt,
       registrationClosesAt: trek.registrationClosesAt,
+      notifyRequested,
     });
   } catch (error) {
     console.error(error);
