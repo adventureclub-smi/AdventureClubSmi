@@ -14,7 +14,11 @@ const nextConfig: NextConfig = {
   // .../@sparticuz/chromium/bin does not exist"). Marking both packages
   // external keeps them as plain node_modules requires instead, so their
   // non-JS assets stay put and get traced/copied as a whole dependency.
-  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  // sharp has the exact same problem: its native .node binary lives in a
+  // platform-specific subfolder that the bundler doesn't know to carry along,
+  // which is fine on Vercel (sharp is special-cased there) but breaks on
+  // other hosts like Netlify.
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "sharp"],
   images: {
     remotePatterns: [
       {
