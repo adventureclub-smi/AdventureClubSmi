@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { optimizeImage } from "@/lib/media-optimize";
 
 export async function GET() {
   try {
@@ -41,7 +42,12 @@ export async function GET() {
         },
       });
 
-    return NextResponse.json(registrations);
+    return NextResponse.json(
+      registrations.map((r) => ({
+        ...r,
+        trek: { ...r.trek, coverImage: optimizeImage(r.trek.coverImage) },
+      }))
+    );
   } catch (error) {
     console.error(error);
 

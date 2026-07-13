@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { optimizeImage } from "@/lib/media-optimize";
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -51,7 +52,7 @@ export async function GET() {
       title: trek.title,
       destination: trek.destination,
       date: trek.date,
-      coverImage: trek.coverImage,
+      coverImage: optimizeImage(trek.coverImage),
 
       registered,
       approved,

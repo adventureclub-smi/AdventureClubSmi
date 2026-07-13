@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import type { Trek } from "@prisma/client";
+import { optimizeImage } from "@/lib/media-optimize";
 
 function registrationStateFor(trek: Trek, now: Date) {
   let registrationState: "NOT_OPEN" | "OPEN" | "CLOSED" = "OPEN";
@@ -51,6 +52,7 @@ export async function GET() {
 
     if (activeRegistration) {
       const { trek } = activeRegistration;
+      trek.coverImage = optimizeImage(trek.coverImage);
 
       return NextResponse.json({
         trek,
@@ -84,6 +86,8 @@ export async function GET() {
     });
 
     if (openTrek) {
+      openTrek.coverImage = optimizeImage(openTrek.coverImage);
+
       return NextResponse.json({
         trek: openTrek,
         registration: null,
@@ -105,6 +109,7 @@ export async function GET() {
 
     if (latestRegistration) {
       const { trek } = latestRegistration;
+      trek.coverImage = optimizeImage(trek.coverImage);
 
       return NextResponse.json({
         trek,
@@ -132,6 +137,8 @@ export async function GET() {
     if (!trek) {
       return NextResponse.json(null);
     }
+
+    trek.coverImage = optimizeImage(trek.coverImage);
 
     return NextResponse.json({
       trek,

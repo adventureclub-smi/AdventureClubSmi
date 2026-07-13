@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { notifyTrekCreated } from "@/lib/notification-emails";
 import { parseIstDateTimeLocal } from "@/lib/ist-time";
+import { optimizeImage } from "@/lib/media-optimize";
 
 export async function POST(req: Request) {
   const admin = await requireAdmin();
@@ -182,7 +183,9 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(treks);
+    return NextResponse.json(
+      treks.map((trek) => ({ ...trek, coverImage: optimizeImage(trek.coverImage) }))
+    );
   } catch (error) {
     console.error(error);
 

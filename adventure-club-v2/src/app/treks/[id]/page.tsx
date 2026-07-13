@@ -6,6 +6,7 @@ import TrekDetails from "@/components/treks/TrekDetails";
 import { getCurrentUser } from "@/lib/current-user";
 import { getHomepageContent } from "@/data/homepage-content";
 import { notifyRegistrationOpenedIfDue } from "@/lib/notification-emails";
+import { optimizeImage } from "@/lib/media-optimize";
 
 export default async function TrekPage({
   params,
@@ -28,6 +29,8 @@ export default async function TrekPage({
   if (!trek) {
     notFound();
   }
+
+  trek.coverImage = optimizeImage(trek.coverImage);
 
   // Piggybacks the "registrations just opened -> email Notify Me subscribers"
   // check on this page's visits (no cron in this project) — cheap no-op once
