@@ -1,5 +1,6 @@
 import { requireAdminAccess } from "@/lib/admin-access";
 import { prisma } from "@/lib/prisma";
+import NotifyListManager from "@/components/admin/NotifyListManager";
 import styles from "./notify-list.module.scss";
 
 export default async function Page({
@@ -39,27 +40,15 @@ export default async function Page({
         Everyone below is emailed automatically the moment registrations open.
       </p>
 
-      <div className={styles.count}>{rows.length} student(s) waiting</div>
-
-      {rows.length === 0 ? (
-        <div className={styles.empty}>No one has requested a notification yet.</div>
-      ) : (
-        <div className={styles.rows}>
-          {rows.map(({ request, user }) => (
-            <div key={request.id} className={styles.row}>
-              <div className={styles.rowInfo}>
-                <strong>{user.fullName}</strong>
-                <span>{user.clubId}</span>
-              </div>
-
-              <div className={styles.rowContact}>
-                <span>{user.email}</span>
-                <span>{user.phoneNumber}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <NotifyListManager
+        initialRows={rows.map(({ request, user }) => ({
+          requestId: request.id,
+          fullName: user.fullName,
+          clubId: user.clubId,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+        }))}
+      />
     </div>
   );
 }
