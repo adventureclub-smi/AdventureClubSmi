@@ -28,6 +28,16 @@ type Registration = {
   };
 };
 
+// The signup form's stored institution value for SMI students has been the
+// full descriptive name ("Srishti Manipal Institute of Art, Design and
+// Technology (SMI)") since early on, but older accounts and manually-added
+// participants may only have the shorter "Srishti Manipal Institute" or a
+// bare "SMI" — a plain `=== "smi"` check missed all of those.
+function isSmiInstitution(institution: string) {
+  const value = institution.toLowerCase();
+  return value.includes("srishti manipal") || value === "smi";
+}
+
 export default function RegistrationsTable({
   trekId,
 }: {
@@ -145,16 +155,12 @@ export default function RegistrationsTable({
     });
   }, [registrations, search]);
 
-  const smiStudents = filtered.filter(
-    (r) =>
-      r.user.institution.toLowerCase() ===
-      "smi"
+  const smiStudents = filtered.filter((r) =>
+    isSmiInstitution(r.user.institution)
   );
 
   const otherStudents = filtered.filter(
-    (r) =>
-      r.user.institution.toLowerCase() !==
-      "smi"
+    (r) => !isSmiInstitution(r.user.institution)
   );
 
   if (loading) {
