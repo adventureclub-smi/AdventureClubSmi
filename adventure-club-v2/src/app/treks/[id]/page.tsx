@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TrekDetails from "@/components/treks/TrekDetails";
@@ -34,12 +35,15 @@ export default async function TrekPage({
 
   // Piggybacks the "registrations just opened -> email Notify Me subscribers"
   // check on this page's visits (no cron in this project) — cheap no-op once
-  // the trek has already been notified.
-  try {
-    await notifyRegistrationOpenedIfDue();
-  } catch (error) {
-    console.error("Failed to process registration-open notifications:", error);
-  }
+  // the trek has already been notified. Runs after the response is sent so a
+  // large notify list can't stall this page's render.
+  after(async () => {
+    try {
+      await notifyRegistrationOpenedIfDue();
+    } catch (error) {
+      console.error("Failed to process registration-open notifications:", error);
+    }
+  });
 
   let registration = null;
   let notifyRequested = false;

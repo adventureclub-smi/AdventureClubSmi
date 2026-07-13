@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { notifyTrekCreated } from "@/lib/notification-emails";
@@ -138,11 +138,16 @@ export async function POST(req: Request) {
       },
     });
 
-    try {
-      await notifyTrekCreated(trek);
-    } catch (emailError) {
-      console.error("Failed to send trek-created emails:", emailError);
-    }
+    // Runs after the response is sent — a large member list could take
+    // longer than a serverless function's response window allows, and the
+    // admin doesn't need to wait for the email blast to see "Trek created."
+    after(async () => {
+      try {
+        await notifyTrekCreated(trek);
+      } catch (emailError) {
+        console.error("Failed to send trek-created emails:", emailError);
+      }
+    });
 
     return NextResponse.json(
       {

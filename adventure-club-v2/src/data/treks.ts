@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { after } from "next/server";
 import type { RegistrationLike } from "@/lib/registration-journey";
 import type { TrekSummary, TrekMapPin, UpcomingTrekRoute } from "@/types/homepage";
 import { optimizeImage, optimizeVideo } from "@/lib/media-optimize";
@@ -7,12 +8,15 @@ import { notifyRegistrationOpenedIfDue } from "@/lib/notification-emails";
 export async function getUpcomingTreks(): Promise<TrekSummary[]> {
   // Piggybacks the "registrations just opened -> email Notify Me subscribers"
   // check on homepage/list visits (no cron in this project) — cheap no-op
-  // once every due trek has already been notified.
-  try {
-    await notifyRegistrationOpenedIfDue();
-  } catch (error) {
-    console.error("Failed to process registration-open notifications:", error);
-  }
+  // once every due trek has already been notified. Runs after the response
+  // is sent so a large notify list can't stall the homepage's render.
+  after(async () => {
+    try {
+      await notifyRegistrationOpenedIfDue();
+    } catch (error) {
+      console.error("Failed to process registration-open notifications:", error);
+    }
+  });
 
   const treks = await prisma.trek.findMany({
     where: {
