@@ -53,6 +53,20 @@ export async function PUT(
 
     const body = await req.json();
 
+    const existing = await prisma.trek.findUnique({
+      where: { id },
+      select: { registrationOpensAt: true },
+    });
+
+    const nextRegistrationOpensAt = parseIstDateTimeLocal(body.registrationOpensAt);
+
+    // Rescheduling registrationOpensAt (e.g. pushing it out, or setting a new
+    // one after it already passed) must re-arm the Notify Me email — once
+    // set, registrationOpenNotifiedAt otherwise stays permanently "already
+    // sent" even though the trek is now opening at a brand new time.
+    const registrationOpensAtChanged =
+      existing?.registrationOpensAt?.getTime() !== nextRegistrationOpensAt?.getTime();
+
     const trek = await prisma.trek.update({
       where: { id },
       data: {
@@ -74,9 +88,11 @@ export async function PUT(
 
         ...(body.coverImage ? { coverImage: body.coverImage } : {}),
 
-        registrationOpensAt: parseIstDateTimeLocal(body.registrationOpensAt),
+        registrationOpensAt: nextRegistrationOpensAt,
 
         registrationClosesAt: parseIstDateTimeLocal(body.registrationClosesAt),
+
+        ...(registrationOpensAtChanged ? { registrationOpenNotifiedAt: null } : {}),
 
         // Portfolio Automation
         distanceKm:
