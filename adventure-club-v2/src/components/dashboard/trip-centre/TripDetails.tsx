@@ -160,7 +160,7 @@ export default function TripDetails({ trekId }: { trekId: string }) {
         transition={{ duration: 0.6 }}
         style={{
           backgroundImage: `linear-gradient(90deg, rgba(13,13,13,.92), rgba(13,13,13,.65), rgba(13,13,13,.2)), url(${
-            trek.coverImage || "/images/about/about-5.JPG"
+            trek.coverImage || "/_next/image?url=%2Fimages%2Fabout%2Fabout-5.JPG&w=1920&q=75"
           })`,
         }}
       >

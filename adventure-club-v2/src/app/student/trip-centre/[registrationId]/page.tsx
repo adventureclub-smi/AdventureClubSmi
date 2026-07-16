@@ -180,7 +180,7 @@ export default function StudentTripCentre() {
         transition={{ duration: 0.6 }}
         style={{
           backgroundImage: `linear-gradient(90deg, rgba(3,7,7,.92), rgba(3,7,7,.6), rgba(3,7,7,.18)), url(${
-            trek.coverImage || "/images/about/about-5.JPG"
+            trek.coverImage || "/_next/image?url=%2Fimages%2Fabout%2Fabout-5.JPG&w=1920&q=75"
           })`,
         }}
       >
