@@ -19,7 +19,7 @@ type PaymentRegistration = {
   registrationNumber: string;
   guestName?: string | null;
   user?: { fullName: string } | null;
-  trek: { initialPayment: number; finalPayment: number };
+  trek: { initialPayment: number; finalPayment: number; installments: number };
   initialPaymentPaid: boolean;
   offlinePaymentCreated: boolean;
   finalPaymentPaid: boolean;
@@ -134,7 +134,13 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
         <BackButton />
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <h1>{paymentType === "FINAL" ? "Final Payment" : "Initial Payment"}</h1>
+          <h1>
+            {paymentType === "FINAL"
+              ? "Final Payment"
+              : registration.trek.installments === 1
+              ? "Full Payment"
+              : "Initial Payment"}
+          </h1>
 
           <p className={styles.subtitle}>
             Scan the QR or pay using your favourite UPI app.
@@ -212,7 +218,7 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
           </a>
 
           <div className={styles.timelineWrap}>
-            <PaymentTimeline registration={registration} />
+            <PaymentTimeline registration={registration} installments={registration.trek.installments} />
           </div>
         </motion.div>
       </div>

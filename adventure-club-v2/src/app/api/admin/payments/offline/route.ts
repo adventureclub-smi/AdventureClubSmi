@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
         where: {
           id: registrationId,
         },
+        include: {
+          trek: true,
+        },
       });
 
     if (!registration) {
@@ -74,6 +77,12 @@ export async function POST(req: NextRequest) {
         },
       });
 
+    // A single-installment trek has no real "final payment" — recording its
+    // one payment (as INITIAL) must also complete the final-payment flags,
+    // since every downstream journey/admin view keys off those to decide
+    // when a registration is fully paid.
+    const isSingleInstallment = registration.trek.installments === 1;
+
     await prisma.registration.update({
   where: {
     id: registrationId,
@@ -98,6 +107,13 @@ export async function POST(req: NextRequest) {
       : {
           initialPaymentPaid: true,
           initialPaymentPaidAt: new Date(),
+          ...(isSingleInstallment
+            ? {
+                finalPaymentUnlocked: true,
+                finalPaymentPaid: true,
+                finalPaymentPaidAt: new Date(),
+              }
+            : {}),
         }),
   },
 });

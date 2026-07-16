@@ -18,6 +18,7 @@ type FormState = {
   trekDay: string;
   date: string;
   price: string;
+  installments: "1" | "2";
   initialPayment: string;
   finalPayment: string;
   seats: string;
@@ -43,6 +44,7 @@ const emptyForm: FormState = {
   trekDay: "",
   date: "",
   price: "",
+  installments: "2",
   initialPayment: "",
   finalPayment: "",
   seats: "",
@@ -117,6 +119,7 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           trekDay: trek.trekDay || "",
           date: toDateInput(trek.date),
           price: String(trek.price ?? ""),
+          installments: trek.installments === 1 ? "1" : "2",
           initialPayment: String(trek.initialPayment ?? ""),
           finalPayment: String(trek.finalPayment ?? ""),
           seats: String(trek.seats ?? ""),
@@ -451,7 +454,19 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
             </label>
 
             <label className={styles.field}>
-              <span>Initial Payment (₹)</span>
+              <span>Payment Installments</span>
+              <small>
+                Some treks only ever collect one payment instead of an
+                initial + final split
+              </small>
+              <select name="installments" value={form.installments} onChange={handleChange}>
+                <option value="2">2 Installments (Initial + Final)</option>
+                <option value="1">1 Installment (Full Payment)</option>
+              </select>
+            </label>
+
+            <label className={styles.field}>
+              <span>{form.installments === "1" ? "Full Payment (₹)" : "Initial Payment (₹)"}</span>
               <input
                 type="number"
                 name="initialPayment"
@@ -462,17 +477,19 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
               />
             </label>
 
-            <label className={styles.field}>
-              <span>Final Payment (₹)</span>
-              <input
-                type="number"
-                name="finalPayment"
-                placeholder="e.g. 700"
-                value={form.finalPayment}
-                onChange={handleChange}
-                required
-              />
-            </label>
+            {form.installments !== "1" && (
+              <label className={styles.field}>
+                <span>Final Payment (₹)</span>
+                <input
+                  type="number"
+                  name="finalPayment"
+                  placeholder="e.g. 700"
+                  value={form.finalPayment}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+            )}
 
             <label className={styles.field}>
               <span>Total Seats</span>

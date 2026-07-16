@@ -11,9 +11,13 @@ type TimelineRegistration = {
 
 export default function PaymentTimeline({
   registration,
+  installments = 2,
 }: {
   registration: TimelineRegistration;
+  installments?: number;
 }) {
+  const isSingleInstallment = installments === 1;
+
   const steps = [
     {
       key: "approved",
@@ -24,7 +28,7 @@ export default function PaymentTimeline({
     },
     {
       key: "initial",
-      title: "Initial Payment",
+      title: isSingleInstallment ? "Full Payment" : "Initial Payment",
       subtitle: registration.initialPaymentPaid
         ? "Payment Verified"
         : registration.offlinePaymentCreated
@@ -46,21 +50,25 @@ export default function PaymentTimeline({
       state: registration.initialPaymentPaid ? ("done" as const) : ("locked" as const),
       icon: FileText,
     },
-    {
-      key: "final",
-      title: "Final Payment",
-      subtitle: registration.finalPaymentPaid
-        ? "Verified"
-        : registration.finalPaymentUnlocked
-        ? "Ready to pay"
-        : "Locked",
-      state: registration.finalPaymentPaid
-        ? ("done" as const)
-        : registration.finalPaymentUnlocked
-        ? ("waiting" as const)
-        : ("locked" as const),
-      icon: CreditCard,
-    },
+    ...(isSingleInstallment
+      ? []
+      : [
+          {
+            key: "final",
+            title: "Final Payment",
+            subtitle: registration.finalPaymentPaid
+              ? "Verified"
+              : registration.finalPaymentUnlocked
+              ? "Ready to pay"
+              : "Locked",
+            state: registration.finalPaymentPaid
+              ? ("done" as const)
+              : registration.finalPaymentUnlocked
+              ? ("waiting" as const)
+              : ("locked" as const),
+            icon: CreditCard,
+          },
+        ]),
     {
       key: "trek",
       title: "Trek Day",

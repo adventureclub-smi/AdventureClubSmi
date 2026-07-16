@@ -47,6 +47,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // A single-installment trek has no real "final payment" — verifying its
+    // one payment (recorded as INITIAL) must also complete the final-payment
+    // flags, since every downstream journey/admin view keys off those to
+    // decide when a registration is fully paid.
+    const registration = await prisma.registration.findUnique({
+      where: { id: registrationId },
+      select: { trek: { select: { installments: true } } },
+    });
+
+    const isSingleInstallment = registration?.trek.installments === 1;
+
     await prisma.registration.update({
       where: {
         id: registrationId,
@@ -62,6 +73,13 @@ export async function POST(req: NextRequest) {
               initialPaymentPaid: verified,
               offlinePaymentVerified: verified,
               initialPaymentPaidAt: verified ? new Date() : null,
+              ...(isSingleInstallment
+                ? {
+                    finalPaymentUnlocked: verified,
+                    finalPaymentPaid: verified,
+                    finalPaymentPaidAt: verified ? new Date() : null,
+                  }
+                : {}),
             },
     });
 

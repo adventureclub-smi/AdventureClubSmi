@@ -67,6 +67,8 @@ export async function PUT(
     const registrationOpensAtChanged =
       existing?.registrationOpensAt?.getTime() !== nextRegistrationOpensAt?.getTime();
 
+    const installmentCount = Number(body.installments) === 1 ? 1 : 2;
+
     const trek = await prisma.trek.update({
       where: { id },
       data: {
@@ -80,8 +82,9 @@ export async function PUT(
         trekDay: body.trekDay,
         date: new Date(body.date),
         price: Number(body.price),
+        installments: installmentCount,
         initialPayment: Number(body.initialPayment),
-        finalPayment: Number(body.finalPayment),
+        finalPayment: installmentCount === 1 ? 0 : Number(body.finalPayment),
         seats: Number(body.seats),
         description: body.description,
         status: body.status,

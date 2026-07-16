@@ -43,6 +43,7 @@ type Registration = RegistrationLike & {
     tripCentrePublished?: boolean;
     initialPayment: number;
     finalPayment: number;
+    installments?: number;
     expectedReimbursementMin: number | null;
     expectedReimbursementMax: number | null;
   };

@@ -180,22 +180,26 @@ export default function PaymentsTab({
                     verify(r.id)
                   }
                 >
-                  Verify Initial Payment
+                  {r.trek?.installments === 1
+                    ? "Verify Payment"
+                    : "Verify Initial Payment"}
                 </button>
               )}
 
-              <button
-                onClick={() =>
-                  unlock(
-                    r.id,
-                    !r.finalPaymentUnlocked
-                  )
-                }
-              >
-                {r.finalPaymentUnlocked
-                  ? "Lock Final Payment"
-                  : "Unlock Final Payment"}
-              </button>
+              {r.trek?.installments !== 1 && (
+                <button
+                  onClick={() =>
+                    unlock(
+                      r.id,
+                      !r.finalPaymentUnlocked
+                    )
+                  }
+                >
+                  {r.finalPaymentUnlocked
+                    ? "Lock Final Payment"
+                    : "Unlock Final Payment"}
+                </button>
+              )}
             </div>
           </div>
         ))}

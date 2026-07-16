@@ -157,6 +157,12 @@ model Trek {
 
   price Int
 
+  // 1 = pay the whole trek cost in one go (finalPayment stays 0, and the
+  // single payment auto-completes both the initial and final payment flags
+  // once verified — see the payments/verify and payments/offline routes).
+  // 2 = the existing initial-then-final split.
+  installments Int @default(2)
+
   initialPayment Int
 
   finalPayment Int

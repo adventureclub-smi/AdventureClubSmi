@@ -16,6 +16,7 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
 
   const initialPayment = registration.payments?.find((p) => p.type === "INITIAL");
   const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
+  const isSingleInstallment = registration.trek?.installments === 1;
 
   const [method, setMethod] = useState("Cash");
   const [reference, setReference] = useState("");
@@ -170,7 +171,7 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
         {/* Initial Payment */}
 
         <div className={styles.card}>
-          <h3>Initial Payment</h3>
+          <h3>{isSingleInstallment ? "Full Payment" : "Initial Payment"}</h3>
 
           <div className={styles.item}>
             <span>Status</span>
@@ -218,7 +219,11 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
           </div>
 
           <button className={styles.action} onClick={verifyInitial}>
-            {registration.initialPaymentPaid ? "Undo Verification" : "Verify Initial Payment"}
+            {registration.initialPaymentPaid
+              ? "Undo Verification"
+              : isSingleInstallment
+              ? "Verify Payment"
+              : "Verify Initial Payment"}
           </button>
 
           <button
@@ -230,68 +235,71 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
           </button>
         </div>
 
-        {/* Final Payment */}
+        {/* Final Payment — not applicable to single-installment treks, whose
+            one payment (above) already covers the whole trek cost. */}
 
-        <div className={styles.card}>
-          <h3>Final Payment</h3>
+        {!isSingleInstallment && (
+          <div className={styles.card}>
+            <h3>Final Payment</h3>
 
-          <div className={styles.item}>
-            <span>Status</span>
+            <div className={styles.item}>
+              <span>Status</span>
 
-            <strong>
-              {registration.finalPaymentPaid
-                ? "🟢 Paid"
-                : registration.finalPaymentUnlocked
-                ? "🟡 Unlocked"
-                : "🔒 Locked"}
-            </strong>
+              <strong>
+                {registration.finalPaymentPaid
+                  ? "🟢 Paid"
+                  : registration.finalPaymentUnlocked
+                  ? "🟡 Unlocked"
+                  : "🔒 Locked"}
+              </strong>
+            </div>
+
+            <div className={styles.item}>
+              <span>Recorded Amount</span>
+              <strong>₹{finalPayment?.amount ?? 0}</strong>
+            </div>
+
+            <div className={styles.item}>
+              <span>UTR / Reference</span>
+              <strong>{finalPayment?.reference || "-"}</strong>
+            </div>
+
+            <div className={styles.screenshotSection}>
+              <span>Payment Screenshot</span>
+
+              {finalPayment?.notes ? (
+                <a
+                  href={finalPayment.notes}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={styles.imageLink}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={finalPayment.notes}
+                    alt="Final payment screenshot"
+                    className={styles.paymentImage}
+                  />
+                  <p>Click to enlarge</p>
+                </a>
+              ) : (
+                <div className={styles.noImage}>No Screenshot Uploaded</div>
+              )}
+            </div>
+
+            <button className={styles.action} onClick={verifyFinal}>
+              {registration.finalPaymentPaid ? "Undo Verification" : "Verify Final Payment"}
+            </button>
+
+            <button
+              className={styles.secondaryAction}
+              disabled={resubmitting === "FINAL"}
+              onClick={() => requireResubmission("FINAL")}
+            >
+              {resubmitting === "FINAL" ? "Requesting..." : "Require Resubmission"}
+            </button>
           </div>
-
-          <div className={styles.item}>
-            <span>Recorded Amount</span>
-            <strong>₹{finalPayment?.amount ?? 0}</strong>
-          </div>
-
-          <div className={styles.item}>
-            <span>UTR / Reference</span>
-            <strong>{finalPayment?.reference || "-"}</strong>
-          </div>
-
-          <div className={styles.screenshotSection}>
-            <span>Payment Screenshot</span>
-
-            {finalPayment?.notes ? (
-              <a
-                href={finalPayment.notes}
-                target="_blank"
-                rel="noreferrer"
-                className={styles.imageLink}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={finalPayment.notes}
-                  alt="Final payment screenshot"
-                  className={styles.paymentImage}
-                />
-                <p>Click to enlarge</p>
-              </a>
-            ) : (
-              <div className={styles.noImage}>No Screenshot Uploaded</div>
-            )}
-          </div>
-
-          <button className={styles.action} onClick={verifyFinal}>
-            {registration.finalPaymentPaid ? "Undo Verification" : "Verify Final Payment"}
-          </button>
-
-          <button
-            className={styles.secondaryAction}
-            disabled={resubmitting === "FINAL"}
-            onClick={() => requireResubmission("FINAL")}
-          >
-            {resubmitting === "FINAL" ? "Requesting..." : "Require Resubmission"}
-          </button>
-        </div>
+        )}
 
         {/* Record Offline Payment */}
 
@@ -341,8 +349,12 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
           {registration.paymentPortal && <p>✅ Added to Payment Portal</p>}
           {registration.offlinePaymentCreated && <p>✅ Payment Submitted</p>}
           {registration.initialPaymentPaid && <p>✅ Payment Verified</p>}
-          {registration.finalPaymentUnlocked && <p>✅ Final Payment Unlocked</p>}
-          {registration.finalPaymentPaid && <p>✅ Final Payment Paid</p>}
+          {!isSingleInstallment && registration.finalPaymentUnlocked && (
+            <p>✅ Final Payment Unlocked</p>
+          )}
+          {!isSingleInstallment && registration.finalPaymentPaid && (
+            <p>✅ Final Payment Paid</p>
+          )}
         </div>
       </div>
     </div>

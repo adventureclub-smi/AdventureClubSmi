@@ -20,6 +20,7 @@ type Trek = {
   coverImage?: string | null;
   description: string;
   price: number;
+  installments: number;
   initialPayment: number;
   finalPayment: number;
   difficulty: string;
@@ -143,15 +144,24 @@ export default function TrekDetails({
           </div>
 
           <div className={styles.payments}>
-            <div>
-              <p>Initial Payment</p>
-              <h3>₹{trek.initialPayment}</h3>
-            </div>
+            {trek.installments === 1 ? (
+              <div>
+                <p>Full Payment</p>
+                <h3>₹{trek.initialPayment}</h3>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <p>Initial Payment</p>
+                  <h3>₹{trek.initialPayment}</h3>
+                </div>
 
-            <div>
-              <p>Final Payment</p>
-              <h3>₹{trek.finalPayment}</h3>
-            </div>
+                <div>
+                  <p>Final Payment</p>
+                  <h3>₹{trek.finalPayment}</h3>
+                </div>
+              </>
+            )}
           </div>
 
           <div className={styles.divider} />
@@ -297,12 +307,15 @@ export default function TrekDetails({
                 href={`/student/payments/${registration.id}`}
                 className={styles.registerButton}
               >
-                <Wallet size={16} /> Pay Initial Payment ₹{trek.initialPayment}
+                <Wallet size={16} />{" "}
+                {trek.installments === 1 ? "Pay Full Payment" : "Pay Initial Payment"} ₹
+                {trek.initialPayment}
               </Link>
 
               <p className={styles.note}>
-                Your registration has been approved. Complete the initial
-                payment before the countdown ends to confirm your seat.
+                Your registration has been approved. Complete the{" "}
+                {trek.installments === 1 ? "payment" : "initial payment"} before
+                the countdown ends to confirm your seat.
               </p>
             </>
           )}

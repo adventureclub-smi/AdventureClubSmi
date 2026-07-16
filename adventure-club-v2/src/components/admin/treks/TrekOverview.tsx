@@ -116,14 +116,16 @@ const completed = trek.registrations.filter(
           </div>
 
           <div>
-            <strong>Initial Payment</strong>
+            <strong>{trek.installments === 1 ? "Full Payment" : "Initial Payment"}</strong>
             <p>₹{trek.initialPayment}</p>
           </div>
 
-          <div>
-            <strong>Final Payment</strong>
-            <p>₹{trek.finalPayment}</p>
-          </div>
+          {trek.installments !== 1 && (
+            <div>
+              <strong>Final Payment</strong>
+              <p>₹{trek.finalPayment}</p>
+            </div>
+          )}
         </div>
 
         <div className={styles.description}>

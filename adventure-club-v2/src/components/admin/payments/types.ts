@@ -35,4 +35,8 @@ export type PaymentRegistration = {
   guestName: string | null;
 
   payments?: PaymentRecord[];
+
+  trek?: {
+    installments?: number;
+  };
 };

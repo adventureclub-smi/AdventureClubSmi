@@ -14,7 +14,7 @@ export type RegistrationLike = {
   finalPaymentUnlocked: boolean;
   finalPaymentPaid: boolean;
   certificateIssued: boolean;
-  trek?: { tripCentrePublished?: boolean };
+  trek?: { tripCentrePublished?: boolean; installments?: number };
 };
 
 export type JourneyStep = {
@@ -55,6 +55,8 @@ export function getJourneySteps(
   registration: RegistrationLike | null,
   registrationState?: RegistrationState
 ): JourneyStep[] {
+  const isSingleInstallment = registration?.trek?.installments === 1;
+
   const steps: Omit<JourneyStep, "current">[] = [
     {
       key: "registration",
@@ -84,7 +86,7 @@ export function getJourneySteps(
     },
     {
       key: "initialPayment",
-      title: "Initial Payment",
+      title: isSingleInstallment ? "Full Payment" : "Initial Payment",
       done: !!(
         registration?.initialPaymentPaid ||
         registration?.offlinePaymentVerified
@@ -111,16 +113,23 @@ export function getJourneySteps(
         ? "Available"
         : "Waiting for Admin",
     },
-    {
-      key: "finalPayment",
-      title: "Final Payment",
-      done: !!registration?.finalPaymentPaid,
-      subtitle: registration?.finalPaymentUnlocked
-        ? registration?.finalPaymentPaid
-          ? "Verified"
-          : "Ready to Pay"
-        : "Locked",
-    },
+    // A single-installment trek has no separate final payment — the one
+    // payment above already covers it, so this step would just be a
+    // redundant "done" duplicate of "Full Payment".
+    ...(isSingleInstallment
+      ? []
+      : [
+          {
+            key: "finalPayment" as const,
+            title: "Final Payment",
+            done: !!registration?.finalPaymentPaid,
+            subtitle: registration?.finalPaymentUnlocked
+              ? registration?.finalPaymentPaid
+                ? "Verified"
+                : "Ready to Pay"
+              : "Locked",
+          },
+        ]),
     {
       key: "attendance",
       title: "Attendance",
@@ -214,13 +223,17 @@ export function getJourneyAction(
     return { text: "Waiting for Approval", href: null, variant: "disabled" };
   }
 
+  const isSingleInstallment = registration.trek?.installments === 1;
+
   if (
     registration.status === "APPROVED" &&
     registration.offlinePaymentCreated &&
     !registration.offlinePaymentVerified
   ) {
     return {
-      text: "Waiting for Initial Payment Verification",
+      text: isSingleInstallment
+        ? "Waiting for Payment Verification"
+        : "Waiting for Initial Payment Verification",
       href: null,
       variant: "disabled",
     };
@@ -232,13 +245,20 @@ export function getJourneyAction(
     !registration.offlinePaymentCreated
   ) {
     return {
-      text: "Pay Initial Payment",
+      text: isSingleInstallment ? "Pay Full Payment" : "Pay Initial Payment",
       href: `/student/payments/${registration.id}`,
       variant: "pay",
     };
   }
 
-  if (registration.initialPaymentPaid && !registration.finalPaymentUnlocked) {
+  // A single-installment trek's one payment auto-completes the final-payment
+  // flags too (see the payments/verify and payments/offline routes), so
+  // there's no separate final-payment leg to gate this on — trip centre
+  // stays the focus straight through to attendance being marked.
+  if (
+    registration.initialPaymentPaid &&
+    (isSingleInstallment ? !registration.attendanceMarked : !registration.finalPaymentUnlocked)
+  ) {
     if (registration.trek?.tripCentrePublished) {
       return {
         text: "Open Trip Centre",
@@ -316,7 +336,12 @@ export type PaymentRow = {
 
 export type PaymentRegistrationLike = RegistrationLike & {
   payments: PaymentInfo[];
-  trek?: { initialPayment: number; finalPayment: number; tripCentrePublished?: boolean };
+  trek?: {
+    initialPayment: number;
+    finalPayment: number;
+    tripCentrePublished?: boolean;
+    installments?: number;
+  };
 };
 
 export function getPaymentBadge(
@@ -330,13 +355,16 @@ export function getPaymentBadge(
 }
 
 export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
+  const isSingleInstallment = reg.trek?.installments === 1;
+  const initialLabel = isSingleInstallment ? "Full Payment" : "Initial Payment";
+
   const initial = reg.payments.find((p) => p.type === "INITIAL");
   const final = reg.payments.find((p) => p.type === "FINAL");
 
   const rows: PaymentRow[] = [
     initial?.status === "PAID"
       ? {
-          label: "Initial Payment",
+          label: initialLabel,
           amount: initial.amount,
           text: "Paid & Verified",
           tone: "success",
@@ -345,20 +373,20 @@ export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
         }
       : initial?.status === "PENDING"
       ? {
-          label: "Initial Payment",
+          label: initialLabel,
           amount: initial.amount,
           text: "Verification Pending",
           tone: "waiting",
         }
       : {
-          label: "Initial Payment",
+          label: initialLabel,
           amount: reg.trek?.initialPayment ?? 0,
           text: "Not Paid Yet",
           tone: "neutral",
         },
   ];
 
-  if (reg.finalPaymentUnlocked || final) {
+  if (!isSingleInstallment && (reg.finalPaymentUnlocked || final)) {
     rows.push(
       final?.status === "PAID"
         ? {

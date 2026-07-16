@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       trekDay,
       date,
       price,
+      installments,
       initialPayment,
       finalPayment,
       seats,
@@ -47,6 +48,8 @@ export async function POST(req: Request) {
       longitude,
     } = body;
 
+    const installmentCount = Number(installments) === 1 ? 1 : 2;
+
     if (
       !title ||
       !destination ||
@@ -59,7 +62,7 @@ export async function POST(req: Request) {
       !date ||
       !price ||
       !initialPayment ||
-      !finalPayment ||
+      (installmentCount === 2 && !finalPayment) ||
       !seats ||
       !description
     ) {
@@ -88,9 +91,11 @@ export async function POST(req: Request) {
 
         price: Number(price),
 
+        installments: installmentCount,
+
         initialPayment: Number(initialPayment),
 
-        finalPayment: Number(finalPayment),
+        finalPayment: installmentCount === 1 ? 0 : Number(finalPayment),
 
         seats: Number(seats),
 

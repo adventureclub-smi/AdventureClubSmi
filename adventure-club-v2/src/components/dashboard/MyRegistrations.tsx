@@ -50,6 +50,7 @@ type Registration = {
     tripCentrePublished?: boolean;
     initialPayment: number;
     finalPayment: number;
+    installments?: number;
   };
 };
 

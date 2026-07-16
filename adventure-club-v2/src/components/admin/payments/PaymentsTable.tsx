@@ -96,6 +96,8 @@ export default function PaymentsTable({ trekId }: Props) {
     }
   }
 
+  const isSingleInstallment = registrations[0]?.trek?.installments === 1;
+
   const trekCompleted = registrations.some(
     (r) => r.status === "COMPLETED" || r.status === "MISSED"
   );
@@ -203,14 +205,16 @@ export default function PaymentsTable({ trekId }: Props) {
       </div>
 
       <div className={styles.bulkActions}>
-        <button
-          className={styles.unlockAllButton}
-          disabled={unlockingAll}
-          onClick={handleUnlockAll}
-        >
-          <Unlock size={15} />
-          {unlockingAll ? "Unlocking..." : "Unlock Final Payment for All"}
-        </button>
+        {!isSingleInstallment && (
+          <button
+            className={styles.unlockAllButton}
+            disabled={unlockingAll}
+            onClick={handleUnlockAll}
+          >
+            <Unlock size={15} />
+            {unlockingAll ? "Unlocking..." : "Unlock Final Payment for All"}
+          </button>
+        )}
 
         <button
           className={trekCompleted ? styles.undoCompleteButton : styles.completeTrekButton}
@@ -253,7 +257,7 @@ export default function PaymentsTable({ trekId }: Props) {
 
                 <div className={styles.grid}>
                   <div className={styles.infoCard}>
-                    <span>Initial Payment</span>
+                    <span>{isSingleInstallment ? "Full Payment" : "Initial Payment"}</span>
 
                     {registration.initialPaymentPaid ? (
                       <strong className={styles.success}>
@@ -266,23 +270,25 @@ export default function PaymentsTable({ trekId }: Props) {
                     )}
                   </div>
 
-                  <div className={styles.infoCard}>
-                    <span>Final Payment</span>
+                  {!isSingleInstallment && (
+                    <div className={styles.infoCard}>
+                      <span>Final Payment</span>
 
-                    {registration.finalPaymentPaid ? (
-                      <strong className={styles.success}>
-                        <CheckCircle2 size={15} /> Paid
-                      </strong>
-                    ) : registration.finalPaymentUnlocked ? (
-                      <strong className={styles.warning}>
-                        <Clock size={15} /> Unlocked
-                      </strong>
-                    ) : (
-                      <strong className={styles.locked}>
-                        <Lock size={15} /> Locked
-                      </strong>
-                    )}
-                  </div>
+                      {registration.finalPaymentPaid ? (
+                        <strong className={styles.success}>
+                          <CheckCircle2 size={15} /> Paid
+                        </strong>
+                      ) : registration.finalPaymentUnlocked ? (
+                        <strong className={styles.warning}>
+                          <Clock size={15} /> Unlocked
+                        </strong>
+                      ) : (
+                        <strong className={styles.locked}>
+                          <Lock size={15} /> Locked
+                        </strong>
+                      )}
+                    </div>
+                  )}
 
                   <div className={styles.infoCard}>
                     <span>Method</span>
