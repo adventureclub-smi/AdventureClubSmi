@@ -4,6 +4,7 @@ import { getGalleryPhotos } from "@/data/gallery-photos";
 import { getStories } from "@/data/stories";
 import { getGoogleEarthSettings } from "@/data/google-earth-settings";
 import { getHomepageStats } from "@/data/homepage-stats";
+import { getActivities } from "@/data/homepage-activities";
 
 /**
  * Single centralized source for all non-database homepage content.
@@ -19,15 +20,16 @@ import { getHomepageStats } from "@/data/homepage-stats";
  * placeholder content.
  */
 export async function getHomepageContent(): Promise<HomepageContent> {
-  const [socials, gallery, stories, googleEarth, stats] = await Promise.all([
+  const [socials, gallery, stories, googleEarth, stats, activities] = await Promise.all([
     getSocialSettings(),
     getGalleryPhotos(),
     getStories(),
     getGoogleEarthSettings(),
     getHomepageStats(),
+    getActivities(),
   ]);
 
-  return { ...homepageContent, socials, gallery, stories, googleEarth, stats };
+  return { ...homepageContent, socials, gallery, stories, googleEarth, stats, activities };
 }
 
 const homepageContent: HomepageContent = {
@@ -51,133 +53,11 @@ const homepageContent: HomepageContent = {
   // admin Settings > By The Numbers to edit/add/remove them).
   stats: [],
 
-  activities: [
-    {
-      id: "trekking",
-      icon: "mountain",
-      title: "Trekking",
-      description:
-        "Conquer breathtaking peaks and unforgettable trails with the Adventure Club.",
-      backgroundImage: "/images/activities/trekking.jpg",
-      highlights: [
-        "Sunrise Views",
-        "Weekend Adventures",
-        "Beginner Friendly",
-        "Experienced Leaders",
-      ],
-      difficulty: "Moderate",
-      bestSeason: "Oct – Feb",
-      duration: "1–2 Days",
-      funFact: "Our highest trek climbs over 2,600m above sea level.",
-      buttonText: "Explore Treks",
-      buttonLink: "/treks",
-      order: 1,
-    },
-    {
-      id: "camping",
-      icon: "tent",
-      title: "Camping",
-      description: "Pitch your tent under open skies and wake up to the wild.",
-      backgroundImage: "/images/activities/camping.jpg",
-      highlights: [
-        "Starlit Nights",
-        "Tent Setup Skills",
-        "Group Bonding",
-        "Off-Grid Escape",
-      ],
-      difficulty: "Easy",
-      bestSeason: "Sep – Mar",
-      duration: "1 Night",
-      funFact: "Some of our best friendships were made over a shared tent pole.",
-      buttonText: "See Upcoming Camps",
-      buttonLink: "/treks",
-      order: 2,
-    },
-    {
-      id: "bonfire",
-      icon: "flame",
-      title: "Bonfire",
-      description: "Gather around the fire after an unforgettable adventure.",
-      backgroundImage: "/images/activities/bonfire.jpg",
-      highlights: ["Music", "Stories", "Night Sky", "Camping Experience"],
-      funFact: "No trek officially ends until the last log burns out.",
-      buttonText: "Join The Circle",
-      buttonLink: "/signup",
-      order: 3,
-    },
-    {
-      id: "kayaking",
-      icon: "sailboat",
-      title: "Kayaking",
-      description: "Experience calm lakes and exciting waters.",
-      backgroundImage: "/images/activities/kayaking.jpg",
-      highlights: [
-        "Beginner Lessons",
-        "Safety Gear Included",
-        "Team Paddling",
-        "Scenic Routes",
-      ],
-      difficulty: "Easy – Moderate",
-      bestSeason: "Jun – Sep",
-      duration: "Half Day",
-      buttonText: "Explore Water Adventures",
-      buttonLink: "/treks",
-      order: 4,
-    },
-    {
-      id: "forest-trails",
-      icon: "tree-pine",
-      title: "Forest Trails",
-      description:
-        "Where the road ends, the story begins — lose yourself in the green.",
-      backgroundImage: "/images/activities/trail-running.jpg",
-      highlights: [
-        "Shaded Canopies",
-        "Wildlife Spotting",
-        "Quiet Trails",
-        "Fresh Air Reset",
-      ],
-      duration: "2–4 Hours",
-      buttonText: "Discover Trails",
-      buttonLink: "/treks",
-      order: 5,
-    },
-    {
-      id: "bouldering",
-      icon: "footprints",
-      title: "Bouldering",
-      description: "Test your grip, your grit, and your nerve on raw rock.",
-      backgroundImage: "/images/activities/bouldering.jpg",
-      highlights: [
-        "No Experience Needed",
-        "Certified Instructors",
-        "Crash Pads Provided",
-        "Real Rock, Real Rush",
-      ],
-      difficulty: "Beginner to Advanced",
-      buttonText: "Try Bouldering",
-      buttonLink: "/treks",
-      order: 6,
-    },
-    {
-      id: "photography",
-      icon: "camera",
-      title: "Photography",
-      description:
-        "Chase the light, frame the wild, and take the mountains home with you.",
-      backgroundImage: "/images/activities/photography.jpg",
-      highlights: [
-        "Golden Hour Shoots",
-        "Landscape Tips",
-        "Gear Advice Welcome",
-        "Shared Reels",
-      ],
-      funFact: "Half our Instagram feed comes from members, not professionals.",
-      buttonText: "See The Shots",
-      buttonLink: "#gallery",
-      order: 7,
-    },
-  ],
+  // Always overridden by getActivities() in getHomepageContent() above —
+  // kept here only to satisfy the HomepageContent type. Seeded with the
+  // original 7 activities directly in the database (see admin Settings >
+  // Things We Do to edit/add/remove them).
+  activities: [],
 
   upcomingTreks: {
     eyebrow: "UPCOMING ADVENTURES",

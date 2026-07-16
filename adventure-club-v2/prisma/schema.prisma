@@ -621,6 +621,38 @@ model GoogleEarthSettings {
   updatedAt DateTime @updatedAt
 }
 
+// The homepage "Things We Do" interactive section — one card per activity,
+// admin-editable image + copy instead of the old hardcoded array.
+model HomepageActivity {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  icon String
+
+  title String
+
+  description String
+
+  imageUrl String
+
+  highlights String[] @default([])
+
+  difficulty String?
+
+  bestSeason String?
+
+  duration String?
+
+  funFact String?
+
+  buttonText String
+
+  buttonLink String
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+}
+
 model TrailStat {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
