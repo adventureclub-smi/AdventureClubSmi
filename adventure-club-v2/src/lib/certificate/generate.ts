@@ -61,14 +61,16 @@ function buildHtml(data: CertificateData) {
     );
 }
 
-// Vercel's serverless functions can't run the full `puppeteer` package (its
-// bundled Chromium download is far too large for the function size limit),
-// so production launches `puppeteer-core` against the Linux Chromium build
-// from `@sparticuz/chromium` instead. That binary only runs on Vercel's
-// Linux runtime, so local dev keeps using the full `puppeteer` package
-// (already has its own bundled Chromium for whatever OS you're on).
+// Serverless hosts (Vercel, Netlify, ...) can't run the full `puppeteer`
+// package (its bundled Chromium download is far too large for the function
+// size limit), so production launches `puppeteer-core` against the Linux
+// Chromium build from `@sparticuz/chromium` instead. That binary only runs
+// on a Linux serverless runtime, so local dev keeps using the full
+// `puppeteer` package (already has its own bundled Chromium for whatever OS
+// you're on). NODE_ENV is used instead of a host-specific flag (like the
+// old `VERCEL` check) so this keeps working across hosting migrations.
 async function launchBrowser(): Promise<Browser> {
-  if (process.env.VERCEL) {
+  if (process.env.NODE_ENV === "production") {
     const [{ default: chromium }, { default: puppeteerCore }] = await Promise.all([
       import("@sparticuz/chromium"),
       import("puppeteer-core"),

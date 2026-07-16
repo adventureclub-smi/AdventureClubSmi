@@ -37,6 +37,7 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
   const [settings, setSettings] = useState<PaymentSettings | null>(null);
   const [qrCode, setQrCode] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<"upi" | "note" | null>(null);
 
   useEffect(() => {
@@ -52,6 +53,11 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
         const registrationData = await registrationRes.json();
         const settingsData = await settingsRes.json();
         if (!active) return;
+
+        if (!registrationRes.ok || !settingsRes.ok) {
+          setError(registrationData?.message || "Unable to load payment details.");
+          return;
+        }
 
         setRegistration(registrationData);
         setSettings(settingsData);
@@ -82,6 +88,7 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
         if (active) setQrCode(qr);
       } catch (err) {
         console.error(err);
+        if (active) setError("Unable to load payment details.");
       } finally {
         if (active) setLoading(false);
       }
@@ -94,8 +101,21 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
     };
   }, [registrationId, paymentType]);
 
-  if (loading || !registration || !settings) {
+  if (loading) {
     return <div className={styles.loading}>Loading Payment...</div>;
+  }
+
+  if (error || !registration || !settings) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <BackButton />
+          <p className={styles.subtitle}>
+            {error || "This payment link is no longer valid."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const amount =
