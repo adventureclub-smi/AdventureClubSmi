@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Images, UploadCloud, Trash2 } from "lucide-react";
+import { Images, Pencil, Trash2, UploadCloud, X } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./GalleryManager.module.scss";
@@ -10,6 +10,7 @@ type GalleryPhoto = {
   id: string;
   imageUrl: string;
   caption: string | null;
+  category: string | null;
 };
 
 export default function GalleryManager({
@@ -18,10 +19,12 @@ export default function GalleryManager({
   initialPhotos: GalleryPhoto[];
 }) {
   const [photos, setPhotos] = useState<GalleryPhoto[]>(initialPhotos);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
+  const [category, setCategory] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
 
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -40,69 +43,90 @@ export default function GalleryManager({
     setStatus("");
   }
 
+  function startEdit(photo: GalleryPhoto) {
+    setEditingId(photo.id);
+    setCaption(photo.caption || "");
+    setCategory(photo.category || "");
+    setImageFile(null);
+    setImagePreview(photo.imageUrl);
+    setStatus("");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setCaption("");
+    setCategory("");
+    setImageFile(null);
+    setImagePreview("");
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    setStatus("");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!imageFile) {
+    if (!editingId && !imageFile) {
       setStatus("Please choose a photo to upload.");
       return;
     }
 
-    setUploading(true);
+    setSaving(true);
     setStatus("");
 
     try {
       const form = new FormData();
       form.append("caption", caption.trim());
-      form.append("imageFile", imageFile);
+      form.append("category", category.trim());
+      if (imageFile) form.append("imageFile", imageFile);
 
-      const res = await fetch("/api/admin/homepage-gallery", {
-        method: "POST",
-        body: form,
-      });
+      const res = await fetch(
+        editingId ? `/api/admin/homepage-gallery/${editingId}` : "/api/admin/homepage-gallery",
+        { method: editingId ? "PATCH" : "POST", body: form }
+      );
 
       const data = await res.json();
 
       if (!res.ok) {
-        setStatus(data.message || "Failed to upload photo.");
+        setStatus(data.message || "Failed to save photo.");
         return;
       }
 
-      setPhotos((prev) => [...prev, data]);
-      setCaption("");
-      setImageFile(null);
-      setImagePreview("");
-      if (imageInputRef.current) imageInputRef.current.value = "";
-      setStatus("Photo added to the homepage gallery.");
+      setPhotos((prev) =>
+        editingId ? prev.map((p) => (p.id === editingId ? data : p)) : [...prev, data]
+      );
+
+      setStatus(editingId ? "Photo updated." : "Photo added to the gallery.");
+      cancelEdit();
     } finally {
-      setUploading(false);
+      setSaving(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this photo from the homepage gallery?")) return;
+    if (!confirm("Remove this photo from the gallery?")) return;
 
     const res = await fetch(`/api/admin/homepage-gallery/${id}`, { method: "DELETE" });
 
     if (res.ok) {
       setPhotos((prev) => prev.filter((p) => p.id !== id));
+      if (editingId === id) cancelEdit();
     }
   }
 
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Homepage Gallery"
+        title="Gallery Photos"
         breadcrumb={[
           { label: "Admin", href: "/admin" },
           { label: "Settings", href: "/admin/settings" },
-          { label: "Homepage Gallery" },
+          { label: "Gallery" },
         ]}
       />
 
       <p className={styles.subtitle}>
-        Photos uploaded here scroll across the &quot;Gallery&quot; section on
-        the public homepage.
+        Photos added here appear on the public <strong>/gallery</strong> page, filterable
+        by category.
       </p>
 
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -116,30 +140,50 @@ export default function GalleryManager({
           />
         </div>
 
-        <div>
-          <label>Caption (optional)</label>
-          <input
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="e.g. Summit Day"
-          />
-        </div>
-
         {imagePreview && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imagePreview} alt="Preview" className={styles.preview} />
         )}
 
+        <div className={styles.row2}>
+          <div>
+            <label>Category (optional)</label>
+            <input
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g. Trekking"
+            />
+          </div>
+
+          <div>
+            <label>Caption (optional)</label>
+            <input
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="e.g. Summit Day"
+            />
+          </div>
+        </div>
+
         {status && <p className={styles.status}>{status}</p>}
 
-        <button type="submit" disabled={uploading}>
-          <UploadCloud size={15} /> {uploading ? "Uploading..." : "Add Photo"}
-        </button>
+        <div className={styles.formButtons}>
+          <button type="submit" disabled={saving}>
+            <UploadCloud size={15} />
+            {saving ? "Saving..." : editingId ? "Save Changes" : "Add Photo"}
+          </button>
+
+          {editingId && (
+            <button type="button" className={styles.cancelButton} onClick={cancelEdit}>
+              <X size={15} /> Cancel
+            </button>
+          )}
+        </div>
       </form>
 
       <section className={styles.section}>
         <h3>
-          <Images size={17} /> On the Homepage ({photos.length})
+          <Images size={17} /> In The Gallery ({photos.length})
         </h3>
 
         {photos.length === 0 ? (
@@ -153,22 +197,33 @@ export default function GalleryManager({
 
                 <div className={styles.rowInfo}>
                   <span>{photo.caption || "No caption"}</span>
+                  {photo.category && <small>{photo.category}</small>}
                 </div>
 
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => handleDelete(photo.id)}
-                  aria-label="Remove photo"
-                >
-                  <Trash2 size={14} />
-                </button>
+                <div className={styles.rowActions}>
+                  <button
+                    className={styles.editButton}
+                    onClick={() => startEdit(photo)}
+                    aria-label="Edit photo"
+                  >
+                    <Pencil size={14} />
+                  </button>
+
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => handleDelete(photo.id)}
+                    aria-label="Remove photo"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      <p className={styles.hint}>New photos are added to the end of the strip.</p>
+      <p className={styles.hint}>New photos are added to the end of the gallery.</p>
     </div>
   );
 }

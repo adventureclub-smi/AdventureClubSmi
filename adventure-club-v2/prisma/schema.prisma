@@ -690,9 +690,37 @@ model HomepageGalleryPhoto {
 
   caption String?
 
+  category String?
+
+  // Actual upload dimensions, so the /gallery masonry grid can size each
+  // next/image at its real aspect ratio instead of forcing a fixed crop.
+  // Nullable since photos uploaded before this field existed don't have it.
+  width Int?
+
+  height Int?
+
   order Int @default(0)
 
   createdAt DateTime @default(now())
+}
+
+// Singleton hero banner for the dedicated /gallery page (separate from the
+// individual gallery photos above) — admin-editable image/heading/subtitle/
+// button, same pattern as GoogleEarthSettings.
+model GalleryHeroSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  imageUrl String
+
+  heading String
+
+  subtitle String
+
+  buttonText String?
+
+  buttonLink String?
+
+  updatedAt DateTime @updatedAt
 }
 
 model HomepageStory {

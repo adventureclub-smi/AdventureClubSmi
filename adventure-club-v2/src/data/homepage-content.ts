@@ -1,6 +1,5 @@
 import type { HomepageContent } from "@/types/homepage";
 import { getSocialSettings } from "@/data/social-settings";
-import { getGalleryPhotos } from "@/data/gallery-photos";
 import { getStories } from "@/data/stories";
 import { getGoogleEarthSettings } from "@/data/google-earth-settings";
 import { getHomepageStats } from "@/data/homepage-stats";
@@ -20,16 +19,15 @@ import { getActivities } from "@/data/homepage-activities";
  * placeholder content.
  */
 export async function getHomepageContent(): Promise<HomepageContent> {
-  const [socials, gallery, stories, googleEarth, stats, activities] = await Promise.all([
+  const [socials, stories, googleEarth, stats, activities] = await Promise.all([
     getSocialSettings(),
-    getGalleryPhotos(),
     getStories(),
     getGoogleEarthSettings(),
     getHomepageStats(),
     getActivities(),
   ]);
 
-  return { ...homepageContent, socials, gallery, stories, googleEarth, stats, activities };
+  return { ...homepageContent, socials, stories, googleEarth, stats, activities };
 }
 
 const homepageContent: HomepageContent = {
@@ -66,12 +64,6 @@ const homepageContent: HomepageContent = {
     showFeaturedCountdown: true,
     featuredTrekId: null,
   },
-
-  // Always overridden by getGalleryPhotos() in getHomepageContent() above —
-  // kept here only to satisfy the HomepageContent type. Seeded with real
-  // starter photos directly in the database (see admin Settings > Homepage
-  // Gallery to edit/replace them).
-  gallery: [],
 
   // Always overridden by getStories() in getHomepageContent() above — kept
   // here only to satisfy the HomepageContent type. Seeded with the original

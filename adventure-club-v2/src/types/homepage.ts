@@ -52,6 +52,17 @@ export interface GalleryPhoto {
   src: string;
   alt: string;
   caption?: string;
+  category?: string;
+  width: number;
+  height: number;
+}
+
+export interface GalleryHeroContent {
+  imageUrl: string;
+  heading: string;
+  subtitle: string;
+  buttonText?: string;
+  buttonLink?: string;
 }
 
 export interface StoryMedia {
@@ -112,7 +123,6 @@ export interface HomepageContent {
   stats: StatItem[];
   activities: ActivityCard[];
   upcomingTreks: UpcomingTreksConfig;
-  gallery: GalleryPhoto[];
   stories: Story[];
   finalSection: FinalSectionContent;
   socials: SocialLinks;

@@ -38,7 +38,7 @@ export default function SettingsQuickLinks() {
 
       <QuickActionCard
         icon={Images}
-        label="Homepage Gallery"
+        label="Gallery Page"
         href="/admin/settings/gallery"
       />
 
