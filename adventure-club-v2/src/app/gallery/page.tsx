@@ -23,8 +23,8 @@ export default async function GalleryPage() {
   return (
     <>
       <Navbar />
-      <TripPoll />
       <GalleryPageHero content={heroContent} />
+      <TripPoll />
       <GalleryMasonryGrid photos={photos} />
       <Footer socials={homepageContent.socials} />
     </>
