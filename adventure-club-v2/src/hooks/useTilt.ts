@@ -10,7 +10,10 @@ import { useMotionValue, useSpring, useTransform, useReducedMotion } from "frame
 // Takes the target ref rather than creating one itself — see the comment
 // in useScrollReveal.ts for why (an ESLint react-hooks/refs false positive
 // on the whole returned object once any property is a ref).
-export function useTilt(ref: RefObject<HTMLDivElement | null>, intensity = 10) {
+export function useTilt<T extends HTMLElement = HTMLDivElement>(
+  ref: RefObject<T | null>,
+  intensity = 10
+) {
   const reducedMotion = useReducedMotion();
   const [pointerFine, setPointerFine] = useState(false);
 

@@ -8,9 +8,14 @@
   padding: 160px 24px 80px;
 }
 
+.imageLayer {
+  position: absolute;
+  inset: -30px;
+  z-index: 0;
+}
+
 .image {
   object-fit: cover;
-  z-index: 0;
 }
 
 .overlay {

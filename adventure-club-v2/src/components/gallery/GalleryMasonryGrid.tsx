@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Image from "next/image";
-import { AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, useInView } from "framer-motion";
 import { Compass } from "lucide-react";
 
 import type { GalleryPhoto } from "@/types/homepage";
 import GalleryLightbox from "@/components/sections/GalleryLightbox";
+import GalleryGridItem from "./GalleryGridItem";
 import styles from "./GalleryMasonryGrid.module.scss";
+
+const BATCH_SIZE = 15;
 
 export default function GalleryMasonryGrid({ photos }: { photos: GalleryPhoto[] }) {
   const categories = useMemo(() => {
@@ -19,11 +21,34 @@ export default function GalleryMasonryGrid({ photos }: { photos: GalleryPhoto[] 
 
   const [activeCategory, setActiveCategory] = useState("All");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
 
   const filtered = useMemo(() => {
     if (activeCategory === "All") return photos;
     return photos.filter((p) => p.category === activeCategory);
   }, [photos, activeCategory]);
+
+  // Only the first batch downloads up front — every fresh visit to a
+  // photo-heavy page like this one otherwise pays for every single image,
+  // most of which nobody scrolls far enough to see.
+  const visible = filtered.slice(0, visibleCount);
+
+  function switchCategory(category: string) {
+    setActiveCategory(category);
+    setVisibleCount(BATCH_SIZE);
+  }
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const sentinelInView = useInView(sentinelRef, { margin: "400px" });
+
+  useEffect(() => {
+    function loadNextBatch() {
+      if (sentinelInView && visibleCount < filtered.length) {
+        setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, filtered.length));
+      }
+    }
+    loadNextBatch();
+  }, [sentinelInView, filtered.length, visibleCount]);
 
   if (photos.length === 0) {
     return (
@@ -46,7 +71,7 @@ export default function GalleryMasonryGrid({ photos }: { photos: GalleryPhoto[] 
               key={category}
               type="button"
               className={category === activeCategory ? styles.tabActive : styles.tab}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => switchCategory(category)}
             >
               {category}
             </button>
@@ -55,30 +80,22 @@ export default function GalleryMasonryGrid({ photos }: { photos: GalleryPhoto[] 
       )}
 
       <div className={styles.grid}>
-        {filtered.map((photo, i) => (
-          <button
+        {visible.map((photo, i) => (
+          <GalleryGridItem
             key={photo.id}
-            type="button"
-            className={styles.item}
-            style={{ aspectRatio: `${photo.width} / ${photo.height}` }}
-            onClick={() => setOpenIndex(i)}
-            aria-label={`View photo: ${photo.alt}`}
-          >
-            <Image
-              src={photo.src}
-              alt={photo.alt}
-              fill
-              sizes="(max-width: 700px) 50vw, 25vw"
-              className={styles.image}
-            />
-          </button>
+            photo={photo}
+            index={i}
+            onOpen={() => setOpenIndex(i)}
+          />
         ))}
       </div>
+
+      {visibleCount < filtered.length && <div ref={sentinelRef} className={styles.sentinel} />}
 
       <AnimatePresence>
         {openIndex !== null && (
           <GalleryLightbox
-            items={filtered}
+            items={visible}
             index={openIndex}
             onClose={() => setOpenIndex(null)}
             onNavigate={setOpenIndex}
