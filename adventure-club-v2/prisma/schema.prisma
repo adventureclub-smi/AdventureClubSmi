@@ -723,9 +723,9 @@ model GalleryHeroSettings {
   updatedAt DateTime @updatedAt
 }
 
-// One vote per logged-in student for their favorite past trip — re-voting
-// updates their existing pick rather than adding a second row, enforced by
-// the unique constraint on userId.
+// One permanent vote per logged-in student for their favorite past trip —
+// the unique constraint on userId is what makes a second vote impossible
+// (the API rejects it outright rather than overwriting the first pick).
 model TripPollVote {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 

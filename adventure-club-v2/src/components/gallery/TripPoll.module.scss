@@ -1,12 +1,12 @@
 .section {
-  padding: 40px 24px 120px;
-  max-width: 900px;
+  padding: 140px 24px 60px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .heading {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .eyebrow {
@@ -14,114 +14,109 @@
   color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: 4px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .heading h2 {
   font-family: var(--font-display);
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(24px, 3.4vw, 34px);
 }
 
 .subtitle {
   color: var(--color-text-muted);
-  font-size: 15px;
-  margin-top: 10px;
+  font-size: 13.5px;
+  margin-top: 8px;
 }
 
-.loginPrompt {
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: 14px;
-  margin-bottom: 24px;
-
-  a {
-    color: var(--color-accent);
-    font-weight: 600;
-  }
-}
-
-.list {
+.grid {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
 }
 
-.option {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px;
+.card {
+  position: relative;
+  width: 160px;
+  height: 220px;
   border-radius: 16px;
-  background: var(--color-charcoal);
-  border: 1px solid rgba(245, 245, 245, 0.06);
+  overflow: hidden;
+  border: 2px solid transparent;
+  padding: 0;
   cursor: pointer;
-  text-align: left;
   transition: 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-
-.option:hover {
-  border-color: rgba(34, 197, 94, 0.3);
-}
-
-.optionVoted {
-  border-color: var(--color-accent);
-  background: rgba(34, 197, 94, 0.06);
-}
-
-.thumb {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  overflow: hidden;
   flex-shrink: 0;
 }
 
-.thumbImage {
+.card:hover {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.card:disabled {
+  cursor: default;
+}
+
+.cardVoted {
+  border-color: var(--color-accent);
+}
+
+.cardImage {
   object-fit: cover;
 }
 
-.info {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  z-index: 1;
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(13, 13, 13, 0) 40%, rgba(13, 13, 13, 0.92) 100%);
 }
 
-.infoTop {
+.votedBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+}
+
+.cardContent {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 12px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 
   strong {
     color: var(--color-text);
-    font-size: 15px;
-  }
-
-  span {
-    color: var(--color-text-muted);
     font-size: 13px;
-    white-space: nowrap;
+    line-height: 1.25;
   }
 }
 
 .destination {
   color: var(--color-text-muted);
-  font-size: 12.5px;
-  margin-bottom: 8px;
+  font-size: 11px;
 }
 
 .barTrack {
-  height: 6px;
+  height: 4px;
   border-radius: 999px;
-  background: rgba(245, 245, 245, 0.08);
+  background: rgba(245, 245, 245, 0.15);
   overflow: hidden;
+  margin-top: 6px;
 }
 
 .barFill {
@@ -130,20 +125,19 @@
   background: var(--color-accent);
 }
 
-.votedBadge {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  background: var(--color-accent);
-  color: var(--color-midnight);
+.percent {
+  color: var(--color-text-muted);
+  font-size: 10.5px;
+  margin-top: 2px;
 }
 
-.empty {
-  text-align: center;
-  color: var(--color-text-muted);
-  padding: 60px 24px;
+@media (max-width: 700px) {
+  .section {
+    padding: 100px 20px 40px;
+  }
+
+  .card {
+    width: 130px;
+    height: 180px;
+  }
 }

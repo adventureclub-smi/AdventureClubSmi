@@ -19,6 +19,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "trekId is required." }, { status: 400 });
     }
 
+    const existingVote = await prisma.tripPollVote.findUnique({ where: { userId: user.id } });
+
+    if (existingVote) {
+      return NextResponse.json(
+        { message: "You've already voted — votes can't be changed." },
+        { status: 400 }
+      );
+    }
+
     const trek = await prisma.trek.findUnique({ where: { id: trekId } });
 
     if (!trek || (!trek.isHistorical && trek.status !== "COMPLETED")) {
@@ -28,11 +37,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await prisma.tripPollVote.upsert({
-      where: { userId: user.id },
-      update: { trekId },
-      create: { userId: user.id, trekId },
-    });
+    await prisma.tripPollVote.create({ data: { userId: user.id, trekId } });
 
     return NextResponse.json({ message: "Vote recorded." });
   } catch (error) {

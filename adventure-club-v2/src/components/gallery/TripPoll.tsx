@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Check, Trophy } from "lucide-react";
@@ -24,6 +24,7 @@ type PollState = {
 };
 
 export default function TripPoll() {
+  const router = useRouter();
   const [poll, setPoll] = useState<PollState | null>(null);
   const [voting, setVoting] = useState<string | null>(null);
 
@@ -48,8 +49,16 @@ export default function TripPoll() {
     };
   }, []);
 
-  async function vote(trekId: string) {
-    if (!poll?.loggedIn || voting) return;
+  async function handleClick(trekId: string) {
+    if (!poll) return;
+
+    // Voting is one-shot — once myVote is set, cards are read-only reveals.
+    if (poll.myVote) return;
+
+    if (!poll.loggedIn) {
+      router.push("/login");
+      return;
+    }
 
     setVoting(trekId);
 
@@ -71,6 +80,8 @@ export default function TripPoll() {
 
   if (!poll || poll.options.length === 0) return null;
 
+  const revealed = Boolean(poll.myVote);
+
   return (
     <section className={styles.section}>
       <div className={styles.heading}>
@@ -79,16 +90,14 @@ export default function TripPoll() {
           FAVOURITE TRIP
         </span>
         <h2>Which Trip Did You Love Most?</h2>
-        <p className={styles.subtitle}>Vote for your favorite adventure so far.</p>
+        <p className={styles.subtitle}>
+          {revealed
+            ? "Thanks for voting — here's how everyone else feels."
+            : "Cast your vote to see how everyone else feels."}
+        </p>
       </div>
 
-      {!poll.loggedIn && (
-        <p className={styles.loginPrompt}>
-          <Link href="/login">Log in</Link> to cast your vote — here&apos;s how everyone else voted so far.
-        </p>
-      )}
-
-      <div className={styles.list}>
+      <div className={styles.grid}>
         {poll.options.map((option, i) => {
           const percent =
             poll.totalVotes > 0 ? Math.round((option.voteCount / poll.totalVotes) * 100) : 0;
@@ -98,50 +107,51 @@ export default function TripPoll() {
             <motion.button
               key={option.trekId}
               type="button"
-              className={`${styles.option} ${isMine ? styles.optionVoted : ""}`}
-              onClick={() => vote(option.trekId)}
-              disabled={!poll.loggedIn || voting === option.trekId}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              className={`${styles.card} ${isMine ? styles.cardVoted : ""}`}
+              onClick={() => handleClick(option.trekId)}
+              disabled={revealed || voting === option.trekId}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.05 }}
+              whileHover={revealed ? undefined : { y: -6 }}
             >
-              <div className={styles.thumb}>
-                <Image
-                  src={option.coverImage}
-                  alt={option.title}
-                  fill
-                  sizes="64px"
-                  className={styles.thumbImage}
-                />
-              </div>
+              <Image
+                src={option.coverImage}
+                alt={option.title}
+                fill
+                sizes="(max-width: 700px) 45vw, 220px"
+                className={styles.cardImage}
+              />
 
-              <div className={styles.info}>
-                <div className={styles.infoTop}>
-                  <strong>{option.title}</strong>
-                  <span>
-                    {option.voteCount} vote{option.voteCount === 1 ? "" : "s"} · {percent}%
-                  </span>
-                </div>
-
-                <p className={styles.destination}>{option.destination}</p>
-
-                <div className={styles.barTrack}>
-                  <motion.div
-                    className={styles.barFill}
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${percent}%` }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: i * 0.05 + 0.2 }}
-                  />
-                </div>
-              </div>
+              <div className={styles.cardOverlay} />
 
               {isMine && (
                 <span className={styles.votedBadge}>
-                  <Check size={16} />
+                  <Check size={14} />
                 </span>
               )}
+
+              <div className={styles.cardContent}>
+                <strong>{option.title}</strong>
+                <span className={styles.destination}>{option.destination}</span>
+
+                {revealed && (
+                  <>
+                    <div className={styles.barTrack}>
+                      <motion.div
+                        className={styles.barFill}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percent}%` }}
+                        transition={{ duration: 0.7, delay: i * 0.05 + 0.15 }}
+                      />
+                    </div>
+                    <span className={styles.percent}>
+                      {percent}% · {option.voteCount} vote{option.voteCount === 1 ? "" : "s"}
+                    </span>
+                  </>
+                )}
+              </div>
             </motion.button>
           );
         })}
