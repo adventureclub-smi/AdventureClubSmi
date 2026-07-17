@@ -132,26 +132,29 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
 
   return (
     <section className={styles.section} id="things-we-do">
-      {/* Warms the browser's (and Next's image-optimizer) cache for just the
-          next couple of activities' full-size 100vw variant up front —
-          without this, clicking a card for the first time meant waiting on a
-          fresh fetch of a size Next had never generated before, which is
-          exactly what made switching cards feel laggy. Capped to the two
-          most likely next clicks (rather than every other activity) since
-          eagerly fetching all of them cost every fresh visitor several extra
-          MB for cards they may never open. Zero-size and inert so it never
-          affects layout or interaction. */}
+      {/* Warms the browser's (and Next's image-optimizer) cache for every
+          *other* activity's full-size 100vw variant up front — without
+          this, clicking a card for the first time meant waiting on a fresh
+          fetch of a size Next had never generated before, which is exactly
+          what made switching cards feel laggy/janky. Tried capping this to
+          only the next couple of likely clicks to save bandwidth, but that
+          meant activities further down the row still loaded live at the
+          exact moment you clicked them — worse, more noticeable lag than
+          the bandwidth it saved. Zero-size and inert so it never affects
+          layout or interaction. */}
       <div aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>
-        {reordered.slice(0, 2).map(({ activity }) => (
-          <Image
-            key={activity.id}
-            src={activity.backgroundImage}
-            alt=""
-            width={1920}
-            height={1080}
-            sizes="100vw"
-          />
-        ))}
+        {sorted
+          .filter((activity) => activity.id !== active.id)
+          .map((activity) => (
+            <Image
+              key={activity.id}
+              src={activity.backgroundImage}
+              alt=""
+              width={1920}
+              height={1080}
+              sizes="100vw"
+            />
+          ))}
       </div>
 
       {/* The fullscreen hero image — shares a layoutId with whichever row
