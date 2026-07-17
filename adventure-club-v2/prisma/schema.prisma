@@ -723,6 +723,21 @@ model GalleryHeroSettings {
   updatedAt DateTime @updatedAt
 }
 
+// One vote per logged-in student for their favorite past trip — re-voting
+// updates their existing pick rather than adding a second row, enforced by
+// the unique constraint on userId.
+model TripPollVote {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId
+
+  trekId String @db.ObjectId
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId])
+}
+
 model HomepageStory {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
