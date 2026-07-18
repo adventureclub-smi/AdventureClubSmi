@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const admin = await requireAdmin();
 
   if (!admin) {
@@ -10,19 +10,26 @@ export async function GET() {
   }
 
   try {
+    const trekId = req.nextUrl.searchParams.get("trekId") || undefined;
+
     const [candidates, issued] = await Promise.all([
       prisma.registration.findMany({
         where: {
           attendanceMarked: true,
           certificateIssued: false,
           trek: { isHistorical: false },
+          ...(trekId ? { trekId } : {}),
         },
         include: { user: true, trek: true },
         orderBy: { createdAt: "desc" },
       }),
 
       prisma.registration.findMany({
-        where: { certificateIssued: true, trek: { isHistorical: false } },
+        where: {
+          certificateIssued: true,
+          trek: { isHistorical: false },
+          ...(trekId ? { trekId } : {}),
+        },
         include: { user: true, trek: true, certificate: true },
         orderBy: { certificateIssuedAt: "desc" },
       }),

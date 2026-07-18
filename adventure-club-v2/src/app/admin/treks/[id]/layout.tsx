@@ -47,6 +47,7 @@ export default async function TrekLayout({
     { title: "Payments", href: `/admin/treks/${id}/payments` },
     { title: "Attendance", href: `/admin/treks/${id}/attendance` },
     { title: "Trip Centre", href: `/admin/treks/${id}/trip-centre` },
+    { title: "Certificates", href: `/admin/treks/${id}/certificates` },
     { title: "Booking", href: `/admin/treks/${id}/booking` },
     { title: "Refunds", href: `/admin/treks/${id}/refunds` },
     { title: "Finance", href: `/admin/treks/${id}/finance` },

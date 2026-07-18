@@ -12,14 +12,68 @@
   margin-bottom: 16px;
 }
 
-.trekSection {
-  margin-bottom: 36px;
-  padding-bottom: 28px;
-  border-bottom: 1px solid rgba(245, 245, 245, 0.08);
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
-.trekSection:last-child {
-  border-bottom: none;
+.trekCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 16px;
+  color: var(--color-text);
+  transition: 0.2s;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    letter-spacing: 0.5px;
+    font-size: 18px;
+  }
+}
+
+.trekCard:hover {
+  border-color: rgba(34, 197, 94, 0.35);
+  transform: translateY(-2px);
+}
+
+.cardStats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+}
+
+.statReady {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.statMuted {
+  color: var(--color-text-muted);
+}
+
+.cardLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: auto;
 }
 
 .trekHeader {
