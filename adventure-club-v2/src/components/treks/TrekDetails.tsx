@@ -27,6 +27,8 @@ type Trek = {
   duration: string;
   registrationClosesAt?: string | Date | null;
   registrationOpensAt?: string | Date | null;
+  type?: string;
+  time?: string | null;
 };
 
 type Registration = {
@@ -53,6 +55,9 @@ export default function TrekDetails({
   const [notifyLoading, setNotifyLoading] = useState(false);
 
   const { phase } = useRegistrationPhase(trek.date, trek.registrationOpensAt);
+
+  const isWorkshop = trek.type === "WORKSHOP";
+  const isFree = trek.price === 0;
 
   async function handleNotifyMe() {
     setNotifyLoading(true);
@@ -128,7 +133,7 @@ export default function TrekDetails({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2>About Expedition</h2>
+          <h2>{isWorkshop ? "About This Workshop" : "About Expedition"}</h2>
           <p>{trek.description}</p>
         </motion.div>
 
@@ -139,30 +144,32 @@ export default function TrekDetails({
           viewport={{ once: true }}
         >
           <div className={styles.price}>
-            <h2>₹{trek.price}</h2>
-            <span>Total Trek Fee</span>
+            <h2>{isFree ? "Free" : `₹${trek.price}`}</h2>
+            <span>{isWorkshop ? "Workshop Fee" : "Total Trek Fee"}</span>
           </div>
 
-          <div className={styles.payments}>
-            {trek.installments === 1 ? (
-              <div>
-                <p>Full Payment</p>
-                <h3>₹{trek.initialPayment}</h3>
-              </div>
-            ) : (
-              <>
+          {!isFree && (
+            <div className={styles.payments}>
+              {trek.installments === 1 ? (
                 <div>
-                  <p>Initial Payment</p>
+                  <p>Full Payment</p>
                   <h3>₹{trek.initialPayment}</h3>
                 </div>
+              ) : (
+                <>
+                  <div>
+                    <p>Initial Payment</p>
+                    <h3>₹{trek.initialPayment}</h3>
+                  </div>
 
-                <div>
-                  <p>Final Payment</p>
-                  <h3>₹{trek.finalPayment}</h3>
-                </div>
-              </>
-            )}
-          </div>
+                  <div>
+                    <p>Final Payment</p>
+                    <h3>₹{trek.finalPayment}</h3>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <div className={styles.divider} />
 
@@ -174,16 +181,27 @@ export default function TrekDetails({
               <strong>{new Date(trek.date).toLocaleDateString("en-IN")}</strong>
             </div>
 
-            <div>
-              <span>
-                <Mountain size={14} /> Difficulty
-              </span>
-              <strong>{trek.difficulty}</strong>
-            </div>
+            {trek.time && (
+              <div>
+                <span>
+                  <Clock size={14} /> Time
+                </span>
+                <strong>{trek.time}</strong>
+              </div>
+            )}
+
+            {!isWorkshop && (
+              <div>
+                <span>
+                  <Mountain size={14} /> Difficulty
+                </span>
+                <strong>{trek.difficulty}</strong>
+              </div>
+            )}
 
             <div>
               <span>
-                <MapPin size={14} /> Destination
+                <MapPin size={14} /> {isWorkshop ? "Place" : "Destination"}
               </span>
               <strong>{trek.destination}</strong>
             </div>
@@ -297,7 +315,19 @@ export default function TrekDetails({
             </>
           )}
 
-          {registration?.status === "APPROVED" && (
+          {registration?.status === "APPROVED" && isFree && (
+            <>
+              <div className={styles.badgeRow}>
+                <StatusBadge text="Registered — Free Entry" tone="approved" />
+              </div>
+              <p className={styles.note}>
+                Your registration has been approved. No payment needed — see
+                you there!
+              </p>
+            </>
+          )}
+
+          {registration?.status === "APPROVED" && !isFree && (
             <>
               {registration.initialPaymentDeadline && (
                 <PaymentCountdown deadline={registration.initialPaymentDeadline} />

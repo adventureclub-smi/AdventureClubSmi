@@ -41,7 +41,9 @@ export default function TrekTile({
           />
           <div className={styles.overlay} />
 
-          <span className={styles.difficulty}>{trek.difficulty}</span>
+          <span className={styles.difficulty}>
+            {trek.type === "WORKSHOP" ? "Workshop" : trek.difficulty}
+          </span>
           <span
             className={
               trek.seatsLeft > 0 ? styles.availability : styles.full
@@ -59,7 +61,7 @@ export default function TrekTile({
                 <p className={styles.date}>
                   {new Date(trek.date).toLocaleDateString("en-IN")}
                 </p>
-                <h4>₹{trek.price}</h4>
+                <h4>{trek.price === 0 ? "Free" : `₹${trek.price}`}</h4>
               </div>
 
               <span className={styles.register}>Register →</span>

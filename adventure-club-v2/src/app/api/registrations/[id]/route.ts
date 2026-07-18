@@ -31,7 +31,7 @@ export async function PUT(
 
     const existing = await prisma.registration.findUnique({
       where: { id },
-      select: { status: true },
+      select: { status: true, trek: { select: { price: true } } },
     });
 
     const statusMap: Record<string, RegistrationStatus> = {
@@ -50,6 +50,13 @@ export async function PUT(
       MISSED: RegistrationStatus.MISSED,
     };
 
+    const approvingNow = statusMap[status] === RegistrationStatus.APPROVED;
+
+    // Free treks/workshops (price 0) skip payment entirely — there's
+    // nothing to pay or verify, so approval alone should unlock everything
+    // a paid registration would only reach after its payment is verified.
+    const isFree = existing?.trek?.price === 0;
+
     const registration = await prisma.registration.update({
       where: {
         id,
@@ -59,14 +66,10 @@ export async function PUT(
         status: statusMap[status],
         remarks,
 
-        approvedAt:
-          statusMap[status] === RegistrationStatus.APPROVED
-            ? new Date()
-            : null,
+        approvedAt: approvingNow ? new Date() : null,
 
         initialPaymentDeadline:
-          statusMap[status] === RegistrationStatus.APPROVED &&
-          paymentDays
+          approvingNow && paymentDays
             ? new Date(
                 Date.now() +
                   Number(paymentDays) *
@@ -76,6 +79,16 @@ export async function PUT(
                     1000
               )
             : null,
+
+        ...(approvingNow && isFree
+          ? {
+              initialPaymentPaid: true,
+              initialPaymentPaidAt: new Date(),
+              finalPaymentUnlocked: true,
+              finalPaymentPaid: true,
+              finalPaymentPaidAt: new Date(),
+            }
+          : {}),
       },
 
       include: {

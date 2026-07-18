@@ -102,7 +102,9 @@ export default function FeaturedTrekCard({
         <p className={styles.location}>{trek.destination}</p>
 
         <div className={styles.badges}>
-          <span className={styles.badge}>{trek.difficulty}</span>
+          <span className={styles.badge}>
+            {trek.type === "WORKSHOP" ? "Workshop" : trek.difficulty}
+          </span>
           <span
             className={
               trek.seatsLeft > 0 ? styles.badge : styles.badgeFull

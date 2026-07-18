@@ -139,6 +139,7 @@ export interface TrekSummary {
   coverImage: string;
   seatsLeft: number;
   registrationOpensAt: string | null;
+  type?: string;
 }
 
 export interface TrekMapPin {

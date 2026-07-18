@@ -102,6 +102,7 @@ export default function AdminSidebar({
       return (
         pathname.startsWith("/admin/treks") ||
         pathname.startsWith("/admin/create-trek") ||
+        pathname.startsWith("/admin/create-workshop") ||
         pathname.startsWith("/admin/edit-trek")
       );
     }

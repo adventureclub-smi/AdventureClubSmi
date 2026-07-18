@@ -20,6 +20,7 @@ type Trek = {
   coverImage?: string | null;
   isHistorical?: boolean;
   season?: string | null;
+  type?: string;
 };
 
 type FinanceSummary = {
@@ -118,9 +119,15 @@ export default function TreksTable() {
         breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Treks" }]}
         quickActions={
           activeTab === "current" ? (
-            <Link href="/admin/create-trek" className={styles.createButton}>
-              <Plus size={16} /> Create Trek
-            </Link>
+            <div className={styles.quickActionsGroup}>
+              <Link href="/admin/create-trek" className={styles.createButton}>
+                <Plus size={16} /> Create Trek
+              </Link>
+
+              <Link href="/admin/create-workshop" className={styles.createButton}>
+                <Plus size={16} /> Create Workshop
+              </Link>
+            </div>
           ) : (
             <Link href="/admin/create-historical-trek" className={styles.createButton}>
               <Plus size={16} /> Add Historical Trek
@@ -210,6 +217,10 @@ export default function TreksTable() {
                     <Archive size={12} /> Archived
                   </span>
                 )}
+
+                {trek.type === "WORKSHOP" && (
+                  <span className={styles.archivedBadge}>Workshop</span>
+                )}
               </div>
 
               <div className={styles.content}>
@@ -219,14 +230,16 @@ export default function TreksTable() {
                   <span>
                     <MapPin size={13} /> {trek.destination}
                   </span>
-                  <span>
-                    <Mountain size={13} /> {trek.difficulty}
-                  </span>
+                  {trek.type !== "WORKSHOP" && (
+                    <span>
+                      <Mountain size={13} /> {trek.difficulty}
+                    </span>
+                  )}
                   <span>
                     <CalendarDays size={13} /> {new Date(trek.date).toLocaleDateString()}
                   </span>
                   <span>
-                    <Wallet size={13} /> ₹{trek.price}
+                    <Wallet size={13} /> {trek.price === 0 ? "Free" : `₹${trek.price}`}
                   </span>
                   <span>
                     <Users size={13} /> {trek.seats} Seats

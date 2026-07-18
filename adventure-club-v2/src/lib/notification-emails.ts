@@ -37,6 +37,33 @@ export async function notifyTrekCreated(trek: Trek) {
   );
 }
 
+// ===== Workshop created -> every verified (ACTIVE) member =====
+// Separate from notifyTrekCreated since its copy ("expedition to
+// {destination}") reads wrong for an on-campus workshop.
+export async function notifyWorkshopCreated(workshop: Trek) {
+  const members = await prisma.user.findMany({
+    where: { membershipStatus: "ACTIVE" },
+    select: { email: true, fullName: true },
+  });
+
+  const url = `${getSiteUrl()}/treks/${workshop.id}`;
+  const isFree = workshop.price === 0;
+
+  await sendBulkEmails(
+    members.map((member) => ({
+      to: member.email,
+      subject: `New Workshop Announced: ${workshop.title}`,
+      html: emailShell(`
+        <h2 style="color:#16a34a;">${workshop.title}</h2>
+        <p>Hi ${firstName(member.fullName)}, a new workshop at ${workshop.destination} has just been announced.</p>
+        <p>${formatTrekDate(workshop.date)}${workshop.time ? ` &middot; ${workshop.time}` : ""}</p>
+        <p>${isFree ? "Free to attend." : `Registration fee: ₹${workshop.price}`}</p>
+        ${emailButton(url, "View Workshop Details")}
+      `),
+    }))
+  );
+}
+
 // ===== Registration opens -> everyone who clicked Notify Me =====
 // Piggybacked on page visits (no cron in this project): called opportunistically
 // whenever a trek's page or the treks list is loaded. Cheap no-op in the

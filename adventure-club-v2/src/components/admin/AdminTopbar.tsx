@@ -10,6 +10,7 @@ import {
   Wallet,
   CheckSquare,
   Megaphone,
+  Tent,
   X,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ type SearchResults = {
 
 const quickActions = [
   { href: "/admin/create-trek", label: "Create Trek", icon: Mountain },
+  { href: "/admin/create-workshop", label: "Create Workshop", icon: Tent },
   { href: "/admin/payments", label: "Verify Payments", icon: Wallet },
   { href: "/admin/attendance", label: "Mark Attendance", icon: CheckSquare },
   { href: "/admin/announcements", label: "Create Announcement", icon: Megaphone },

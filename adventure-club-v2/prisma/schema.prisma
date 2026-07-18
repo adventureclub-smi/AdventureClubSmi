@@ -111,6 +111,13 @@ model User {
 model Trek {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
+  // "TREK" (default) or "WORKSHOP" — on-campus workshops (tent pitching,
+  // etc.) reuse this same model/registration/payment/countdown machinery
+  // instead of a parallel system, since they need exactly the same
+  // mechanics minus most of the trek-specific fields below (which get
+  // harmless placeholder values for a workshop row — see /api/workshops).
+  type String @default("TREK")
+
   title String
 
   destination String
@@ -122,6 +129,12 @@ model Trek {
   altitude String
 
   duration String
+
+  // Display-only time-of-day text for workshops (e.g. "3:00 PM - 5:00 PM").
+  // Kept separate from `date` (which stays a plain calendar date, same as
+  // treks) rather than folding it into one timestamp — treks don't track
+  // time-of-day either, so this only ever gets set for workshops.
+  time String?
 
   distance String
 

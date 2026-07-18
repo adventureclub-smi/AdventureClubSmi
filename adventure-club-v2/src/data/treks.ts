@@ -43,6 +43,7 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
     registrationOpensAt: trek.registrationOpensAt
       ? trek.registrationOpensAt.toISOString()
       : null,
+    type: trek.type,
   }));
 }
 

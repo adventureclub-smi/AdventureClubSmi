@@ -71,10 +71,17 @@ export default function AdminWelcome() {
         )}
       </div>
 
-      <Link href="/admin/create-trek" className={styles.button}>
-        <Plus size={20} />
-        <span>Create Trek</span>
-      </Link>
+      <div className={styles.buttonGroup}>
+        <Link href="/admin/create-trek" className={styles.button}>
+          <Plus size={20} />
+          <span>Create Trek</span>
+        </Link>
+
+        <Link href="/admin/create-workshop" className={styles.buttonSecondary}>
+          <Plus size={20} />
+          <span>Create Workshop</span>
+        </Link>
+      </div>
     </motion.div>
   );
 }
