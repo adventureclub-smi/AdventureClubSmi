@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 
@@ -22,9 +22,15 @@ interface Member {
   govtIdLocked: boolean;
 }
 
+const YEAR_OPTIONS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
+
 export default function MembersTable() {
   const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState("");
+  const [yearFilter, setYearFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [govtIdFilter, setGovtIdFilter] = useState("");
+  const [sortBy, setSortBy] = useState<"clubId" | "nameAsc" | "nameDesc">("clubId");
 
   useEffect(() => {
     let active = true;
@@ -46,22 +52,54 @@ export default function MembersTable() {
     };
   }, []);
 
-  const filtered = members.filter((member) =>
-    `${member.fullName} ${member.clubId} ${member.department}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  function govtIdState(member: Member) {
+    if (member.govtIdLocked) return "LOCKED";
+    return member.govtIdStatus;
+  }
 
-  async function approve(id: string) {
+  const filtered = useMemo(() => {
+    const bySearch = members.filter((member) =>
+      `${member.fullName} ${member.clubId} ${member.department}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    );
+
+    const byYear = yearFilter
+      ? bySearch.filter((member) => member.year === yearFilter)
+      : bySearch;
+
+    const byStatus = statusFilter
+      ? byYear.filter((member) => member.membershipStatus === statusFilter)
+      : byYear;
+
+    const byGovtId = govtIdFilter
+      ? byStatus.filter((member) => govtIdState(member) === govtIdFilter)
+      : byStatus;
+
+    const sorted = [...byGovtId].sort((a, b) => {
+      if (sortBy === "nameAsc") return a.fullName.localeCompare(b.fullName);
+      if (sortBy === "nameDesc") return b.fullName.localeCompare(a.fullName);
+      return a.clubId.localeCompare(b.clubId);
+    });
+
+    return sorted;
+  }, [members, search, yearFilter, statusFilter, govtIdFilter, sortBy]);
+
+  async function setMembership(id: string, membershipStatus: string, clubRole?: string) {
     await fetch(`/api/admin/members/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ membershipStatus: "ACTIVE", clubRole: "Member" }),
+      body: JSON.stringify({
+        membershipStatus,
+        ...(clubRole ? { clubRole } : {}),
+      }),
     });
 
     setMembers((prev) =>
       prev.map((member) =>
-        member.id === id ? { ...member, membershipStatus: "ACTIVE" } : member
+        member.id === id
+          ? { ...member, membershipStatus, ...(clubRole ? { clubRole } : {}) }
+          : member
       )
     );
   }
@@ -82,6 +120,43 @@ export default function MembersTable() {
           </div>
         }
       />
+
+      <div className={styles.filterBar}>
+        <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
+          <option value="">All Years</option>
+          {YEAR_OPTIONS.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">All Statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="ACTIVE">Active</option>
+          <option value="SUSPENDED">Suspended</option>
+        </select>
+
+        <select value={govtIdFilter} onChange={(e) => setGovtIdFilter(e.target.value)}>
+          <option value="">Any Govt ID Status</option>
+          <option value="NOT_SUBMITTED">Not Submitted</option>
+          <option value="PENDING">Pending Review</option>
+          <option value="VERIFIED">Verified</option>
+          <option value="LOCKED">Verified &amp; Locked</option>
+        </select>
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as "clubId" | "nameAsc" | "nameDesc")}
+        >
+          <option value="clubId">Sort: Club ID</option>
+          <option value="nameAsc">Sort: Name (A-Z)</option>
+          <option value="nameDesc">Sort: Name (Z-A)</option>
+        </select>
+
+        <span className={styles.resultCount}>{filtered.length} students</span>
+      </div>
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>
@@ -144,7 +219,18 @@ export default function MembersTable() {
                     </Link>
 
                     {member.membershipStatus === "PENDING" && (
-                      <button onClick={() => approve(member.id)}>Quick Approve</button>
+                      <button onClick={() => setMembership(member.id, "ACTIVE", "Member")}>
+                        Quick Approve
+                      </button>
+                    )}
+
+                    {member.membershipStatus === "ACTIVE" && (
+                      <button
+                        className={styles.undoButton}
+                        onClick={() => setMembership(member.id, "PENDING")}
+                      >
+                        Undo Approval
+                      </button>
                     )}
                   </div>
                 </td>
@@ -152,6 +238,10 @@ export default function MembersTable() {
             ))}
           </tbody>
         </table>
+
+        {filtered.length === 0 && (
+          <div className={styles.empty}>No students match these filters.</div>
+        )}
       </div>
     </div>
   );

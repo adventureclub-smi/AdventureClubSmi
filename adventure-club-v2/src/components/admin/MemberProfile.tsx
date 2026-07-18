@@ -99,6 +99,22 @@ export default function MemberProfile({
     setStatus("Member approved.");
   }
 
+  async function undoApproval() {
+    if (!user) return;
+
+    await fetch(`/api/admin/members/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        membershipStatus: "PENDING",
+        clubRole: user.clubRole,
+      }),
+    });
+
+    setUser({ ...user, membershipStatus: "PENDING" });
+    setStatus("Approval undone — back to pending.");
+  }
+
   async function toggleGovtVerified() {
     if (!user) return;
 
@@ -157,6 +173,18 @@ export default function MemberProfile({
           </div>
           <button className={styles.approveButton} onClick={approve}>
             Approve Member
+          </button>
+        </div>
+      )}
+
+      {user.membershipStatus === "ACTIVE" && (
+        <div className={styles.approvedBanner}>
+          <div>
+            <strong>Member Approved</strong>
+            <p>This student is an active member. Undo if this was approved by mistake.</p>
+          </div>
+          <button className={styles.undoApprovalButton} onClick={undoApproval}>
+            Undo Approval
           </button>
         </div>
       )}
