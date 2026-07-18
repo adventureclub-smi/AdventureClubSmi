@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
+import { isSmiInstitution } from "@/lib/institution";
 import styles from "./MembersTable.module.scss";
 
 interface Member {
@@ -14,6 +15,7 @@ interface Member {
   fullName: string;
   email: string;
   phoneNumber: string;
+  institution: string;
   year: string;
   department: string;
   membershipStatus: string;
@@ -26,6 +28,7 @@ const YEAR_OPTIONS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
 export default function MembersTable() {
   const [members, setMembers] = useState<Member[]>([]);
+  const [activeTab, setActiveTab] = useState<"smi" | "other">("smi");
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -57,9 +60,21 @@ export default function MembersTable() {
     return member.govtIdStatus;
   }
 
+  const smiCount = useMemo(
+    () => members.filter((member) => isSmiInstitution(member.institution)).length,
+    [members]
+  );
+  const otherCount = members.length - smiCount;
+
   const filtered = useMemo(() => {
-    const bySearch = members.filter((member) =>
-      `${member.fullName} ${member.clubId} ${member.department}`
+    const byTab = members.filter((member) =>
+      activeTab === "smi"
+        ? isSmiInstitution(member.institution)
+        : !isSmiInstitution(member.institution)
+    );
+
+    const bySearch = byTab.filter((member) =>
+      `${member.fullName} ${member.clubId} ${member.department} ${member.institution}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
@@ -83,7 +98,7 @@ export default function MembersTable() {
     });
 
     return sorted;
-  }, [members, search, yearFilter, statusFilter, govtIdFilter, sortBy]);
+  }, [members, activeTab, search, yearFilter, statusFilter, govtIdFilter, sortBy]);
 
   async function setMembership(id: string, membershipStatus: string, clubRole?: string) {
     await fetch(`/api/admin/members/${id}`, {
@@ -120,6 +135,22 @@ export default function MembersTable() {
           </div>
         }
       />
+
+      <div className={styles.tabs}>
+        <button
+          className={activeTab === "smi" ? styles.tabActive : styles.tab}
+          onClick={() => setActiveTab("smi")}
+        >
+          SMI Students ({smiCount})
+        </button>
+
+        <button
+          className={activeTab === "other" ? styles.tabActive : styles.tab}
+          onClick={() => setActiveTab("other")}
+        >
+          Other Institutions ({otherCount})
+        </button>
+      </div>
 
       <div className={styles.filterBar}>
         <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
@@ -165,7 +196,7 @@ export default function MembersTable() {
               <th>Club ID</th>
               <th>Name</th>
               <th>Year</th>
-              <th>Department</th>
+              <th>{activeTab === "other" ? "Institution" : "Department"}</th>
               <th>Status</th>
               <th>Role</th>
               <th>Govt ID</th>
@@ -184,7 +215,17 @@ export default function MembersTable() {
                 </td>
 
                 <td>{member.year}</td>
-                <td>{member.department}</td>
+
+                <td>
+                  {activeTab === "other" ? (
+                    <>
+                      <strong>{member.institution}</strong>
+                      <p>{member.department}</p>
+                    </>
+                  ) : (
+                    member.department
+                  )}
+                </td>
 
                 <td>
                   <span
