@@ -28,7 +28,11 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
 
     audioRef.current.src = songs[currentIndex].audioUrl;
     ensureAudioGraph();
-    audioRef.current.play();
+    // Switching songs quickly (rapid next/cover clicks) can set a new src
+    // before the previous play() promise settles, which rejects it with an
+    // AbortError — expected and harmless, so it's swallowed rather than
+    // surfacing as an unhandled rejection.
+    audioRef.current.play().catch(() => {});
     setIsPlaying(true);
   }, [currentIndex, songs]);
 
@@ -119,7 +123,7 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {});
       setIsPlaying(true);
     }
   }
