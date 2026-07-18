@@ -20,6 +20,7 @@ type Member = {
   clubId: string;
   email: string;
   phoneNumber: string;
+  institution: string;
   department: string;
   year: string;
   membershipStatus: string;
@@ -82,6 +83,22 @@ export default function MemberProfile({
     setStatus("Changes saved.");
   }
 
+  async function approve() {
+    if (!user) return;
+
+    await fetch(`/api/admin/members/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        membershipStatus: "ACTIVE",
+        clubRole: "Member",
+      }),
+    });
+
+    setUser({ ...user, membershipStatus: "ACTIVE", clubRole: "Member" });
+    setStatus("Member approved.");
+  }
+
   async function toggleGovtVerified() {
     if (!user) return;
 
@@ -132,6 +149,18 @@ export default function MemberProfile({
 
       {status && <p className={styles.status}>{status}</p>}
 
+      {user.membershipStatus === "PENDING" && (
+        <div className={styles.pendingBanner}>
+          <div>
+            <strong>New sign-up awaiting approval</strong>
+            <p>Review the details below, then approve to activate their membership.</p>
+          </div>
+          <button className={styles.approveButton} onClick={approve}>
+            Approve Member
+          </button>
+        </div>
+      )}
+
       <div className={styles.grid}>
         <section className={styles.card}>
           <h2>Personal Information</h2>
@@ -144,6 +173,9 @@ export default function MemberProfile({
           </p>
           <p>
             <strong>Phone:</strong> {user.phoneNumber}
+          </p>
+          <p>
+            <strong>Institution:</strong> {user.institution}
           </p>
           <p>
             <strong>Department:</strong> {user.department}

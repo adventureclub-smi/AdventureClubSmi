@@ -25,6 +25,46 @@
   background: var(--color-accent-hover);
 }
 
+.pendingBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+
+  strong {
+    color: var(--color-text);
+    font-size: 15px;
+  }
+
+  p {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+}
+
+.approveButton {
+  flex-shrink: 0;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.approveButton:hover {
+  background: var(--color-accent-hover);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

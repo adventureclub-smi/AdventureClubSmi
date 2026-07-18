@@ -136,13 +136,17 @@ export default function MembersTable() {
                 </td>
 
                 <td>
-                  {member.membershipStatus === "PENDING" ? (
-                    <button onClick={() => approve(member.id)}>Approve</button>
-                  ) : (
+                  <div className={styles.rowActions}>
                     <Link href={`/admin/members/${member.id}`}>
-                      <button>Manage</button>
+                      <button className={styles.viewButton}>
+                        {member.membershipStatus === "PENDING" ? "View & Approve" : "Manage"}
+                      </button>
                     </Link>
-                  )}
+
+                    {member.membershipStatus === "PENDING" && (
+                      <button onClick={() => approve(member.id)}>Quick Approve</button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
