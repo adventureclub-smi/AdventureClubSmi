@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MapPin, CalendarDays, ArrowUpRight } from "lucide-react";
+import { MapPin, CalendarDays, ArrowUpRight, Archive } from "lucide-react";
 
 import BackButton from "./shared/BackButton";
 import StatusBadge from "./shared/StatusBadge";
@@ -25,12 +25,15 @@ type Registration = RegistrationLike & {
     coverImage?: string | null;
     expectedReimbursementMin: number | null;
     expectedReimbursementMax: number | null;
+    isHistorical?: boolean;
+    season?: string | null;
   };
 };
 
 export default function StudentTreks() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("current");
 
   useEffect(() => {
     let active = true;
@@ -52,22 +55,61 @@ export default function StudentTreks() {
     };
   }, []);
 
+  // Seasons the student actually has archived treks in — most students
+  // will only ever see the "Current" tab since this stays empty for them.
+  const seasons = useMemo(() => {
+    const found = new Set<string>();
+    registrations.forEach((reg) => {
+      if (reg.trek.isHistorical && reg.trek.season) found.add(reg.trek.season);
+    });
+    return Array.from(found).sort().reverse();
+  }, [registrations]);
+
+  const visibleRegistrations = useMemo(
+    () =>
+      registrations.filter((reg) =>
+        activeTab === "current" ? !reg.trek.isHistorical : reg.trek.season === activeTab
+      ),
+    [registrations, activeTab]
+  );
+
   return (
     <div className={styles.container}>
       <BackButton />
 
       <h1>My Treks</h1>
 
+      {seasons.length > 0 && (
+        <div className={styles.tabs}>
+          <button
+            className={activeTab === "current" ? styles.tabActive : styles.tab}
+            onClick={() => setActiveTab("current")}
+          >
+            This Year
+          </button>
+
+          {seasons.map((season) => (
+            <button
+              key={season}
+              className={activeTab === season ? styles.tabActive : styles.tab}
+              onClick={() => setActiveTab(season)}
+            >
+              <Archive size={13} /> {season}
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
         <p className={styles.emptyText}>Loading...</p>
-      ) : registrations.length === 0 ? (
+      ) : visibleRegistrations.length === 0 ? (
         <div className={styles.empty}>
           <h2>No treks yet.</h2>
           <p>Register for an upcoming trek to start your adventure journey.</p>
         </div>
       ) : (
         <div className={styles.grid}>
-          {registrations.map((reg, i) => {
+          {visibleRegistrations.map((reg, i) => {
             const badge = getJourneyBadge(reg);
 
             const tripOver = reg.status === "COMPLETED" || reg.status === "MISSED";
