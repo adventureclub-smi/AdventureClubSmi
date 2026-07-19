@@ -18,13 +18,24 @@ export async function GET(
 
   const { trekId } = await params;
 
+  const trek = await prisma.trek.findUnique({
+    where: { id: trekId },
+    select: { isHistorical: true },
+  });
+
+  // Historical registrations are bulk-imported and some never had their
+  // initial payment marked paid at all — gating on that here would make
+  // those participants impossible to mark present/absent for an archived
+  // trek. Live treks keep the original "must have paid" restriction.
   const registrations =
     await prisma.registration.findMany({
-      where: {
-        trekId,
+      where: trek?.isHistorical
+        ? { trekId }
+        : {
+            trekId,
 
-        initialPaymentPaid: true,
-      },
+            initialPaymentPaid: true,
+          },
 
       include: {
         user: true,

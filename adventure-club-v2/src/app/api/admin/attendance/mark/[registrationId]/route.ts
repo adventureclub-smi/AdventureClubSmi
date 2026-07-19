@@ -23,6 +23,19 @@ export async function PUT(
 
   const body = await req.json();
 
+  const existing = await prisma.registration.findUnique({
+    where: { id: registrationId },
+    select: { status: true },
+  });
+
+  // On a live trek, completion status only flips when the "Mark Trek
+  // Completed" bulk action runs. But a historical/already-finalized trek
+  // has no such action (it would clobber every other participant's
+  // status), so here attendance is the only signal — keep status in sync
+  // with it directly rather than leaving a stale COMPLETED/MISSED value.
+  const alreadyFinalized =
+    existing?.status === "COMPLETED" || existing?.status === "MISSED";
+
   const registration =
     await prisma.registration.update({
       where: {
@@ -37,6 +50,10 @@ export async function PUT(
           body.attendanceMarked
             ? new Date()
             : null,
+
+        ...(alreadyFinalized
+          ? { status: body.attendanceMarked ? "COMPLETED" : "MISSED" }
+          : {}),
       },
     });
 
