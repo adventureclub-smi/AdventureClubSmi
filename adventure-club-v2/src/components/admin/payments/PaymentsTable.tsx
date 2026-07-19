@@ -21,7 +21,7 @@ type FilterOption =
   | "finalDidNotPay"
   | "finalPending";
 
-type SortOption = "nameAsc" | "nameDesc";
+type SortOption = "nameAsc" | "nameDesc" | "orderAsc" | "orderDesc";
 
 const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
   { value: "all", label: "All Participants" },
@@ -36,6 +36,8 @@ const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "nameAsc", label: "Name (A–Z)" },
   { value: "nameDesc", label: "Name (Z–A)" },
+  { value: "orderAsc", label: "Registration # (Low–High)" },
+  { value: "orderDesc", label: "Registration # (High–Low)" },
 ];
 
 export default function PaymentsTable({ trekId }: Props) {
@@ -159,6 +161,16 @@ export default function PaymentsTable({ trekId }: Props) {
     }
   }
 
+  // registrations arrives ordered by createdAt (registration order) from the
+  // API — capture each person's position here, before the filter/sort below
+  // reorders the visible list, so the number always reflects who signed up
+  // first regardless of how the cards are currently sorted.
+  const registrationOrder = useMemo(() => {
+    const order = new Map<string, number>();
+    registrations.forEach((r, i) => order.set(r.id, i + 1));
+    return order;
+  }, [registrations]);
+
   const filtered = useMemo(() => {
     const bySearchAndFilter = registrations.filter((registration) => {
       const name = registration.user?.fullName ?? registration.guestName ?? "";
@@ -190,10 +202,19 @@ export default function PaymentsTable({ trekId }: Props) {
 
     const nameOf = (r: Registration) => r.user?.fullName ?? r.guestName ?? "";
 
-    return [...bySearchAndFilter].sort((a, b) =>
-      sortBy === "nameDesc" ? nameOf(b).localeCompare(nameOf(a)) : nameOf(a).localeCompare(nameOf(b))
-    );
-  }, [registrations, search, filterBy, sortBy]);
+    return [...bySearchAndFilter].sort((a, b) => {
+      switch (sortBy) {
+        case "nameDesc":
+          return nameOf(b).localeCompare(nameOf(a));
+        case "orderAsc":
+          return (registrationOrder.get(a.id) ?? 0) - (registrationOrder.get(b.id) ?? 0);
+        case "orderDesc":
+          return (registrationOrder.get(b.id) ?? 0) - (registrationOrder.get(a.id) ?? 0);
+        default:
+          return nameOf(a).localeCompare(nameOf(b));
+      }
+    });
+  }, [registrations, search, filterBy, sortBy, registrationOrder]);
 
   const stats = useMemo(() => {
     const participants = registrations.length;
@@ -207,16 +228,6 @@ export default function PaymentsTable({ trekId }: Props) {
     );
 
     return { participants, initialPaid, finalPaid, pending, collected };
-  }, [registrations]);
-
-  // registrations arrives ordered by createdAt (registration order) from the
-  // API — capture each person's position here, before the filter/sort above
-  // reorders the visible list, so the number always reflects who signed up
-  // first regardless of how the cards are currently sorted.
-  const registrationOrder = useMemo(() => {
-    const order = new Map<string, number>();
-    registrations.forEach((r, i) => order.set(r.id, i + 1));
-    return order;
   }, [registrations]);
 
   if (loading) {
