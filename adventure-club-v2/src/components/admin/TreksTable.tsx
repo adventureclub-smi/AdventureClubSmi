@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
+import { HISTORICAL_SEASONS } from "@/lib/historical-seasons";
 import styles from "./TreksTable.module.scss";
 
 type Trek = {
@@ -34,10 +35,6 @@ const emptyFinanceSummary: FinanceSummary = {
   totalCollegeFundRemaining: 0,
   grandTotal: 0,
 };
-
-// Archived seasons that have historical data imported. Add the next
-// season here once its treks are backfilled.
-const HISTORICAL_SEASONS = ["2025-26"];
 
 export default function TreksTable() {
   const [treks, setTreks] = useState<Trek[]>([]);

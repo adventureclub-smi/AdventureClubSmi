@@ -6,6 +6,7 @@ import { Sparkles, Pencil } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
+import { HISTORICAL_SEASONS } from "@/lib/historical-seasons";
 import styles from "./PortfolioOverview.module.scss";
 
 type Trek = {
@@ -15,6 +16,7 @@ type Trek = {
   altitudeMeters: number;
   campNights: number;
   countsAsPeak: boolean;
+  isHistorical?: boolean;
 };
 
 export default function PortfolioOverview() {
@@ -26,9 +28,20 @@ export default function PortfolioOverview() {
 
     async function load() {
       try {
-        const res = await fetch("/api/treks");
-        if (!res.ok || !active) return;
-        setTreks(await res.json());
+        // Portfolio data matters just as much for backfilled historical
+        // treks as current ones — /api/treks only returns current treks by
+        // default, so the archived seasons have to be fetched separately.
+        const responses = await Promise.all([
+          fetch("/api/treks"),
+          ...HISTORICAL_SEASONS.map((season) =>
+            fetch(`/api/treks?season=${encodeURIComponent(season)}`)
+          ),
+        ]);
+
+        if (!active || responses.some((res) => !res.ok)) return;
+
+        const allTreks = (await Promise.all(responses.map((res) => res.json()))).flat();
+        setTreks(allTreks);
       } finally {
         if (active) setLoading(false);
       }
@@ -71,6 +84,7 @@ export default function PortfolioOverview() {
                 <div>
                   <strong>{trek.title}</strong>
                   <div className={styles.meta}>
+                    {trek.isHistorical && <span>Archived</span>}
                     <span>{trek.distanceKm} km</span>
                     <span>{trek.altitudeMeters} m</span>
                     <span>{trek.campNights} nights</span>
