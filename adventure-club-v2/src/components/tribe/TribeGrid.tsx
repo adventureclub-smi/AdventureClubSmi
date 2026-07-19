@@ -68,7 +68,18 @@ function TribeCard({
   );
 }
 
-export default function TribeGrid({ members }: { members: TribeMemberSummary[] }) {
+type Background = {
+  mediaUrl: string | null;
+  mediaType: "IMAGE" | "VIDEO" | null;
+};
+
+export default function TribeGrid({
+  members,
+  background,
+}: {
+  members: TribeMemberSummary[];
+  background?: Background;
+}) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -109,6 +120,25 @@ export default function TribeGrid({ members }: { members: TribeMemberSummary[] }
 
   return (
     <section className={styles.section}>
+      {background?.mediaUrl && (
+        <div className={styles.bg}>
+          {background.mediaType === "VIDEO" ? (
+            <video
+              src={background.mediaUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={styles.bgMedia}
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={background.mediaUrl} alt="" className={styles.bgMedia} />
+          )}
+          <div className={styles.bgScrim} />
+        </div>
+      )}
+
       <div className={`${styles.container} ${selectedMember ? styles.split : ""}`}>
         {!selectedMember && (
           <motion.div

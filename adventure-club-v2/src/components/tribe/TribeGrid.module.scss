@@ -3,6 +3,30 @@
   min-height: 100vh;
   padding: 180px 0 140px;
   background: var(--color-midnight);
+  overflow: hidden;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.bgMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bgScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 8, 6, 0.88) 0%,
+    rgba(4, 8, 6, 0.75) 40%,
+    rgba(4, 8, 6, 0.9) 100%
+  );
 }
 
 .container {

@@ -28,7 +28,16 @@ const nextConfig: NextConfig = {
   // platform-specific subfolder that the bundler doesn't know to carry along,
   // which is fine on Vercel (sharp is special-cased there) but breaks on
   // other hosts like Netlify.
-  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "sharp"],
+  // ffmpeg-static has the exact same "binary lives in a package-relative
+  // path resolved at runtime, not import time" problem as chromium/sharp
+  // above — same fix.
+  serverExternalPackages: [
+    "@sparticuz/chromium",
+    "puppeteer-core",
+    "sharp",
+    "ffmpeg-static",
+    "fluent-ffmpeg",
+  ],
   images: {
     remotePatterns: [
       {

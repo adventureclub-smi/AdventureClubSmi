@@ -777,6 +777,17 @@ model GalleryHeroSettings {
   updatedAt DateTime @updatedAt
 }
 
+model TribeBackgroundSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaUrl String?
+
+  // "IMAGE" | "VIDEO"
+  mediaType String?
+
+  updatedAt DateTime @updatedAt
+}
+
 // One permanent vote per logged-in student for their favorite past trip —
 // the unique constraint on userId is what makes a second vote impossible
 // (the API rejects it outright rather than overwriting the first pick).

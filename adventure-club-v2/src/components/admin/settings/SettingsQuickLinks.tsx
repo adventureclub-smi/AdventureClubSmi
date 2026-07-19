@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2, Mountain, Film, Hash, Compass } from "lucide-react";
+import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2, Mountain, Film, Hash, Compass, ImagePlay } from "lucide-react";
 import QuickActionCard from "@/components/dashboard/shared/QuickActionCard";
 
 export default function SettingsQuickLinks() {
@@ -22,6 +22,12 @@ export default function SettingsQuickLinks() {
         icon={Users}
         label="Tribe"
         href="/admin/settings/tribe"
+      />
+
+      <QuickActionCard
+        icon={ImagePlay}
+        label="Tribe Background"
+        href="/admin/settings/tribe-background"
       />
 
       <QuickActionCard
