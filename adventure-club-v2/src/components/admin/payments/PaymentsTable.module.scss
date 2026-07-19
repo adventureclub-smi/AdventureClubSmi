@@ -220,6 +220,26 @@
   margin-bottom: 20px;
 }
 
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.orderNumber {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
 .cardHeader h3 {
   color: var(--color-text);
   margin-bottom: 4px;

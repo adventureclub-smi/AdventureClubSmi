@@ -209,6 +209,16 @@ export default function PaymentsTable({ trekId }: Props) {
     return { participants, initialPaid, finalPaid, pending, collected };
   }, [registrations]);
 
+  // registrations arrives ordered by createdAt (registration order) from the
+  // API — capture each person's position here, before the filter/sort above
+  // reorders the visible list, so the number always reflects who signed up
+  // first regardless of how the cards are currently sorted.
+  const registrationOrder = useMemo(() => {
+    const order = new Map<string, number>();
+    registrations.forEach((r, i) => order.set(r.id, i + 1));
+    return order;
+  }, [registrations]);
+
   if (loading) {
     return <div className={styles.loading}>Loading payments...</div>;
   }
@@ -324,9 +334,13 @@ export default function PaymentsTable({ trekId }: Props) {
             return (
               <div key={registration.id} className={styles.card}>
                 <div className={styles.cardHeader}>
-                  <div>
-                    <h3>{participant}</h3>
-                    <p>{clubId}</p>
+                  <div className={styles.nameRow}>
+                    <span className={styles.orderNumber}>{registrationOrder.get(registration.id)}</span>
+
+                    <div>
+                      <h3>{participant}</h3>
+                      <p>{clubId}</p>
+                    </div>
                   </div>
 
                   <button className={styles.manage} onClick={() => setSelected(registration)}>
