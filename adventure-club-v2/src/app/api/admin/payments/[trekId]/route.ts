@@ -19,11 +19,18 @@ export async function GET(
   try {
     const { trekId } = await params;
 
+    const trek = await prisma.trek.findUnique({
+      where: { id: trekId },
+      select: { isHistorical: true },
+    });
+
+    // Historical registrations are bulk-imported straight to a terminal
+    // status and never pass through the live payment portal, so gating on
+    // paymentPortal would hide every one of them here. Every current-trek
+    // registration reaches this tab through the portal, so that filter
+    // stays for everything else.
     const registrations = await prisma.registration.findMany({
-      where: {
-        trekId,
-        paymentPortal: true,
-      },
+      where: trek?.isHistorical ? { trekId } : { trekId, paymentPortal: true },
       include: {
   user: {
   select: {

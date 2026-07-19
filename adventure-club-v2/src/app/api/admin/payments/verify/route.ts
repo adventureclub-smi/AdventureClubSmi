@@ -25,27 +25,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!payment) {
-      return NextResponse.json(
-        {
-          message: "Payment not found",
+    // Historical registrations are bulk-imported with their paid/unpaid
+    // flags set directly on the Registration itself — there's no Payment
+    // row to flip, so just fall through to updating the registration below.
+    if (payment) {
+      await prisma.payment.update({
+        where: {
+          id: payment.id,
         },
-        {
-          status: 404,
-        }
-      );
+        data: {
+          status: verified
+            ? PaymentStatus.PAID
+            : PaymentStatus.PENDING,
+        },
+      });
     }
-
-    await prisma.payment.update({
-      where: {
-        id: payment.id,
-      },
-      data: {
-        status: verified
-          ? PaymentStatus.PAID
-          : PaymentStatus.PENDING,
-      },
-    });
 
     // A single-installment trek has no real "final payment" — verifying its
     // one payment (recorded as INITIAL) must also complete the final-payment

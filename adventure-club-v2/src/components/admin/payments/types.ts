@@ -38,5 +38,6 @@ export type PaymentRegistration = {
 
   trek?: {
     installments?: number;
+    isHistorical?: boolean;
   };
 };

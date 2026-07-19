@@ -97,6 +97,7 @@ export default function PaymentsTable({ trekId }: Props) {
   }
 
   const isSingleInstallment = registrations[0]?.trek?.installments === 1;
+  const isHistorical = registrations[0]?.trek?.isHistorical ?? false;
 
   const trekCompleted = registrations.some(
     (r) => r.status === "COMPLETED" || r.status === "MISSED"
@@ -204,34 +205,40 @@ export default function PaymentsTable({ trekId }: Props) {
         </div>
       </div>
 
-      <div className={styles.bulkActions}>
-        {!isSingleInstallment && (
+      {/* Both bulk actions key off "APPROVED" status and toggle the trek's
+          live listing status — meaningless (and, for "Undo", actively
+          harmful to already-COMPLETED/MISSED historical data) for an
+          archived trek, so they're live-trek only. */}
+      {!isHistorical && (
+        <div className={styles.bulkActions}>
+          {!isSingleInstallment && (
+            <button
+              className={styles.unlockAllButton}
+              disabled={unlockingAll}
+              onClick={handleUnlockAll}
+            >
+              <Unlock size={15} />
+              {unlockingAll ? "Unlocking..." : "Unlock Final Payment for All"}
+            </button>
+          )}
+
           <button
-            className={styles.unlockAllButton}
-            disabled={unlockingAll}
-            onClick={handleUnlockAll}
+            className={trekCompleted ? styles.undoCompleteButton : styles.completeTrekButton}
+            disabled={completingTrek}
+            onClick={handleCompleteTrek}
           >
-            <Unlock size={15} />
-            {unlockingAll ? "Unlocking..." : "Unlock Final Payment for All"}
+            <FlagTriangleRight size={15} />
+            {completingTrek
+              ? "Working..."
+              : trekCompleted
+              ? "Undo Trek Completion"
+              : "Mark Trek Completed"}
           </button>
-        )}
 
-        <button
-          className={trekCompleted ? styles.undoCompleteButton : styles.completeTrekButton}
-          disabled={completingTrek}
-          onClick={handleCompleteTrek}
-        >
-          <FlagTriangleRight size={15} />
-          {completingTrek
-            ? "Working..."
-            : trekCompleted
-            ? "Undo Trek Completion"
-            : "Mark Trek Completed"}
-        </button>
-
-        {unlockStatus && <p className={styles.unlockStatus}>{unlockStatus}</p>}
-        {completeStatus && <p className={styles.unlockStatus}>{completeStatus}</p>}
-      </div>
+          {unlockStatus && <p className={styles.unlockStatus}>{unlockStatus}</p>}
+          {completeStatus && <p className={styles.unlockStatus}>{completeStatus}</p>}
+        </div>
+      )}
 
       <div className={styles.cards}>
         {filtered.length === 0 ? (
