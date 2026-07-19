@@ -45,23 +45,37 @@ type UploadOptions = {
   maxSizeKB?: number;
 };
 
-// Re-encodes at progressively lower quality, then progressively smaller
-// width, until under maxBytes or the quality/width floor is hit — whichever
-// comes first, so a heavily oversized source still ends up as small as this
-// approach can get it rather than looping forever.
+// A source photo downscaled to a sane display resolution loses far less
+// perceptible detail than that same resolution crushed down to a low WebP
+// quality — profile-style photos are never viewed anywhere near their raw
+// phone-camera dimensions anyway. So: cap dimensions to a generous display
+// size first, then nudge quality down only gently (never below a floor
+// where compression artifacts become visible), and only fall back to
+// shrinking further if that still isn't enough.
 async function compressToTarget(buffer: Buffer, maxBytes: number) {
-  let quality = 80;
-  let result = await sharp(buffer).rotate().webp({ quality }).toBuffer({ resolveWithObject: true });
+  const metadata = await sharp(buffer).rotate().metadata();
 
-  while (result.data.length > maxBytes && quality > 20) {
-    quality -= 15;
-    result = await sharp(buffer).rotate().webp({ quality }).toBuffer({ resolveWithObject: true });
+  let width =
+    metadata.width && metadata.width > 1600 ? 1600 : metadata.width;
+  let quality = 82;
+
+  let result = await sharp(buffer)
+    .rotate()
+    .resize({ width })
+    .webp({ quality })
+    .toBuffer({ resolveWithObject: true });
+
+  while (result.data.length > maxBytes && quality > 55) {
+    quality -= 8;
+    result = await sharp(buffer)
+      .rotate()
+      .resize({ width })
+      .webp({ quality })
+      .toBuffer({ resolveWithObject: true });
   }
 
-  let width = result.info.width;
-
-  while (result.data.length > maxBytes && width > 400) {
-    width = Math.round(width * 0.8);
+  while (result.data.length > maxBytes && width && width > 500) {
+    width = Math.round(width * 0.85);
     result = await sharp(buffer)
       .rotate()
       .resize({ width })
