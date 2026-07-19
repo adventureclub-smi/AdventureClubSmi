@@ -73,6 +73,8 @@ type Background = {
   mediaType: "IMAGE" | "VIDEO" | null;
 };
 
+const BAR_COUNT = 40;
+
 export default function TribeGrid({
   members,
   background,
@@ -81,17 +83,92 @@ export default function TribeGrid({
   background?: Background;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const frameRef = useRef<number | null>(null);
 
   const selectedMember = members.find((member) => member.id === selectedId) ?? null;
+
+  function resetBars() {
+    barRefs.current.forEach((bar) => {
+      if (bar) bar.style.transform = "scaleY(0.08)";
+    });
+  }
+
+  function ensureAudioGraph() {
+    if (audioCtxRef.current || !audioRef.current) return;
+
+    try {
+      const ctx = new AudioContext();
+      const source = ctx.createMediaElementSource(audioRef.current);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 128;
+      analyser.smoothingTimeConstant = 0.8;
+
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyser;
+    } catch (err) {
+      console.error("Audio visualizer unavailable:", err);
+    }
+  }
 
   useEffect(() => {
     if (!selectedMember?.songUrl || !audioRef.current) return;
 
     audioRef.current.src = selectedMember.songUrl;
     audioRef.current.currentTime = 0;
+    ensureAudioGraph();
+    // Switching between members' anthems quickly can set a new src before
+    // the previous play() promise settles, which rejects it with an
+    // AbortError — expected and harmless, so it's swallowed rather than
+    // surfacing as an unhandled rejection (same pattern as Club Vibe Check).
     audioRef.current.play().catch(() => {});
   }, [selectedMember]);
+
+  // Drives the frequency-reactive bars from the live audio, same technique
+  // as the homepage's Club Vibe Check section.
+  useEffect(() => {
+    if (!isPlaying || !analyserRef.current) {
+      resetBars();
+      return;
+    }
+
+    const analyser = analyserRef.current;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+
+    const center = (BAR_COUNT - 1) / 2;
+    const maxDist = Math.ceil(BAR_COUNT / 2);
+    const chunk = Math.max(1, Math.floor(analyser.frequencyBinCount / maxDist));
+
+    function tick() {
+      analyser.getByteFrequencyData(data);
+
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const dist = Math.round(Math.abs(i - center));
+
+        let sum = 0;
+        for (let j = 0; j < chunk; j++) sum += data[dist * chunk + j] || 0;
+        const scale = Math.max(0.08, sum / chunk / 255);
+
+        const bar = barRefs.current[i];
+        if (bar) bar.style.transform = `scaleY(${scale})`;
+      }
+
+      frameRef.current = requestAnimationFrame(tick);
+    }
+
+    tick();
+
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, [isPlaying]);
 
   // Stop playback if the visitor navigates away from the page entirely,
   // not just when they close the detail panel.
@@ -139,6 +216,29 @@ export default function TribeGrid({
           <div className={styles.bgScrim} />
         </div>
       )}
+
+      <AnimatePresence>
+        {selectedMember && (
+          <motion.div
+            key={selectedMember.id}
+            className={styles.detailBgArt}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            aria-hidden="true"
+          >
+            <Image
+              src={selectedMember.photoUrl}
+              alt=""
+              fill
+              sizes="100vw"
+              className={styles.detailBgArtImage}
+            />
+            <div className={styles.detailBgArtScrim} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className={`${styles.container} ${selectedMember ? styles.split : ""}`}>
         {!selectedMember && (
@@ -249,10 +349,24 @@ export default function TribeGrid({
                   <p className={styles.detailBio}>{selectedMember.bio}</p>
 
                   {selectedMember.songUrl && (
-                    <div className={styles.songRow}>
-                      <Music size={14} />
-                      Their Anthem · {selectedMember.songTitle}
-                    </div>
+                    <>
+                      <div className={styles.visualizer} aria-hidden="true">
+                        {Array.from({ length: BAR_COUNT }).map((_, i) => (
+                          <span
+                            key={i}
+                            ref={(el) => {
+                              barRefs.current[i] = el;
+                            }}
+                            className={styles.bar}
+                          />
+                        ))}
+                      </div>
+
+                      <div className={styles.songRow}>
+                        <Music size={14} />
+                        Their Anthem · {selectedMember.songTitle}
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -261,7 +375,13 @@ export default function TribeGrid({
         </AnimatePresence>
       </div>
 
-      <audio ref={audioRef} crossOrigin="anonymous" />
+      <audio
+        ref={audioRef}
+        crossOrigin="anonymous"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
+      />
     </section>
   );
 }
