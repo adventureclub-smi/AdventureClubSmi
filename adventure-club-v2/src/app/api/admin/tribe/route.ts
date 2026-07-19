@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
 
     const uploadedPhoto = await uploadBuffer(photoBytes, photoFile.type, {
       folder: "AdventureClub/Tribe",
+      maxSizeKB: 800,
     });
 
     let songUrl: string | null = null;

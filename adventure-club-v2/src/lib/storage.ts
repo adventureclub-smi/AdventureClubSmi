@@ -38,7 +38,39 @@ type UploadOptions = {
   // operation (e.g. certificate regeneration/deletion) needs to address the
   // exact same object again.
   key?: string;
+  // Opt-in target for uploads that come in unusually large (e.g. raw phone
+  // photos) — ratchets quality down, then downscales width, until under the
+  // limit. Left unset everywhere else, which keeps today's flat quality-80
+  // behavior for every other upload path.
+  maxSizeKB?: number;
 };
+
+// Re-encodes at progressively lower quality, then progressively smaller
+// width, until under maxBytes or the quality/width floor is hit — whichever
+// comes first, so a heavily oversized source still ends up as small as this
+// approach can get it rather than looping forever.
+async function compressToTarget(buffer: Buffer, maxBytes: number) {
+  let quality = 80;
+  let result = await sharp(buffer).rotate().webp({ quality }).toBuffer({ resolveWithObject: true });
+
+  while (result.data.length > maxBytes && quality > 20) {
+    quality -= 15;
+    result = await sharp(buffer).rotate().webp({ quality }).toBuffer({ resolveWithObject: true });
+  }
+
+  let width = result.info.width;
+
+  while (result.data.length > maxBytes && width > 400) {
+    width = Math.round(width * 0.8);
+    result = await sharp(buffer)
+      .rotate()
+      .resize({ width })
+      .webp({ quality })
+      .toBuffer({ resolveWithObject: true });
+  }
+
+  return result;
+}
 
 // Re-encodes images to WebP at upload time (quality 80) since R2 has no
 // on-the-fly transformation like Cloudinary's q_auto,f_auto — this is a
@@ -58,10 +90,9 @@ export async function uploadBuffer(
   const isImage = contentType.startsWith("image/") && options.resourceType !== "video";
 
   if (isImage) {
-    const { data, info } = await sharp(buffer)
-      .rotate()
-      .webp({ quality: 80 })
-      .toBuffer({ resolveWithObject: true });
+    const { data, info } = options.maxSizeKB
+      ? await compressToTarget(buffer, options.maxSizeKB * 1024)
+      : await sharp(buffer).rotate().webp({ quality: 80 }).toBuffer({ resolveWithObject: true });
 
     finalBuffer = data;
     width = info.width;

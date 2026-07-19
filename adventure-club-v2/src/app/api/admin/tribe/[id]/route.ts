@@ -48,6 +48,7 @@ export async function PUT(
 
       const uploadedPhoto = await uploadBuffer(photoBytes, photoFile.type, {
         folder: "AdventureClub/Tribe",
+        maxSizeKB: 800,
       });
 
       photoUrl = uploadedPhoto.secure_url;
