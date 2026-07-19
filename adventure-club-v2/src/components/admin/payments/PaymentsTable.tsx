@@ -12,10 +12,38 @@ interface Props {
   trekId: string;
 }
 
+type FilterOption =
+  | "all"
+  | "initialPaid"
+  | "initialDidNotPay"
+  | "initialPending"
+  | "finalPaid"
+  | "finalDidNotPay"
+  | "finalPending";
+
+type SortOption = "nameAsc" | "nameDesc";
+
+const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
+  { value: "all", label: "All Participants" },
+  { value: "initialPaid", label: "Initial: Paid" },
+  { value: "initialDidNotPay", label: "Initial: Didn't Pay" },
+  { value: "initialPending", label: "Initial: Pending" },
+  { value: "finalPaid", label: "Final: Paid" },
+  { value: "finalDidNotPay", label: "Final: Didn't Pay" },
+  { value: "finalPending", label: "Final: Pending" },
+];
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "nameAsc", label: "Name (A–Z)" },
+  { value: "nameDesc", label: "Name (Z–A)" },
+];
+
 export default function PaymentsTable({ trekId }: Props) {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterBy, setFilterBy] = useState<FilterOption>("all");
+  const [sortBy, setSortBy] = useState<SortOption>("nameAsc");
   const [selected, setSelected] = useState<Registration | null>(null);
   const [unlockingAll, setUnlockingAll] = useState(false);
   const [unlockStatus, setUnlockStatus] = useState("");
@@ -132,16 +160,40 @@ export default function PaymentsTable({ trekId }: Props) {
   }
 
   const filtered = useMemo(() => {
-    return registrations.filter((registration) => {
+    const bySearchAndFilter = registrations.filter((registration) => {
       const name = registration.user?.fullName ?? registration.guestName ?? "";
       const clubId = registration.user?.clubId ?? "";
 
-      return (
+      const matchesSearch =
         name.toLowerCase().includes(search.toLowerCase()) ||
-        clubId.toLowerCase().includes(search.toLowerCase())
-      );
+        clubId.toLowerCase().includes(search.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      switch (filterBy) {
+        case "initialPaid":
+          return registration.initialPaymentPaid;
+        case "initialDidNotPay":
+          return !registration.initialPaymentPaid && registration.initialPaymentDidNotPay;
+        case "initialPending":
+          return !registration.initialPaymentPaid && !registration.initialPaymentDidNotPay;
+        case "finalPaid":
+          return registration.finalPaymentPaid;
+        case "finalDidNotPay":
+          return !registration.finalPaymentPaid && registration.finalPaymentDidNotPay;
+        case "finalPending":
+          return !registration.finalPaymentPaid && !registration.finalPaymentDidNotPay;
+        default:
+          return true;
+      }
     });
-  }, [registrations, search]);
+
+    const nameOf = (r: Registration) => r.user?.fullName ?? r.guestName ?? "";
+
+    return [...bySearchAndFilter].sort((a, b) =>
+      sortBy === "nameDesc" ? nameOf(b).localeCompare(nameOf(a)) : nameOf(a).localeCompare(nameOf(b))
+    );
+  }, [registrations, search, filterBy, sortBy]);
 
   const stats = useMemo(() => {
     const participants = registrations.length;
@@ -176,6 +228,26 @@ export default function PaymentsTable({ trekId }: Props) {
             className={styles.search}
           />
         </div>
+      </div>
+
+      <div className={styles.filterBar}>
+        <select value={filterBy} onChange={(e) => setFilterBy(e.target.value as FilterOption)}>
+          {FILTER_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
+          {SORT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
+        <span className={styles.resultCount}>{filtered.length} shown</span>
       </div>
 
       <div className={styles.stats}>
