@@ -565,10 +565,10 @@ model TribeMember {
 
   role String
 
-  // 1 = Core Leadership (President, Treasurer...), 2 = Department Heads /
-  // Team. Roles/titles change every year so this drives the homepage's
+  // 1 = Core Leadership (President, Treasurer...), 2 = Department Head,
+  // 3 = Team. Roles/titles change every year so this drives the homepage's
   // layout grouping instead of matching on the (unstable) role text.
-  tier Int @default(2)
+  tier Int @default(3)
 
   year String
 

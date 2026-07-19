@@ -116,7 +116,8 @@ export default function TribeGrid({
   }
 
   const leadership = members.filter((member) => member.tier === 1);
-  const team = members.filter((member) => member.tier !== 1);
+  const heads = members.filter((member) => member.tier === 2);
+  const team = members.filter((member) => member.tier !== 1 && member.tier !== 2);
 
   return (
     <section className={styles.section}>
@@ -175,6 +176,22 @@ export default function TribeGrid({
                     selected={selectedId === member.id}
                     onClick={() => select(member.id)}
                     delay={i * 0.08}
+                  />
+                ))}
+              </motion.div>
+            )}
+
+            {heads.length > 0 && (
+              <motion.div layout className={styles.headsRow}>
+                {heads.map((member, i) => (
+                  <TribeCard
+                    key={member.id}
+                    member={member}
+                    size="sm"
+                    active={!!selectedMember}
+                    selected={selectedId === member.id}
+                    onClick={() => select(member.id)}
+                    delay={(i % 8) * 0.06}
                   />
                 ))}
               </motion.div>

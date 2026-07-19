@@ -41,7 +41,7 @@ const ROLE_SUGGESTIONS = [
 const emptyFields = {
   name: "",
   role: "",
-  tier: "2",
+  tier: "3",
   year: "",
   course: "",
   bio: "",
@@ -249,7 +249,8 @@ export default function TribeManager({
               onChange={(e) => handleField("tier", e.target.value)}
             >
               <option value="1">Core Leadership (President, Treasurer...)</option>
-              <option value="2">Department Head / Team</option>
+              <option value="2">Department Head</option>
+              <option value="3">Team</option>
             </select>
           </div>
 
@@ -355,7 +356,7 @@ export default function TribeManager({
                   <strong>{member.name}</strong>
                   <span>
                     {member.role} · {member.year} · {member.course}
-                    {member.tier === 1 ? " · Leadership" : ""}
+                    {member.tier === 1 ? " · Leadership" : member.tier === 2 ? " · Head" : " · Team"}
                   </span>
                 </div>
 
