@@ -9,6 +9,7 @@ export default function SocialSettings() {
   const [linkedin, setLinkedin] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,6 +29,7 @@ export default function SocialSettings() {
         setLinkedin(data.linkedin || "");
         setEmail(data.email || "");
         setPhone(data.phone || "");
+        setWhatsapp(data.whatsapp || "");
       } catch (err) {
         console.error(err);
       } finally {
@@ -50,7 +52,7 @@ export default function SocialSettings() {
       const res = await fetch("/api/admin/settings/social", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ instagram, linkedin, email, phone }),
+        body: JSON.stringify({ instagram, linkedin, email, phone, whatsapp }),
       });
 
       setStatus(res.ok ? "Social links saved." : "Failed to save.");
@@ -111,6 +113,13 @@ export default function SocialSettings() {
           placeholder="+91 90000 00000"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+        />
+
+        <label>WhatsApp Number (for Contact Us page)</label>
+        <input
+          placeholder="919000000000 (country code, no spaces or +)"
+          value={whatsapp}
+          onChange={(e) => setWhatsapp(e.target.value)}
         />
 
         <button onClick={save} disabled={saving}>

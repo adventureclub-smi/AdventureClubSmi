@@ -103,6 +103,7 @@ export interface SocialLinks {
   linkedin?: string;
   email?: string;
   phone?: string;
+  whatsapp?: string;
 }
 
 export interface TrailStat {

@@ -12,7 +12,7 @@ export async function GET() {
   const settings = await prisma.socialSettings.findFirst();
 
   return NextResponse.json(
-    settings || { instagram: "", linkedin: "", email: "", phone: "" }
+    settings || { instagram: "", linkedin: "", email: "", phone: "", whatsapp: "" }
   );
 }
 
@@ -24,13 +24,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { instagram, linkedin, email, phone } = await req.json();
+    const { instagram, linkedin, email, phone, whatsapp } = await req.json();
 
     const data = {
       instagram: instagram?.trim() || null,
       linkedin: linkedin?.trim() || null,
       email: email?.trim() || null,
       phone: phone?.trim() || null,
+      whatsapp: whatsapp?.trim() || null,
     };
 
     const existing = await prisma.socialSettings.findFirst();

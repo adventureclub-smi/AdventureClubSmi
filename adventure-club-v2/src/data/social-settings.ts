@@ -9,5 +9,6 @@ export async function getSocialSettings(): Promise<SocialLinks> {
     linkedin: settings?.linkedin || undefined,
     email: settings?.email || undefined,
     phone: settings?.phone || undefined,
+    whatsapp: settings?.whatsapp || undefined,
   };
 }

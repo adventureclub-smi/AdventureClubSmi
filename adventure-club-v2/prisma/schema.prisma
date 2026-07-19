@@ -66,6 +66,8 @@ model User {
 
   registrations Registration[]
 
+  contactSubmissions ContactSubmission[]
+
   membershipStatus String @default("PENDING")
 
   clubRole String @default("Member")
@@ -635,7 +637,34 @@ model SocialSettings {
 
   phone String?
 
+  // Number the Contact Us page's "Chat on WhatsApp" button opens — kept
+  // separate from `phone` since it needs to be in wa.me's exact digits-only
+  // format (country code + number, no spaces/dashes/plus sign).
+  whatsapp String?
+
   updatedAt DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // "ISSUE" | "INFORMATION" | "SIGNUP_PROBLEM" | "PAYMENT_ISSUE"
+  category String
+
+  message String
+
+  name String?
+
+  email String?
+
+  phoneNumber String?
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  status String @default("PENDING")
+
+  createdAt DateTime @default(now())
 }
 
 model GoogleEarthSettings {

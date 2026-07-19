@@ -14,6 +14,7 @@ const links = [
   { name: "Gallery", href: "/gallery" },
   { name: "Stories", href: "#stories" },
   { name: "Tribe", href: "/tribe" },
+  { name: "Contact Us", href: "/contact" },
 ];
 
 export default function Navbar() {
