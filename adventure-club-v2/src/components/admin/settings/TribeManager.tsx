@@ -30,6 +30,12 @@ const ROLE_SUGGESTIONS = [
   "Social Media Head",
   "Web & Tech Head",
   "Event Head",
+  "Team Logistics",
+  "Team Web & Tech",
+  "Team Events",
+  "Team Finance",
+  "Team Visual Media",
+  "Team Social Media",
 ];
 
 const emptyFields = {
