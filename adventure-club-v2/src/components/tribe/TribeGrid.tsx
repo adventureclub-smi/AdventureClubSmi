@@ -8,6 +8,15 @@ import { Compass, Music, ArrowLeft } from "lucide-react";
 import type { TribeMemberSummary } from "@/data/tribe";
 import styles from "./TribeGrid.module.scss";
 
+// The course field is free text like "B.Des - Industrial Arts and Design
+// Practices" or "B.Des ( Creative and applied Computation )" — the full
+// specialization overflows the small card, so just the degree (everything
+// before the first "-" or "(") is shown there. The detail panel still shows
+// the full text since it has room for it.
+function degreeOnly(course: string) {
+  return course.split(/[-(]/)[0].trim();
+}
+
 function TribeCard({
   member,
   size,
@@ -60,7 +69,7 @@ function TribeCard({
           <span className={styles.role}>{member.role}</span>
           <h3>{member.name}</h3>
           <p>
-            {member.year} · {member.course}
+            {member.year} · {degreeOnly(member.course)}
           </p>
         </div>
       </button>
