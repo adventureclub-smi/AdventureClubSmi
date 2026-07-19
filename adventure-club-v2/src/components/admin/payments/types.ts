@@ -16,6 +16,7 @@ export type PaymentRegistration = {
   initialPaymentDidNotPay: boolean;
   finalPaymentPaid: boolean;
   finalPaymentDidNotPay: boolean;
+  finalPaymentPaidAtOnce: boolean;
   finalPaymentUnlocked: boolean;
 
   bondFormSubmitted: boolean;

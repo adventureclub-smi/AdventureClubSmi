@@ -29,7 +29,9 @@ export async function POST(req: NextRequest) {
         paymentType === "FINAL"
           ? {
               finalPaymentDidNotPay: !!notPaid,
-              ...(notPaid ? { finalPaymentPaid: false, finalPaymentPaidAt: null } : {}),
+              ...(notPaid
+                ? { finalPaymentPaid: false, finalPaymentPaidAt: null, finalPaymentPaidAtOnce: false }
+                : {}),
             }
           : {
               initialPaymentDidNotPay: !!notPaid,

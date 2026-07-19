@@ -287,7 +287,8 @@ export default function PaymentsTable({ trekId }: Props) {
 
                       {registration.finalPaymentPaid ? (
                         <strong className={styles.success}>
-                          <CheckCircle2 size={15} /> Paid
+                          <CheckCircle2 size={15} />{" "}
+                          {registration.finalPaymentPaidAtOnce ? "Paid At Once" : "Paid"}
                         </strong>
                       ) : registration.finalPaymentDidNotPay ? (
                         <strong className={styles.danger}>

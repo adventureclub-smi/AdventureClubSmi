@@ -62,6 +62,9 @@ export async function POST(req: NextRequest) {
               finalPaymentPaid: verified,
               offlinePaymentVerified: verified,
               finalPaymentPaidAt: verified ? new Date() : null,
+              // Verifying (or undoing) a real Final Payment transaction here
+              // always supersedes the "paid at once during initial" state.
+              finalPaymentPaidAtOnce: false,
               ...(verified ? { finalPaymentDidNotPay: false } : {}),
             }
           : {

@@ -14,6 +14,7 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
   const [loading, setLoading] = useState(false);
   const [resubmitting, setResubmitting] = useState<"INITIAL" | "FINAL" | null>(null);
   const [markingNotPaid, setMarkingNotPaid] = useState<"INITIAL" | "FINAL" | null>(null);
+  const [markingPaidAtOnce, setMarkingPaidAtOnce] = useState(false);
 
   const initialPayment = registration.payments?.find((p) => p.type === "INITIAL");
   const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
@@ -102,6 +103,23 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
       onClose();
     } finally {
       setMarkingNotPaid(null);
+    }
+  }
+
+  async function togglePaidAtOnce(paidAtOnce: boolean) {
+    setMarkingPaidAtOnce(true);
+
+    try {
+      await fetch("/api/admin/payments/paid-at-once", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ registrationId: registration.id, paidAtOnce }),
+      });
+
+      refresh();
+      onClose();
+    } finally {
+      setMarkingPaidAtOnce(false);
     }
   }
 
@@ -279,7 +297,9 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
 
               <strong>
                 {registration.finalPaymentPaid
-                  ? "🟢 Paid"
+                  ? registration.finalPaymentPaidAtOnce
+                    ? "🟢 Paid At Once"
+                    : "🟢 Paid"
                   : registration.finalPaymentDidNotPay
                   ? "⚫ Didn't Pay"
                   : registration.finalPaymentUnlocked
@@ -335,6 +355,18 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
                 : registration.finalPaymentDidNotPay
                 ? "Undo Didn't Pay"
                 : "Didn't Pay"}
+            </button>
+
+            <button
+              className={styles.paidAtOnceAction}
+              disabled={markingPaidAtOnce}
+              onClick={() => togglePaidAtOnce(!registration.finalPaymentPaidAtOnce)}
+            >
+              {markingPaidAtOnce
+                ? "Working..."
+                : registration.finalPaymentPaidAtOnce
+                ? "Undo Paid At Once"
+                : "Paid At Once"}
             </button>
 
             <button

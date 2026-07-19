@@ -15,6 +15,7 @@ export type RegistrationLike = {
   finalPaymentUnlocked: boolean;
   finalPaymentPaid: boolean;
   finalPaymentDidNotPay?: boolean;
+  finalPaymentPaidAtOnce?: boolean;
   certificateIssued: boolean;
   trek?: { tripCentrePublished?: boolean; installments?: number };
 };
@@ -414,6 +415,13 @@ export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
             amount: final.amount,
             text: "Verification Pending",
             tone: "waiting",
+          }
+        : reg.finalPaymentPaidAtOnce
+        ? {
+            label: "Final Payment",
+            amount: 0,
+            text: "Paid At Once",
+            tone: "success",
           }
         : reg.finalPaymentDidNotPay
         ? {

@@ -354,6 +354,10 @@ model Registration {
   // mainly for historical trek records where there's no one left to chase.
   finalPaymentDidNotPay Boolean @default(false)
 
+  // The full trek cost was collected in one lump sum during the initial
+  // payment, so there's no separate final-payment transaction to record.
+  finalPaymentPaidAtOnce Boolean @default(false)
+
   // ===== College Reimbursement =====
 
   reimbursementAmount Int?

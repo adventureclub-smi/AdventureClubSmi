@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
           finalPaymentPaid: true,
           finalPaymentPaidAt: new Date(),
           finalPaymentDidNotPay: false,
+          finalPaymentPaidAtOnce: false,
         }
       : {
           initialPaymentPaid: true,
