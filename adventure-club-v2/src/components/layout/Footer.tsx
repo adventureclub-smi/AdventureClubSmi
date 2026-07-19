@@ -5,9 +5,9 @@ import styles from "./Footer.module.scss";
 
 const links = [
   { name: "Home", href: "/" },
-  { name: "Upcoming Treks", href: "#treks" },
-  { name: "Gallery", href: "#gallery" },
-  { name: "Stories", href: "#stories" },
+  { name: "Upcoming Treks", href: "/#treks" },
+  { name: "Gallery", href: "/gallery" },
+  { name: "Stories", href: "/#stories" },
 ];
 
 export default function Footer({ socials }: { socials: SocialLinks }) {
