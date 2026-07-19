@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Pencil, Check, X } from "lucide-react";
 import styles from "./PaymentDrawer.module.scss";
 import type { PaymentRegistration } from "./types";
 
@@ -15,6 +16,9 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
   const [resubmitting, setResubmitting] = useState<"INITIAL" | "FINAL" | null>(null);
   const [markingNotPaid, setMarkingNotPaid] = useState<"INITIAL" | "FINAL" | null>(null);
   const [markingPaidAtOnce, setMarkingPaidAtOnce] = useState(false);
+  const [editingAmount, setEditingAmount] = useState<"INITIAL" | "FINAL" | null>(null);
+  const [amountDraft, setAmountDraft] = useState("");
+  const [savingAmount, setSavingAmount] = useState(false);
 
   const initialPayment = registration.payments?.find((p) => p.type === "INITIAL");
   const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
@@ -123,6 +127,29 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
     }
   }
 
+  function startEditAmount(type: "INITIAL" | "FINAL", currentAmount: number) {
+    setEditingAmount(type);
+    setAmountDraft(String(currentAmount));
+  }
+
+  async function saveAmount(type: "INITIAL" | "FINAL") {
+    setSavingAmount(true);
+
+    try {
+      await fetch("/api/admin/payments/edit-amount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ registrationId: registration.id, type, amount: Number(amountDraft) || 0 }),
+      });
+
+      refresh();
+      onClose();
+    } finally {
+      setSavingAmount(false);
+      setEditingAmount(null);
+    }
+  }
+
   async function requireResubmission(type: "INITIAL" | "FINAL") {
     const confirmReset = confirm(
       `This will reopen ${type === "FINAL" ? "final" : "initial"} payment for this student and they'll need to resubmit. Continue?`
@@ -225,7 +252,46 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
 
           <div className={styles.item}>
             <span>Recorded Amount</span>
-            <strong>₹{registration.paymentAmount ?? initialPayment?.amount ?? 0}</strong>
+
+            {editingAmount === "INITIAL" ? (
+              <div className={styles.amountEdit}>
+                <input
+                  type="number"
+                  className={styles.amountInput}
+                  value={amountDraft}
+                  onChange={(e) => setAmountDraft(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  className={styles.amountSave}
+                  disabled={savingAmount}
+                  onClick={() => saveAmount("INITIAL")}
+                  aria-label="Save amount"
+                >
+                  <Check size={14} />
+                </button>
+                <button
+                  className={styles.amountCancel}
+                  onClick={() => setEditingAmount(null)}
+                  aria-label="Cancel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <span className={styles.amountValue}>
+                <strong>₹{registration.paymentAmount ?? initialPayment?.amount ?? 0}</strong>
+                <button
+                  className={styles.editAmountButton}
+                  onClick={() =>
+                    startEditAmount("INITIAL", registration.paymentAmount ?? initialPayment?.amount ?? 0)
+                  }
+                  aria-label="Edit recorded amount"
+                >
+                  <Pencil size={12} />
+                </button>
+              </span>
+            )}
           </div>
 
           <div className={styles.item}>
@@ -310,7 +376,44 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
 
             <div className={styles.item}>
               <span>Recorded Amount</span>
-              <strong>₹{finalPayment?.amount ?? 0}</strong>
+
+              {editingAmount === "FINAL" ? (
+                <div className={styles.amountEdit}>
+                  <input
+                    type="number"
+                    className={styles.amountInput}
+                    value={amountDraft}
+                    onChange={(e) => setAmountDraft(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    className={styles.amountSave}
+                    disabled={savingAmount}
+                    onClick={() => saveAmount("FINAL")}
+                    aria-label="Save amount"
+                  >
+                    <Check size={14} />
+                  </button>
+                  <button
+                    className={styles.amountCancel}
+                    onClick={() => setEditingAmount(null)}
+                    aria-label="Cancel"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <span className={styles.amountValue}>
+                  <strong>₹{finalPayment?.amount ?? 0}</strong>
+                  <button
+                    className={styles.editAmountButton}
+                    onClick={() => startEditAmount("FINAL", finalPayment?.amount ?? 0)}
+                    aria-label="Edit recorded amount"
+                  >
+                    <Pencil size={12} />
+                  </button>
+                </span>
+              )}
             </div>
 
             <div className={styles.item}>

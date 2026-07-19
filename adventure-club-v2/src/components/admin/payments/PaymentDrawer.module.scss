@@ -193,6 +193,89 @@ select.input {
   cursor: not-allowed;
 }
 
+.amountValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editAmountButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(245, 245, 245, 0.08);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.editAmountButton:hover {
+  background: rgba(245, 245, 245, 0.16);
+  color: white;
+}
+
+.amountEdit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.amountInput {
+  width: 90px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #2f405f;
+  background: #0b1324;
+  color: white;
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+.amountInput:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+.amountSave,
+.amountCancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.amountSave {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.amountSave:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.amountSave:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.amountCancel {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.amountCancel:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
 .card p {
   margin: 8px 0;
   color: #cbd5e1;
