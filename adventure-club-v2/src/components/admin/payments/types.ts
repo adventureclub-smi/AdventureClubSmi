@@ -13,7 +13,9 @@ export type PaymentRegistration = {
   status: string;
 
   initialPaymentPaid: boolean;
+  initialPaymentDidNotPay: boolean;
   finalPaymentPaid: boolean;
+  finalPaymentDidNotPay: boolean;
   finalPaymentUnlocked: boolean;
 
   bondFormSubmitted: boolean;

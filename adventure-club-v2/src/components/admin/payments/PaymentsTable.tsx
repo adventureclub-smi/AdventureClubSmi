@@ -270,6 +270,10 @@ export default function PaymentsTable({ trekId }: Props) {
                       <strong className={styles.success}>
                         <CheckCircle2 size={15} /> Paid
                       </strong>
+                    ) : registration.initialPaymentDidNotPay ? (
+                      <strong className={styles.danger}>
+                        <XCircle size={15} /> Didn&apos;t Pay
+                      </strong>
                     ) : (
                       <strong className={styles.danger}>
                         <XCircle size={15} /> Pending
@@ -284,6 +288,10 @@ export default function PaymentsTable({ trekId }: Props) {
                       {registration.finalPaymentPaid ? (
                         <strong className={styles.success}>
                           <CheckCircle2 size={15} /> Paid
+                        </strong>
+                      ) : registration.finalPaymentDidNotPay ? (
+                        <strong className={styles.danger}>
+                          <XCircle size={15} /> Didn&apos;t Pay
                         </strong>
                       ) : registration.finalPaymentUnlocked ? (
                         <strong className={styles.warning}>

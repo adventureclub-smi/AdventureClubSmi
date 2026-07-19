@@ -13,6 +13,7 @@ interface Props {
 export default function PaymentDrawer({ registration, onClose, refresh }: Props) {
   const [loading, setLoading] = useState(false);
   const [resubmitting, setResubmitting] = useState<"INITIAL" | "FINAL" | null>(null);
+  const [markingNotPaid, setMarkingNotPaid] = useState<"INITIAL" | "FINAL" | null>(null);
 
   const initialPayment = registration.payments?.find((p) => p.type === "INITIAL");
   const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
@@ -85,6 +86,23 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
 
     refresh();
     onClose();
+  }
+
+  async function toggleDidNotPay(type: "INITIAL" | "FINAL", notPaid: boolean) {
+    setMarkingNotPaid(type);
+
+    try {
+      await fetch("/api/admin/payments/mark-not-paid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ registrationId: registration.id, type, notPaid }),
+      });
+
+      refresh();
+      onClose();
+    } finally {
+      setMarkingNotPaid(null);
+    }
   }
 
   async function requireResubmission(type: "INITIAL" | "FINAL") {
@@ -179,6 +197,8 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
             <strong>
               {registration.initialPaymentPaid
                 ? "🟢 Verified"
+                : registration.initialPaymentDidNotPay
+                ? "⚫ Didn't Pay"
                 : registration.offlinePaymentCreated
                 ? "🟡 Waiting Verification"
                 : "🔴 Pending"}
@@ -227,6 +247,18 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
           </button>
 
           <button
+            className={styles.didNotPayAction}
+            disabled={markingNotPaid === "INITIAL"}
+            onClick={() => toggleDidNotPay("INITIAL", !registration.initialPaymentDidNotPay)}
+          >
+            {markingNotPaid === "INITIAL"
+              ? "Working..."
+              : registration.initialPaymentDidNotPay
+              ? "Undo Didn't Pay"
+              : "Didn't Pay"}
+          </button>
+
+          <button
             className={styles.secondaryAction}
             disabled={resubmitting === "INITIAL"}
             onClick={() => requireResubmission("INITIAL")}
@@ -248,6 +280,8 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
               <strong>
                 {registration.finalPaymentPaid
                   ? "🟢 Paid"
+                  : registration.finalPaymentDidNotPay
+                  ? "⚫ Didn't Pay"
                   : registration.finalPaymentUnlocked
                   ? "🟡 Unlocked"
                   : "🔒 Locked"}
@@ -289,6 +323,18 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
 
             <button className={styles.action} onClick={verifyFinal}>
               {registration.finalPaymentPaid ? "Undo Verification" : "Verify Final Payment"}
+            </button>
+
+            <button
+              className={styles.didNotPayAction}
+              disabled={markingNotPaid === "FINAL"}
+              onClick={() => toggleDidNotPay("FINAL", !registration.finalPaymentDidNotPay)}
+            >
+              {markingNotPaid === "FINAL"
+                ? "Working..."
+                : registration.finalPaymentDidNotPay
+                ? "Undo Didn't Pay"
+                : "Didn't Pay"}
             </button>
 
             <button

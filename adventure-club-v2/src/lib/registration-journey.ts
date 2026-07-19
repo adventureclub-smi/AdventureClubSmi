@@ -7,12 +7,14 @@ export type RegistrationLike = {
   status: string;
   initialPaymentDeadline?: string | null;
   initialPaymentPaid: boolean;
+  initialPaymentDidNotPay?: boolean;
   offlinePaymentCreated: boolean;
   offlinePaymentVerified: boolean;
   bondFormSubmitted: boolean;
   attendanceMarked: boolean;
   finalPaymentUnlocked: boolean;
   finalPaymentPaid: boolean;
+  finalPaymentDidNotPay?: boolean;
   certificateIssued: boolean;
   trek?: { tripCentrePublished?: boolean; installments?: number };
 };
@@ -348,8 +350,10 @@ export function getPaymentBadge(
   reg: PaymentRegistrationLike
 ): { text: string; tone: StatusTone } {
   if (reg.finalPaymentPaid) return { text: "Fully Paid", tone: "success" };
+  if (reg.finalPaymentDidNotPay) return { text: "Didn't Pay", tone: "danger" };
   if (reg.finalPaymentUnlocked) return { text: "Final Payment Due", tone: "waiting" };
   if (reg.initialPaymentPaid) return { text: "Initial Paid", tone: "success" };
+  if (reg.initialPaymentDidNotPay) return { text: "Didn't Pay", tone: "danger" };
   if (reg.offlinePaymentCreated) return { text: "Verification Pending", tone: "waiting" };
   return { text: "Payment Pending", tone: "neutral" };
 }
@@ -378,6 +382,13 @@ export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
           text: "Verification Pending",
           tone: "waiting",
         }
+      : reg.initialPaymentDidNotPay
+      ? {
+          label: initialLabel,
+          amount: reg.trek?.initialPayment ?? 0,
+          text: "Didn't Pay",
+          tone: "danger",
+        }
       : {
           label: initialLabel,
           amount: reg.trek?.initialPayment ?? 0,
@@ -403,6 +414,13 @@ export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
             amount: final.amount,
             text: "Verification Pending",
             tone: "waiting",
+          }
+        : reg.finalPaymentDidNotPay
+        ? {
+            label: "Final Payment",
+            amount: reg.trek?.finalPayment ?? 0,
+            text: "Didn't Pay",
+            tone: "danger",
           }
         : {
             label: "Final Payment",

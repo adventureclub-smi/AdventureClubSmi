@@ -103,15 +103,18 @@ export async function POST(req: NextRequest) {
       ? {
           finalPaymentPaid: true,
           finalPaymentPaidAt: new Date(),
+          finalPaymentDidNotPay: false,
         }
       : {
           initialPaymentPaid: true,
           initialPaymentPaidAt: new Date(),
+          initialPaymentDidNotPay: false,
           ...(isSingleInstallment
             ? {
                 finalPaymentUnlocked: true,
                 finalPaymentPaid: true,
                 finalPaymentPaidAt: new Date(),
+                finalPaymentDidNotPay: false,
               }
             : {}),
         }),

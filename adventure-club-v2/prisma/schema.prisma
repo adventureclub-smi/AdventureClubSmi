@@ -324,6 +324,10 @@ model Registration {
 
   initialPaymentId String?
 
+  // Explicitly recorded as never paid (distinct from just not-yet-paid) —
+  // mainly for historical trek records where there's no one left to chase.
+  initialPaymentDidNotPay Boolean @default(false)
+
   // ===== Bond Form =====
 
   bondFormSubmitted Boolean @default(false)
@@ -345,6 +349,10 @@ model Registration {
   finalPaymentPaidAt DateTime?
 
   finalPaymentId String?
+
+  // Explicitly recorded as never paid (distinct from just not-yet-paid) —
+  // mainly for historical trek records where there's no one left to chase.
+  finalPaymentDidNotPay Boolean @default(false)
 
   // ===== College Reimbursement =====
 

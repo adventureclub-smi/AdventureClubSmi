@@ -62,16 +62,19 @@ export async function POST(req: NextRequest) {
               finalPaymentPaid: verified,
               offlinePaymentVerified: verified,
               finalPaymentPaidAt: verified ? new Date() : null,
+              ...(verified ? { finalPaymentDidNotPay: false } : {}),
             }
           : {
               initialPaymentPaid: verified,
               offlinePaymentVerified: verified,
               initialPaymentPaidAt: verified ? new Date() : null,
+              ...(verified ? { initialPaymentDidNotPay: false } : {}),
               ...(isSingleInstallment
                 ? {
                     finalPaymentUnlocked: verified,
                     finalPaymentPaid: verified,
                     finalPaymentPaidAt: verified ? new Date() : null,
+                    ...(verified ? { finalPaymentDidNotPay: false } : {}),
                   }
                 : {}),
             },
