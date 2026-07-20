@@ -2,9 +2,43 @@
   position: relative;
   background: var(--color-midnight);
   padding: 140px 0;
+  overflow: hidden;
+}
+
+.parallaxLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.orbA,
+.orbB {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.35;
+}
+
+.orbA {
+  top: -10%;
+  left: 8%;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, var(--color-accent), transparent 70%);
+}
+
+.orbB {
+  bottom: -15%;
+  right: 6%;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #38bdf8, transparent 70%);
 }
 
 .container {
+  position: relative;
+  z-index: 1;
   width: min(1200px, calc(100% - 64px));
   margin: 0 auto;
 }

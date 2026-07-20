@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
   Camera,
@@ -70,6 +70,18 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
   const dragState = useRef<{ startX: number; startScroll: number } | null>(null);
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
+  const sectionRef = useRef<HTMLElement>(null);
+  const reducedMotion = useReducedMotion();
+
+  // Adds scroll-tied depth to the background photo on top of its existing
+  // click-triggered Ken Burns zoom — a separate wrapping layer so the two
+  // transforms (this one's translateY, the CSS keyframe's scale) land on
+  // different elements instead of one clobbering the other.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const bgParallaxY = useTransform(scrollYProgress, [0, 1], [-40, 40]);
 
   const active = sorted[activeIndex];
 
@@ -131,7 +143,7 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
   const ActiveIcon = ICONS[active.icon] ?? Compass;
 
   return (
-    <section className={styles.section} id="things-we-do">
+    <section className={styles.section} id="things-we-do" ref={sectionRef}>
       {/* Warms the browser's (and Next's image-optimizer) cache for every
           *other* activity's full-size 100vw variant up front — without
           this, clicking a card for the first time meant waiting on a fresh
@@ -174,14 +186,19 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
           transition={SPRING}
           exit={{ opacity: 1 }}
         >
-          <Image
-            src={active.backgroundImage}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className={styles.activeImage}
-          />
+          <motion.div
+            className={styles.parallaxWrap}
+            style={reducedMotion ? undefined : { y: bgParallaxY }}
+          >
+            <Image
+              src={active.backgroundImage}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className={styles.activeImage}
+            />
+          </motion.div>
         </motion.div>
       </AnimatePresence>
 

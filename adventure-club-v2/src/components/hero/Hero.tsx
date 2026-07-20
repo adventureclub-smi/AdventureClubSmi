@@ -125,6 +125,9 @@ export default function Hero({
   });
   const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const contentY = useTransform(scrollYProgress, [0, 0.8], [0, -60]);
+  // The background footage slowly pushes in as you scroll away, reinforcing
+  // the sense that the whole scene is sinking back rather than just fading.
+  const videoScale = useTransform(scrollYProgress, [0, 1], [1, 1.18]);
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     scrollProgressRef.current = v;
@@ -132,16 +135,17 @@ export default function Hero({
 
   return (
     <section className={styles.hero} id="home" ref={sectionRef}>
-      <video
+      <motion.video
         ref={videoRef}
         className={styles.video}
         muted
         loop
         playsInline
         preload="none"
+        style={reducedMotion ? undefined : { scale: videoScale }}
       >
         <source src={content.videoUrl} type="video/mp4" />
-      </video>
+      </motion.video>
 
       <div className={styles.scene}>
         <HeroScene
