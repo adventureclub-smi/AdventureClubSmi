@@ -664,6 +664,10 @@ model ContactSubmission {
 
   status String @default("PENDING")
 
+  reply String?
+
+  repliedAt DateTime?
+
   createdAt DateTime @default(now())
 }
 

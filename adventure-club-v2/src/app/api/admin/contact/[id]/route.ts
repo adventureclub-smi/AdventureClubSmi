@@ -14,11 +14,14 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const { status } = await req.json();
+    const { status, reply } = await req.json();
 
     const submission = await prisma.contactSubmission.update({
       where: { id },
-      data: { status },
+      data: {
+        ...(status !== undefined ? { status } : {}),
+        ...(reply !== undefined ? { reply, repliedAt: new Date() } : {}),
+      },
     });
 
     return NextResponse.json(submission);

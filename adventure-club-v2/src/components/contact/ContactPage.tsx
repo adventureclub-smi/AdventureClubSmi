@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, HelpCircle, UserPlus, CreditCard, MessageCircle, Send } from "lucide-react";
 import styles from "./ContactPage.module.scss";
@@ -21,6 +21,23 @@ const CATEGORY_PHRASE: Record<Category, string> = {
   PAYMENT_ISSUE: "a payment issue",
 };
 
+const CATEGORY_LABELS: Record<Category, string> = {
+  ISSUE: "Issue",
+  INFORMATION: "Information Request",
+  SIGNUP_PROBLEM: "Sign Up Problem",
+  PAYMENT_ISSUE: "Payment Issue",
+};
+
+type MySubmission = {
+  id: string;
+  category: Category;
+  message: string;
+  status: string;
+  reply: string | null;
+  repliedAt: string | null;
+  createdAt: string;
+};
+
 export default function ContactPage({ whatsappNumber }: { whatsappNumber?: string }) {
   const [category, setCategory] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
@@ -29,6 +46,24 @@ export default function ContactPage({ whatsappNumber }: { whatsappNumber?: strin
   const [phoneNumber, setPhoneNumber] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [mySubmissions, setMySubmissions] = useState<MySubmission[]>([]);
+
+  async function loadMySubmissions() {
+    try {
+      const res = await fetch("/api/contact/my-submissions");
+      if (res.ok) setMySubmissions(await res.json());
+    } catch {
+      // Non-critical — the page works fine without this section.
+    }
+  }
+
+  useEffect(() => {
+    function run() {
+      loadMySubmissions();
+    }
+
+    run();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +86,7 @@ export default function ContactPage({ whatsappNumber }: { whatsappNumber?: strin
         setEmail("");
         setPhoneNumber("");
         setCategory(null);
+        loadMySubmissions();
       } else {
         setStatus("error");
       }
@@ -83,6 +119,38 @@ export default function ContactPage({ whatsappNumber }: { whatsappNumber?: strin
           <h1>Contact Us</h1>
           <p>Have a question, an issue, or something to report? Let us know.</p>
         </motion.div>
+
+        {mySubmissions.length > 0 && (
+          <div className={styles.myMessages}>
+            <h2>Your Messages</h2>
+
+            {mySubmissions.map((s) => (
+              <div key={s.id} className={styles.messageCard}>
+                <div className={styles.messageCardHeader}>
+                  <span className={styles.categoryTag}>{CATEGORY_LABELS[s.category]}</span>
+                  <span
+                    className={
+                      s.status === "RESOLVED" ? styles.statusResolved : styles.statusPending
+                    }
+                  >
+                    {s.status === "RESOLVED" ? "Resolved" : "Pending"}
+                  </span>
+                </div>
+
+                <p className={styles.messageText}>{s.message}</p>
+
+                {s.reply ? (
+                  <div className={styles.replyBlock}>
+                    <strong>Adventure Club replied:</strong>
+                    <p>{s.reply}</p>
+                  </div>
+                ) : (
+                  <p className={styles.awaitingReply}>Awaiting a reply...</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {whatsappHref && (
           <a href={whatsappHref} target="_blank" rel="noreferrer" className={styles.whatsappButton}>

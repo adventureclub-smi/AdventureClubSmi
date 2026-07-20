@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle, Mail, Phone, CheckCircle2 } from "lucide-react";
+import { MessageCircle, Mail, Phone, CheckCircle2, Reply } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./ContactSubmissionsTable.module.scss";
@@ -16,6 +16,8 @@ type Submission = {
   email: string | null;
   phoneNumber: string | null;
   status: string;
+  reply: string | null;
+  repliedAt: string | null;
   createdAt: string;
   user: { clubId: string; fullName: string } | null;
 };
@@ -36,6 +38,8 @@ export default function ContactSubmissionsTable() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [sendingReply, setSendingReply] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -80,6 +84,25 @@ export default function ContactSubmissionsTable() {
       await load();
     } finally {
       setUpdating(null);
+    }
+  }
+
+  async function sendReply(id: string) {
+    const reply = (replyDrafts[id] ?? "").trim();
+    if (!reply) return;
+
+    setSendingReply(id);
+
+    try {
+      await fetch(`/api/admin/contact/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reply }),
+      });
+
+      await load();
+    } finally {
+      setSendingReply(null);
     }
   }
 
@@ -173,6 +196,42 @@ export default function ContactSubmissionsTable() {
               </div>
 
               <p className={styles.message}>{submission.message}</p>
+
+              {submission.reply && (
+                <div className={styles.replyBox}>
+                  <strong>Your reply</strong>
+                  <p>{submission.reply}</p>
+                  {submission.repliedAt && (
+                    <span className={styles.replyDate}>
+                      {new Date(submission.repliedAt).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div className={styles.replyForm}>
+                <textarea
+                  placeholder="Write a reply..."
+                  rows={2}
+                  value={replyDrafts[submission.id] ?? submission.reply ?? ""}
+                  onChange={(e) =>
+                    setReplyDrafts((prev) => ({ ...prev, [submission.id]: e.target.value }))
+                  }
+                />
+
+                <button
+                  className={styles.replyButton}
+                  disabled={sendingReply === submission.id}
+                  onClick={() => sendReply(submission.id)}
+                >
+                  <Reply size={14} />
+                  {sendingReply === submission.id
+                    ? "Sending..."
+                    : submission.reply
+                    ? "Update Reply"
+                    : "Send Reply"}
+                </button>
+              </div>
 
               <button
                 className={submission.status === "RESOLVED" ? styles.undoButton : styles.resolveButton}
