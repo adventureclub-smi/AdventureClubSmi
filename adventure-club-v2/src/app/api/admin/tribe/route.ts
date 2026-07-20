@@ -29,7 +29,9 @@ export async function POST(req: NextRequest) {
 
     const name = (form.get("name") as string) || "";
     const role = (form.get("role") as string) || "";
-    const tier = Number(form.get("tier")) === 1 ? 1 : 2;
+    // 1 = Leadership, 2 = Head, 3 = Team — anything else falls back to Head.
+    const rawTier = Number(form.get("tier"));
+    const tier = rawTier === 1 || rawTier === 3 ? rawTier : 2;
     const year = (form.get("year") as string) || "";
     const course = (form.get("course") as string) || "";
     const bio = (form.get("bio") as string) || "";
