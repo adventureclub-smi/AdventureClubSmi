@@ -34,7 +34,10 @@ export default function AuthLayout({
         preload="none"
         className={styles.video}
       >
-        <source src="/videos/hero-compressed.mp4" type="video/mp4" />
+        <source
+          src="https://media.adventureclubsmi.com/AdventureClub/HomepageVideos/d174c44d-10df-4aac-b45e-3964941c53c4.mp4"
+          type="video/mp4"
+        />
       </video>
 
       <div className={styles.overlay} />

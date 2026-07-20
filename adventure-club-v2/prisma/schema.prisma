@@ -258,6 +258,12 @@ model Trek {
   announcements TripAnnouncement[]
 
   waypoints TrekWaypoint[]
+
+  // A pre-recorded flythrough clip covering the same waypoints, shown on
+  // the homepage instead of the live 3D terrain map — that map loads
+  // hundreds of satellite/DEM tiles per visitor, while this is one cached
+  // video. Falls back to the live map when unset.
+  routePreviewVideoUrl String?
 }
 
 // Admin-editable waypoints (trailhead, halfway point, summit, etc.) that

@@ -58,7 +58,19 @@ export default function TrekRoute3D({ routes }: { routes: UpcomingTrekRoute[] })
         )}
 
         <div className={styles.mapWrap}>
-          <TrekRoute3DCanvas key={selectedRoute.trekId} waypoints={selectedRoute.waypoints} />
+          {selectedRoute.previewVideoUrl ? (
+            <video
+              key={selectedRoute.trekId}
+              src={selectedRoute.previewVideoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={styles.previewVideo}
+            />
+          ) : (
+            <TrekRoute3DCanvas key={selectedRoute.trekId} waypoints={selectedRoute.waypoints} />
+          )}
         </div>
       </motion.div>
     </section>

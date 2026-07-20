@@ -130,9 +130,25 @@ function popupHtml(point: TrekWaypoint) {
   `;
 }
 
-export default function TrekRoute3DCanvas({ waypoints }: { waypoints: TrekWaypoint[] }) {
+// A pre-recorded flythrough clip covers this same ground on the public
+// homepage (see TrekRoute3D), so this cinematic mode only exists to make
+// recording that clip easy: it flies through every waypoint on its own,
+// looping continuously, so whoever is screen-recording doesn't have to
+// click through the route by hand.
+const AUTO_FLY_INITIAL_DELAY_MS = 1200;
+const AUTO_FLY_STEP_MS = 3200;
+
+export default function TrekRoute3DCanvas({
+  waypoints,
+  autoFly = false,
+}: {
+  waypoints: TrekWaypoint[];
+  autoFly?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const popupRef = useRef<maplibregl.Popup | null>(null);
+  const autoFlyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function flyToWaypoint(point: TrekWaypoint, bearing: number) {
     const map = mapRef.current;
@@ -149,7 +165,15 @@ export default function TrekRoute3DCanvas({ waypoints }: { waypoints: TrekWaypoi
       essential: true,
     });
 
-    new maplibregl.Popup({ offset: 25, closeButton: true, className: "route3d-popup" })
+    // Otherwise every stop (manual clicks, or each loop of auto-fly) leaves
+    // its popup open, stacking up over the recording instead of showing
+    // just the current waypoint.
+    popupRef.current?.remove();
+    popupRef.current = new maplibregl.Popup({
+      offset: 25,
+      closeButton: true,
+      className: "route3d-popup",
+    })
       .setLngLat(center)
       .setHTML(popupHtml(point))
       .addTo(map);
@@ -205,13 +229,27 @@ export default function TrekRoute3DCanvas({ waypoints }: { waypoints: TrekWaypoi
           .setLngLat([point.longitude, point.latitude])
           .addTo(map);
       });
+
+      if (autoFly && waypoints.length > 0) {
+        let step = 0;
+
+        function flyNext() {
+          const point = waypoints[step % waypoints.length];
+          flyToWaypoint(point, 30 + step * 40);
+          step += 1;
+          autoFlyTimeoutRef.current = setTimeout(flyNext, AUTO_FLY_STEP_MS);
+        }
+
+        autoFlyTimeoutRef.current = setTimeout(flyNext, AUTO_FLY_INITIAL_DELAY_MS);
+      }
     });
 
     return () => {
+      if (autoFlyTimeoutRef.current) clearTimeout(autoFlyTimeoutRef.current);
       map.remove();
       mapRef.current = null;
     };
-  }, [waypoints]);
+  }, [waypoints, autoFly]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>

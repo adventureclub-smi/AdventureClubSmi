@@ -98,6 +98,7 @@ export async function getUpcomingTrekRoutes(): Promise<UpcomingTrekRoute[]> {
     title: trek.title,
     destination: trek.destination,
     date: trek.date.toISOString(),
+    previewVideoUrl: trek.routePreviewVideoUrl,
     waypoints: trek.waypoints.map((w) => {
       const mediaType = w.mediaType === "video" ? "video" : ("image" as const);
       const optimizedMedia = mediaType === "video" ? optimizeVideo(w.mediaUrl) : optimizeImage(w.mediaUrl);

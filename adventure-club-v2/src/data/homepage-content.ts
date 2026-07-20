@@ -32,7 +32,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
 
 const homepageContent: HomepageContent = {
   hero: {
-    videoUrl: "/videos/hero-compressed.mp4",
+    videoUrl: "https://media.adventureclubsmi.com/AdventureClub/HomepageVideos/d174c44d-10df-4aac-b45e-3964941c53c4.mp4",
     tagline: "ADVENTURE CLUB",
     titleWords: ["EXPLORE.", "BEYOND.", "LIMITS."],
     leadLine: "Every summit begins with one step.",
@@ -72,7 +72,7 @@ const homepageContent: HomepageContent = {
   stories: [],
 
   finalSection: {
-    videoUrl: "/videos/drone-compressed.mp4",
+    videoUrl: "https://media.adventureclubsmi.com/AdventureClub/HomepageVideos/c4555f7d-f014-4e97-88c2-3acbcfb8da4c.mp4",
     imageUrl: "/images/about/about-5.JPG",
     heading: ["YOUR NEXT", "ADVENTURE", "STARTS HERE."],
     description:

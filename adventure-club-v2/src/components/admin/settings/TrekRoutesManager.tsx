@@ -1,15 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { Trash2, Video, UploadCloud } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./TrekRoutesManager.module.scss";
+
+// MapLibre touches window/document/WebGL directly — never render it on the
+// server, same isolation pattern as the public homepage embed.
+const TrekRoute3DCanvas = dynamic(() => import("@/components/map/TrekRoute3DCanvas"), {
+  ssr: false,
+});
 
 type Trek = {
   id: string;
   title: string;
   destination: string;
   date: string;
+  routePreviewVideoUrl?: string | null;
 };
 
 type Waypoint = {
@@ -20,6 +28,7 @@ type Waypoint = {
   longitude: number;
   mediaUrl: string | null;
   mediaType: string;
+  order: number;
 };
 
 const emptyDraft = {
@@ -45,6 +54,13 @@ export default function TrekRoutesManager() {
 
   const [newWaypoint, setNewWaypoint] = useState(emptyDraft);
   const [adding, setAdding] = useState(false);
+
+  const [showPreview, setShowPreview] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [removingVideo, setRemovingVideo] = useState(false);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedTrek = treks.find((t) => t.id === selectedTrekId) || null;
 
   useEffect(() => {
     let active = true;
@@ -170,6 +186,58 @@ export default function TrekRoutesManager() {
     }
   }
 
+  async function uploadPreviewVideo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !selectedTrekId) return;
+
+    setUploadingVideo(true);
+    setStatus("Uploading and compressing the preview video — this can take a moment...");
+
+    try {
+      const form = new FormData();
+      form.append("file", file);
+
+      const res = await fetch(`/api/admin/treks/${selectedTrekId}/route-preview-video`, {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus(data.message || "Failed to upload preview video.");
+        return;
+      }
+
+      setTreks((prev) =>
+        prev.map((t) =>
+          t.id === selectedTrekId ? { ...t, routePreviewVideoUrl: data.routePreviewVideoUrl } : t
+        )
+      );
+      setStatus("Preview video saved.");
+    } finally {
+      setUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = "";
+    }
+  }
+
+  async function removePreviewVideo() {
+    if (!selectedTrekId || !confirm("Remove the recorded preview video for this trek?")) return;
+
+    setRemovingVideo(true);
+
+    try {
+      await fetch(`/api/admin/treks/${selectedTrekId}/route-preview-video`, { method: "DELETE" });
+
+      setTreks((prev) =>
+        prev.map((t) => (t.id === selectedTrekId ? { ...t, routePreviewVideoUrl: null } : t))
+      );
+      setStatus("Preview video removed.");
+    } finally {
+      setRemovingVideo(false);
+    }
+  }
+
   async function addWaypoint(e: React.FormEvent) {
     e.preventDefault();
     if (!newWaypoint.label.trim() || !newWaypoint.latitude || !newWaypoint.longitude) return;
@@ -239,6 +307,80 @@ export default function TrekRoutesManager() {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {selectedTrek && waypoints.length > 0 && (
+        <div className={styles.previewSection}>
+          <h3>Homepage Preview Video</h3>
+          <p className={styles.hint}>
+            The live 3D map above loads hundreds of satellite/terrain tiles per visitor. Record a
+            short flythrough once and the homepage will loop that video instead — click{" "}
+            <strong>Start Auto-Fly Preview</strong> below, screen-record it cycling through the
+            waypoints, then upload the clip here.
+          </p>
+
+          <button
+            type="button"
+            className={styles.previewToggle}
+            onClick={() => setShowPreview((v) => !v)}
+          >
+            <Video size={15} />
+            {showPreview ? "Hide Auto-Fly Preview" : "Start Auto-Fly Preview"}
+          </button>
+
+          {showPreview && (
+            <div className={styles.previewMapWrap}>
+              <TrekRoute3DCanvas
+                waypoints={waypoints.map((w) => ({
+                  ...w,
+                  description: w.description ?? "",
+                  mediaUrl: w.mediaUrl ?? "",
+                  mediaType: w.mediaType === "video" ? "video" : "image",
+                }))}
+                autoFly
+              />
+            </div>
+          )}
+
+          <div className={styles.videoRow}>
+            {selectedTrek.routePreviewVideoUrl ? (
+              <>
+                <video
+                  src={selectedTrek.routePreviewVideoUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className={styles.videoPreview}
+                />
+                <button
+                  type="button"
+                  className={styles.removeVideoButton}
+                  onClick={removePreviewVideo}
+                  disabled={removingVideo}
+                >
+                  <Trash2 size={14} />
+                  {removingVideo ? "Removing..." : "Remove Video"}
+                </button>
+              </>
+            ) : (
+              <p className={styles.hint}>No preview video uploaded yet — the live map shows instead.</p>
+            )}
+
+            <label className={styles.uploadButton}>
+              <UploadCloud size={15} />
+              {uploadingVideo ? "Uploading..." : "Upload Recorded Video"}
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                onChange={uploadPreviewVideo}
+                disabled={uploadingVideo}
+                hidden
+              />
+            </label>
+          </div>
         </div>
       )}
 

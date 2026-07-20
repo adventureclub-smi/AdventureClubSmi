@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { uploadBuffer } from "@/lib/storage";
+import { compressVideo } from "@/lib/video-compress";
 
 export async function POST(req: Request) {
   try {
@@ -14,12 +15,14 @@ export async function POST(req: Request) {
       );
     }
 
+    const isVideo = file.type.startsWith("video/");
     const bytes = await file.arrayBuffer();
+    const rawBuffer = Buffer.from(bytes);
+    const buffer = isVideo ? await compressVideo(rawBuffer) : rawBuffer;
 
-    const buffer = Buffer.from(bytes);
-
-    const uploaded = await uploadBuffer(buffer, file.type, {
+    const uploaded = await uploadBuffer(buffer, isVideo ? "video/mp4" : file.type, {
       folder: "AdventureClub/Treks",
+      resourceType: isVideo ? "video" : "image",
     });
 
     return NextResponse.json({

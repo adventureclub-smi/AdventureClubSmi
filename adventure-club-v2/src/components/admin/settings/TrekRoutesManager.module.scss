@@ -67,6 +67,110 @@
   border-color: rgba(34, 197, 94, 0.5);
 }
 
+.previewSection {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 18px;
+  padding: 22px 26px;
+  margin-bottom: 24px;
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .hint {
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.previewToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  background: rgba(124, 58, 237, 0.12);
+  color: #a78bfa;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.previewToggle:hover {
+  background: rgba(124, 58, 237, 0.22);
+}
+
+.previewMapWrap {
+  width: 100%;
+  height: 420px;
+  margin-top: 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(245, 245, 245, 0.08);
+}
+
+.videoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.videoPreview {
+  width: 220px;
+  height: 124px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+}
+
+.removeVideoButton,
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.removeVideoButton {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+.removeVideoButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.removeVideoButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.uploadButton {
+  border: none;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+}
+
+.uploadButton:hover {
+  background: var(--color-accent-hover);
+}
+
 .waypointsSection {
   h3 {
     font-family: var(--font-display);

@@ -86,6 +86,13 @@ async function compressToTarget(buffer: Buffer, maxBytes: number) {
   return result;
 }
 
+// Every upload site-wide funnels through here, so this is the one place that
+// needs to cap dimensions — otherwise a raw phone photo or a full-resolution
+// desktop screenshot (payment proofs and govt ID uploads are as likely to be
+// this large as any admin-facing upload) only gets re-encoded, never resized,
+// and stays multi-MB despite the quality-80 pass.
+const DEFAULT_MAX_WIDTH = 2000;
+
 // Re-encodes images to WebP at upload time (quality 80) since R2 has no
 // on-the-fly transformation like Cloudinary's q_auto,f_auto — this is a
 // one-time cost instead of a per-request one, and WebP alone covers the vast
@@ -104,18 +111,40 @@ export async function uploadBuffer(
   const isImage = contentType.startsWith("image/") && options.resourceType !== "video";
 
   if (isImage) {
-    const { data, info } = options.maxSizeKB
-      ? await compressToTarget(buffer, options.maxSizeKB * 1024)
-      : await sharp(buffer).rotate().webp({ quality: 80 }).toBuffer({ resolveWithObject: true });
+    let result;
 
-    finalBuffer = data;
-    width = info.width;
-    height = info.height;
+    if (options.maxSizeKB) {
+      result = await compressToTarget(buffer, options.maxSizeKB * 1024);
+    } else {
+      const metadata = await sharp(buffer).rotate().metadata();
+      const targetWidth =
+        metadata.width && metadata.width > DEFAULT_MAX_WIDTH ? DEFAULT_MAX_WIDTH : metadata.width;
+
+      result = await sharp(buffer)
+        .rotate()
+        .resize({ width: targetWidth })
+        .webp({ quality: 80 })
+        .toBuffer({ resolveWithObject: true });
+    }
+
+    finalBuffer = result.data;
+    width = result.info.width;
+    height = result.info.height;
     finalContentType = "image/webp";
     ext = "webp";
   }
 
   const key = options.key || `${options.folder}/${crypto.randomUUID()}.${ext}`;
+
+  // Random-UUID keys are permanent once written — nothing ever overwrites
+  // them, so browsers/Cloudflare's edge can cache them forever. A caller-
+  // supplied deterministic key (e.g. certificate regeneration) can be
+  // overwritten at the same URL, so those get a short cache instead —
+  // otherwise a regenerated certificate would stay invisible behind a
+  // year-old cached copy of the old one.
+  const cacheControl = options.key
+    ? "public, max-age=300"
+    : "public, max-age=31536000, immutable";
 
   await getClient().send(
     new PutObjectCommand({
@@ -123,6 +152,7 @@ export async function uploadBuffer(
       Key: key,
       Body: finalBuffer,
       ContentType: finalContentType,
+      CacheControl: cacheControl,
     })
   );
 

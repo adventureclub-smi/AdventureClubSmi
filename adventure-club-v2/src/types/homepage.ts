@@ -173,4 +173,5 @@ export interface UpcomingTrekRoute {
   destination: string;
   date: string;
   waypoints: TrekWaypoint[];
+  previewVideoUrl?: string | null;
 }
