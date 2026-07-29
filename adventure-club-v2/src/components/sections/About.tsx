@@ -72,7 +72,7 @@ export default function About() {
           </h2>
 
           <p className={styles.description}>
-            Adventure Club SMI is a community of explorers,
+            NAVIRA SMI is a community of explorers,
             creators and outdoor enthusiasts who believe the
             best classroom is nature itself. From mountain
             summits and forest camps to rivers and bonfires,

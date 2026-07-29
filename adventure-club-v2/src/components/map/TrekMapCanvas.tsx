@@ -82,14 +82,14 @@ function popupHtml(pin: TrekMapPin) {
   });
 
   const actionHtml = pin.isHistorical
-    ? `<span style="display:inline-block;padding:6px 14px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(34,197,94,0.18);color:var(--color-accent, #22c55e);">Completed</span>`
+    ? `<span style="display:inline-block;padding:6px 14px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(34, 197, 94,0.18);color:var(--color-accent, #22c55e);">Completed</span>`
     : `<a href="/treks/${pin.id}" style="font-size:13px;font-weight:600;color:var(--color-accent, #22c55e);text-decoration:none;">View Trek &rarr;</a>`;
 
   return `
     <div style="font-family:inherit;">
       <div style="position:relative;height:120px;">
         <img src="${pin.coverImage}" alt="${pin.title}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px 12px 0 0;" />
-        <span style="position:absolute;top:10px;left:10px;padding:5px 12px;border-radius:999px;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(245,245,245,0.15);color:var(--color-text, #f5f5f5);backdrop-filter:blur(6px);">${pin.difficulty}</span>
+        <span style="position:absolute;top:10px;left:10px;padding:5px 12px;border-radius:999px;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(245, 245, 245,0.15);color:var(--color-text, #f5f5f5);backdrop-filter:blur(6px);">${pin.difficulty}</span>
       </div>
       <div style="padding:14px 16px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-muted, #9ca3af);margin:0 0 4px;">${pin.destination}</p>

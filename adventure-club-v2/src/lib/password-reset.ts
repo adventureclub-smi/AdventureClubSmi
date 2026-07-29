@@ -50,10 +50,10 @@ export async function sendPasswordResetEmail(email: string, rawToken: string) {
 
   await sendEmail({
     to: email,
-    subject: "Reset your Adventure Club password",
+    subject: "Reset your NAVIRA password",
     html: emailShell(`
       <h2 style="color: #16a34a;">Reset your password</h2>
-      <p>We received a request to reset your Adventure Club SMI password. This link expires in 15 minutes.</p>
+      <p>We received a request to reset your NAVIRA SMI password. This link expires in 15 minutes.</p>
       ${emailButton(resetUrl, "Reset Password")}
       <p style="color:#666;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
     `),

@@ -100,8 +100,8 @@ export default function ContactPage({ whatsappNumber }: { whatsappNumber?: strin
   const whatsappHref = whatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
         category && message.trim()
-          ? `Hi, I have ${CATEGORY_PHRASE[category]} regarding Adventure Club: ${message.trim()}`
-          : "Hi, I'd like to get in touch with Adventure Club SMI."
+          ? `Hi, I have ${CATEGORY_PHRASE[category]} regarding NAVIRA: ${message.trim()}`
+          : "Hi, I'd like to get in touch with NAVIRA SMI."
       )}`
     : null;
 
@@ -141,7 +141,7 @@ export default function ContactPage({ whatsappNumber }: { whatsappNumber?: strin
 
                 {s.reply ? (
                   <div className={styles.replyBlock}>
-                    <strong>Adventure Club replied:</strong>
+                    <strong>NAVIRA replied:</strong>
                     <p>{s.reply}</p>
                   </div>
                 ) : (

@@ -44,9 +44,25 @@
 }
 
 .tabActive {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-midnight);
+  background: #415027;
+  border-color: #415027;
+  color: var(--color-text);
+}
+
+.group {
+  margin-bottom: 36px;
+}
+
+.group:last-child {
+  margin-bottom: 0;
+}
+
+.groupHeading {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  font-size: 18px;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
 }
 
 .grid {
@@ -129,6 +145,52 @@
   background: var(--color-accent-hover);
 }
 
+// Deliberately smaller than .grid/.card — these are treks the student
+// never registered for and can no longer act on, so they stay compact and
+// low-emphasis rather than competing visually with My Treks/Register above.
+.compactGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.compactCard {
+  background: var(--color-charcoal);
+  border: 1px solid rgba(245, 245, 245, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+.compactImageWrap {
+  position: relative;
+  height: 90px;
+}
+
+.compactContent {
+  padding: 10px 12px 12px;
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-text-muted);
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+}
+
 .empty {
   margin-top: 20px;
   background: var(--color-charcoal);
@@ -154,6 +216,10 @@
 
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .compactGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .empty {

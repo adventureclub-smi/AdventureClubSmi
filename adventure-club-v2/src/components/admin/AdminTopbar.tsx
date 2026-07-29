@@ -138,7 +138,7 @@ export default function AdminTopbar({
       results.announcements.length);
 
   return (
-    <header className={styles.topbar} ref={rootRef}>
+    <header className={styles.topbar} ref={rootRef} data-no-print>
       <div className={styles.searchWrap}>
         <button
           className={styles.searchTrigger}

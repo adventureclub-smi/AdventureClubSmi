@@ -26,7 +26,7 @@ export default function PaymentSubmittedPage() {
           <h3>
             <Clock size={18} /> Waiting for Verification
           </h3>
-          <p>The Adventure Club will verify your payment shortly.</p>
+          <p>NAVIRA will verify your payment shortly.</p>
         </div>
 
         <Link href="/dashboard" className={styles.button}>

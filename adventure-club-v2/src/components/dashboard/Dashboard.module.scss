@@ -6,6 +6,39 @@
   padding: 40px;
 }
 
+// Shown above the trek journey card only when the student has two or more
+// treks happening at once — picks which one's journey the card below shows.
+.trekTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.trekTab,
+.trekTabActive {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 245, 245, 0.12);
+  background: rgba(245, 245, 245, 0.04);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.trekTab:hover {
+  border-color: rgba(34, 197, 94, 0.4);
+  color: var(--color-text);
+}
+
+.trekTabActive {
+  background: #415027;
+  border-color: #415027;
+  color: var(--color-text);
+}
+
 .quickActionsHeading {
   font-family: var(--font-display);
   letter-spacing: 1px;

@@ -44,7 +44,7 @@ export default function TrendChart({
                   <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="rgba(245,245,245,0.06)" vertical={false} />
+              <CartesianGrid stroke="rgba(245, 245, 245,0.06)" vertical={false} />
               <XAxis
                 dataKey="label"
                 stroke="#9ca3af"
@@ -56,7 +56,7 @@ export default function TrendChart({
               <Tooltip
                 contentStyle={{
                   background: "#1b1b1b",
-                  border: "1px solid rgba(245,245,245,0.1)",
+                  border: "1px solid rgba(245, 245, 245,0.1)",
                   borderRadius: 10,
                   color: "#f5f5f5",
                   fontSize: 13,

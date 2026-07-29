@@ -65,7 +65,9 @@
   position: relative;
   z-index: 1;
 
-  width: min(1300px, calc(100% - 64px));
+  // Wide enough to fit 8 "sm" cards (165px + 20px gap each) on one row —
+  // 8 * 165 + 7 * 20 = 1460px — instead of wrapping to 7 + 1.
+  width: min(1500px, calc(100% - 64px));
   margin: 0 auto;
 
   display: flex;
@@ -201,6 +203,15 @@
   width: 130px;
 }
 
+/* Phone-only "expand in place" card — takes the full row width so
+   flex-wrap naturally pushes every later card down onto a fresh line,
+   while the card's own motion.div `layout` prop (see TribeGrid.tsx)
+   animates the size/position change smoothly instead of it just snapping. */
+.card.expanded {
+  width: 100%;
+  z-index: 2;
+}
+
 .cardInner {
   position: relative;
   display: flex;
@@ -231,6 +242,51 @@
 .card.selected .cardInner {
   border-color: var(--color-accent);
   box-shadow: 0 20px 45px rgba(34, 197, 94, 0.25);
+}
+
+.expandedInner {
+  aspect-ratio: auto;
+  cursor: pointer;
+}
+
+.card:hover .expandedInner {
+  transform: none;
+}
+
+.expandedInner .photoWrap {
+  flex: none;
+  height: 46vh;
+  min-height: 260px;
+  max-height: 380px;
+}
+
+.expandedInner .info {
+  flex: none;
+  padding: 18px 20px 22px;
+}
+
+.closeExpanded {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.65);
+  backdrop-filter: blur(6px);
+  color: var(--color-text);
+}
+
+.expandedBio {
+  margin-top: 10px;
+  color: #e5e5e5;
+  font-size: 13.5px;
+  line-height: 1.65;
 }
 
 .photoWrap {

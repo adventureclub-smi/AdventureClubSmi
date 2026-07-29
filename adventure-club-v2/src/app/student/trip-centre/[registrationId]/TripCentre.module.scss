@@ -517,9 +517,9 @@
   }
 
   input:checked + span {
-    color: #07100b;
+    color: var(--color-text);
     border-color: transparent;
-    background: #6eeb83;
+    background: #415027;
   }
 }
 

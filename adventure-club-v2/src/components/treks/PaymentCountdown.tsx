@@ -17,7 +17,7 @@ export default function PaymentCountdown({
   heading = "Complete your Initial Payment",
   subheading = "Payment closes in",
   expiredHeading = "Payment Deadline Expired",
-  expiredMessage = "Please contact the Adventure Club for further assistance.",
+  expiredMessage = "Please contact NAVIRA for further assistance.",
 }: Props) {
   const time = useCountdown(deadline);
 

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Compass, Music, ArrowLeft } from "lucide-react";
+import { Compass, Music, ArrowLeft, X } from "lucide-react";
 
 import type { TribeMemberSummary } from "@/data/tribe";
 import styles from "./TribeGrid.module.scss";
@@ -22,57 +22,97 @@ function TribeCard({
   size,
   active,
   selected,
+  expanded,
   onClick,
   delay,
+  barRefs,
+  isPlaying,
 }: {
   member: TribeMemberSummary;
   size: "lg" | "sm";
   active: boolean;
   selected: boolean;
+  expanded: boolean;
   onClick: () => void;
   delay: number;
+  barRefs: React.MutableRefObject<(HTMLSpanElement | null)[]>;
+  isPlaying: boolean;
 }) {
   return (
     <motion.div
       layout
       className={`${styles.card} ${styles[size]} ${active ? styles.split : ""} ${
         selected ? styles.selected : ""
-      }`}
+      } ${expanded ? styles.expanded : ""}`}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ layout: { type: "spring", stiffness: 260, damping: 26 }, delay }}
     >
-      <button
+      <motion.button
+        layout
         type="button"
-        className={styles.cardInner}
+        className={`${styles.cardInner} ${expanded ? styles.expandedInner : ""}`}
         onClick={onClick}
-        aria-label={`View ${member.name}`}
+        aria-label={expanded ? `Close ${member.name}` : `View ${member.name}`}
       >
-        <div className={styles.photoWrap}>
+        <motion.div layout className={styles.photoWrap}>
           <Image
             src={member.photoUrl}
             alt={member.name}
             fill
-            sizes="(max-width: 700px) 40vw, 260px"
+            sizes="(max-width: 700px) 90vw, 260px"
             className={styles.photo}
           />
 
-          {member.songUrl && (
+          {member.songUrl && !expanded && (
             <span className={styles.songIndicator}>
               <Music size={12} />
             </span>
           )}
-        </div>
 
-        <div className={styles.info}>
+          {expanded && (
+            <span className={styles.closeExpanded}>
+              <X size={16} />
+            </span>
+          )}
+        </motion.div>
+
+        <motion.div layout className={styles.info}>
           <span className={styles.role}>{member.role}</span>
           <h3>{member.name}</h3>
           <p>
-            {member.year} · {degreeOnly(member.course)}
+            {member.year} · {expanded ? member.course : degreeOnly(member.course)}
           </p>
-        </div>
-      </button>
+
+          {expanded && (
+            <>
+              <p className={styles.expandedBio}>{member.bio}</p>
+
+              {member.songUrl && (
+                <>
+                  <div className={styles.visualizer} aria-hidden="true">
+                    {Array.from({ length: BAR_COUNT }).map((_, i) => (
+                      <span
+                        key={i}
+                        ref={(el) => {
+                          barRefs.current[i] = el;
+                        }}
+                        className={styles.bar}
+                      />
+                    ))}
+                  </div>
+
+                  <div className={styles.songRow}>
+                    <Music size={14} />
+                    {isPlaying ? "Now Playing" : "Their Anthem"} · {member.songTitle}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </motion.div>
+      </motion.button>
     </motion.div>
   );
 }
@@ -93,6 +133,7 @@ export default function TribeGrid({
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -100,6 +141,21 @@ export default function TribeGrid({
   const frameRef = useRef<number | null>(null);
 
   const selectedMember = members.find((member) => member.id === selectedId) ?? null;
+
+  // Below this width the desktop side-by-side "grid rail + detail panel"
+  // split (see the .container.split rules) has no room to breathe, so on
+  // phones the selected card expands in place within the grid instead —
+  // matches the width this component's own 900px split breakpoint already
+  // treats as "too narrow for the side panel."
+  useEffect(() => {
+    function updateIsMobile() {
+      setIsMobile(window.innerWidth <= 900);
+    }
+
+    updateIsMobile();
+    window.addEventListener("resize", updateIsMobile);
+    return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
 
   function resetBars() {
     barRefs.current.forEach((bar) => {
@@ -192,6 +248,17 @@ export default function TribeGrid({
     setSelectedId(id);
   }
 
+  // On phones there's no separate detail panel to hit a "Back" button in —
+  // the card itself is the expanded detail view, so tapping it again is how
+  // it collapses.
+  function toggleSelect(id: string) {
+    if (isMobile && selectedId === id) {
+      closeDetail();
+    } else {
+      select(id);
+    }
+  }
+
   function closeDetail() {
     setSelectedId(null);
 
@@ -249,7 +316,11 @@ export default function TribeGrid({
         )}
       </AnimatePresence>
 
-      <div className={`${styles.container} ${selectedMember ? styles.split : ""}`}>
+      <div
+        className={`${styles.container} ${
+          selectedMember && !isMobile ? styles.split : ""
+        }`}
+      >
         {!selectedMember && (
           <motion.div
             className={styles.heading}
@@ -281,10 +352,13 @@ export default function TribeGrid({
                     key={member.id}
                     member={member}
                     size="lg"
-                    active={!!selectedMember}
+                    active={!!selectedMember && !isMobile}
                     selected={selectedId === member.id}
-                    onClick={() => select(member.id)}
+                    expanded={isMobile && selectedId === member.id}
+                    onClick={() => toggleSelect(member.id)}
                     delay={i * 0.08}
+                    barRefs={barRefs}
+                    isPlaying={isPlaying}
                   />
                 ))}
               </motion.div>
@@ -297,10 +371,13 @@ export default function TribeGrid({
                     key={member.id}
                     member={member}
                     size="sm"
-                    active={!!selectedMember}
+                    active={!!selectedMember && !isMobile}
                     selected={selectedId === member.id}
-                    onClick={() => select(member.id)}
+                    expanded={isMobile && selectedId === member.id}
+                    onClick={() => toggleSelect(member.id)}
                     delay={(i % 8) * 0.06}
+                    barRefs={barRefs}
+                    isPlaying={isPlaying}
                   />
                 ))}
               </motion.div>
@@ -313,10 +390,13 @@ export default function TribeGrid({
                     key={member.id}
                     member={member}
                     size="sm"
-                    active={!!selectedMember}
+                    active={!!selectedMember && !isMobile}
                     selected={selectedId === member.id}
-                    onClick={() => select(member.id)}
+                    expanded={isMobile && selectedId === member.id}
+                    onClick={() => toggleSelect(member.id)}
                     delay={(i % 8) * 0.06}
+                    barRefs={barRefs}
+                    isPlaying={isPlaying}
                   />
                 ))}
               </motion.div>
@@ -325,7 +405,7 @@ export default function TribeGrid({
         )}
 
         <AnimatePresence>
-          {selectedMember && (
+          {selectedMember && !isMobile && (
             <motion.div
               className={styles.detailPanel}
               initial={{ opacity: 0, x: 60 }}

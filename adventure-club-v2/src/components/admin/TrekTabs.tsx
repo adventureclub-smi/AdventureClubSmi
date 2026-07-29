@@ -17,7 +17,7 @@ export default function TrekTabs({
   const pathname = usePathname();
 
   return (
-    <nav className={styles.tabs}>
+    <nav className={styles.tabs} data-no-print>
       {tabs.map((tab) => (
         <Link
           key={tab.href}

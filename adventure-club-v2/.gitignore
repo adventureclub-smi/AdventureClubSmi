@@ -55,3 +55,7 @@ next-env.d.ts
 # real student names/phone numbers, kept local only, never committed
 /trek-data/*.xlsx
 /trek-data/*.xls
+
+# one-off zip drops from teammates (source bundles, asset packs) — never
+# meant to be committed, just extracted from locally
+*.zip

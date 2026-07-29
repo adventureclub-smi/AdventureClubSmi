@@ -75,7 +75,7 @@ export default function LoginForm() {
         <input
           type="text"
           name="identifier"
-          placeholder="Email / Phone / Adventure Club ID"
+          placeholder="Email / Phone / NAVIRA ID"
           value={formData.identifier}
           onChange={handleChange}
           required

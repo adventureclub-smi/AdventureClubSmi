@@ -1,6 +1,14 @@
+import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // This project lives inside a parent folder that also happens to have its
+  // own (unrelated, older) package-lock.json one level up — Turbopack scans
+  // upward for lockfiles to guess the monorepo root and, without this, picks
+  // that parent by mistake instead of this actual project folder.
+  turbopack: {
+    root: path.join(__dirname),
+  },
   // The certificate generator reads template.html/assets/logo.png via fs at
   // runtime (not import/require), so Next's production file tracing needs
   // an explicit hint to bundle them into a standalone/serverless output.
@@ -45,6 +53,17 @@ const nextConfig: NextConfig = {
         hostname: "media.adventureclubsmi.com",
       },
     ],
+    // Every image already gets resized (max 2000px) and re-encoded to WebP
+    // at upload time in src/lib/storage.ts, so Next's own optimizer
+    // (/_next/image) was just redundantly re-processing already-optimized
+    // files — on Netlify, that costs both bandwidth AND web-request credits
+    // for every image on every page view. Disabling it lets browsers fetch
+    // R2-hosted images directly from Cloudflare (free egress, same
+    // treatment the hero/drone videos already got), matching how video was
+    // already served. The one give-up: no more automatic per-device
+    // srcset/responsive resizing — an acceptable trade given the credit-cap
+    // risk this removes.
+    unoptimized: true,
   },
   experimental: {
     // Dynamic pages (registration status, payment state, etc.) must always

@@ -46,7 +46,7 @@ export default function Certificates() {
 
       <h1>Certificates</h1>
       <p className={styles.subtitle}>
-        Certificates earned for treks you&apos;ve completed with Adventure Club.
+        Certificates earned for treks you&apos;ve completed with NAVIRA.
       </p>
 
       {loading ? (

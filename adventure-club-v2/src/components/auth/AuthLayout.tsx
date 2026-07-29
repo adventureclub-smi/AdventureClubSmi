@@ -58,10 +58,10 @@ export default function AuthLayout({
         {/* Logo */}
 
         <Image
-          src="/logo/logo-white.png"
-          alt="Adventure Club"
-          width={80}
-          height={80}
+          src="/logo/logo-green.png"
+          alt="NAVIRA"
+          width={112}
+          height={51}
           className={styles.logo}
         />
 

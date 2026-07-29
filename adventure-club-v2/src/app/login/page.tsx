@@ -5,7 +5,7 @@ export default function LoginPage() {
   return (
     <AuthLayout
       title="Welcome Back"
-      subtitle="Login to access your Adventure Club account."
+      subtitle="Login to access your NAVIRA account."
     >
       <LoginForm />
     </AuthLayout>

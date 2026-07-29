@@ -45,6 +45,7 @@ a{
 img{
     display:block;
     max-width:100%;
+    height:auto;
 }
 
 button{
@@ -70,4 +71,39 @@ option {
 .hero-title{
     font-family:var(--font-display);
     letter-spacing:2px;
+}
+
+// Everything on this site (admin panel included) is built dark-themed with
+// hardcoded near-invisible-on-white borders (rgba(245, 245, 245,0.08) etc.),
+// which prints as a black page or invisible card outlines otherwise. Since
+// every color in the app already flows through these same CSS variables,
+// flipping them here is enough to make any page (the trek Reports page
+// being the first real reason to print one) legible on paper without
+// touching every component's own stylesheet.
+@media print {
+    :root {
+        color-scheme: light;
+
+        --color-midnight: #ffffff;
+        --color-charcoal: #f4f4f5;
+        --color-accent: #16a34a;
+        --color-accent-hover: #15803d;
+        --color-danger: #dc2626;
+        --color-danger-hover: #b91c1c;
+        --color-text: #111111;
+        --color-text-muted: #4b5563;
+    }
+
+    * {
+        border-color: rgba(0, 0, 0, 0.15) !important;
+        box-shadow: none !important;
+    }
+
+    // Elements only meaningful on-screen — sidebars, top bars, tab
+    // navigation, and any button that only triggers an on-screen action
+    // (like the print button itself) — tag their root element with this
+    // rather than hiding by component-specific class name.
+    [data-no-print] {
+        display: none !important;
+    }
 }

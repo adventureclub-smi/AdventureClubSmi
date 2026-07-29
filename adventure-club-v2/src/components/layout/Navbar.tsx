@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValueEvent,
+  useScroll,
+} from "framer-motion";
 import { Menu, X, Download } from "lucide-react";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import styles from "./Navbar.module.scss";
@@ -17,31 +22,78 @@ const links = [
   { name: "Contact Us", href: "/contact" },
 ];
 
+// Matches the CSS breakpoint below where the full menu collapses into the
+// hamburger trigger — hide-on-scroll-down only makes sense once the navbar
+// is the compact mobile bar, not the full desktop layout.
+const MOBILE_BREAKPOINT = 1150;
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const { canInstall, promptInstall } = useInstallPrompt();
+  const { scrollY } = useScroll();
+
+  useEffect(() => {
+    function updateIsMobile() {
+      setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
+    }
+
+    updateIsMobile();
+    window.addEventListener("resize", updateIsMobile);
+    return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const delta = latest - lastScrollY.current;
+    lastScrollY.current = latest;
+
+    // Desktop keeps the navbar always visible; the drawer being open would
+    // otherwise look broken if the bar it's anchored to slides away under it.
+    if (!isMobile || open) {
+      setHidden(false);
+      return;
+    }
+
+    // Never hide right near the top — only once there's real distance to
+    // scroll back up through does hiding actually save the user anything.
+    if (latest < 80) {
+      setHidden(false);
+    } else if (delta > 4) {
+      setHidden(true);
+    } else if (delta < -4) {
+      setHidden(false);
+    }
+  });
 
   return (
     <header className={styles.header}>
       <motion.nav
         className={styles.navbar}
         initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        animate={{ y: hidden ? -120 : 0, opacity: hidden ? 0 : 1 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
       >
         {/* LEFT SIDE */}
 
         <div className={styles.brandGroup}>
           <Link href="/" className={styles.left}>
             <Image
-              src="/logo/logo-white.png"
-              alt="Adventure Club"
-              width={50}
-              height={50}
+              src="/logo/logo-green.png"
+              alt="NAVIRA"
+              width={72}
+              height={33}
             />
 
             <div>
-              <h3>Adventure Club</h3>
+              <Image
+                src="/logo/clubname-white.png"
+                alt="NAVIRA"
+                width={76}
+                height={22}
+                className={styles.clubname}
+              />
               <span>Srishti Manipal</span>
             </div>
           </Link>
@@ -125,10 +177,10 @@ export default function Navbar() {
             >
               <div className={styles.drawerHeader}>
                 <Image
-                  src="/logo/logo-white.png"
-                  alt="Adventure Club"
-                  width={36}
-                  height={36}
+                  src="/logo/logo-green.png"
+                  alt="NAVIRA"
+                  width={52}
+                  height={24}
                 />
 
                 <button

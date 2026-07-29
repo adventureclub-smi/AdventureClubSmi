@@ -138,7 +138,7 @@ export default function GalleryHeroSettingsManager({
             <input
               value={buttonText}
               onChange={(e) => setButtonText(e.target.value)}
-              placeholder="e.g. Join Adventure Club"
+              placeholder="e.g. Join NAVIRA"
             />
           </div>
 

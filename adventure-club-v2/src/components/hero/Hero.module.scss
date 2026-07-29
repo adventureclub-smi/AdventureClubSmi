@@ -1,7 +1,15 @@
 .hero {
   position: relative;
   width: 100%;
-  height: 100vh;
+  // A fixed 100vh + overflow:hidden was clipping content silently on any
+  // viewport short enough that the text block (heading + subtitle +
+  // buttons + countdown) needed more than one screen's height — the
+  // countdown/Register row was simply cut off below the fold with no way
+  // to reach it. min-height lets the section grow to fit its content
+  // instead: normal-height viewports look identical (still exactly one
+  // screen), short ones just get a slightly taller hero and a scrollbar,
+  // never invisible content.
+  min-height: 100vh;
   overflow: hidden;
 
   display: flex;
@@ -21,16 +29,12 @@
   object-fit: cover;
 
   z-index: 1;
-}
 
-// Sits above the video but below HeroOverlay's darkening gradient (z-index
-// 2), so the same tuning that keeps the text legible also keeps this
-// ambient wireframe subtle rather than needing separate opacity tuning.
-.scene {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
+  // Hints the browser to promote this to its own compositor layer up
+  // front — without it, the scroll-driven scale() transform (see Hero.tsx)
+  // can fall back to repainting the video on the main thread every scroll
+  // frame instead of just recompositing, which is what "laggy" looks like.
+  will-change: transform;
 }
 
 .content {
@@ -45,6 +49,17 @@
   justify-content: center;
 
   height: 100%;
+
+  // The fixed navbar (top: 18px + ~84px tall, z-index 1000 — see
+  // Navbar.module.scss) floats above this section. Without reserving its
+  // height here, centering this block in the *full* viewport lets the
+  // heading's top land underneath the navbar on any window short enough
+  // that the centered content starts near the very top — which varies by
+  // resolution/zoom, exactly what looked "covered" at some sizes and fine
+  // at others. Padding is respected before flex centers the remaining
+  // space, so this reserves that zone unconditionally instead of just
+  // usually clearing it.
+  padding-top: 140px;
 }
 
 .tag {
@@ -236,7 +251,10 @@
 
 @media (max-width: 768px) {
   .hero {
-    height: 100svh;
+    // svh (rather than vh) already accounts for mobile browser chrome — same
+    // min-height reasoning as the desktop rule above still applies on top
+    // of that.
+    min-height: 100svh;
   }
 
   .tag {

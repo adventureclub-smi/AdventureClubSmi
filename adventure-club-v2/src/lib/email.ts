@@ -1,6 +1,9 @@
 import { Resend } from "resend";
 
-const FROM = "Adventure Club SMI <noreply@adventureclubsmi.com>";
+// Display name only — the domain stays as-is since it's a verified sending
+// domain with Resend; switching it would break all outgoing email until a
+// new domain is set up and verified there.
+const FROM = "NAVIRA SMI <noreply@adventureclubsmi.com>";
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
@@ -24,7 +27,7 @@ export function emailShell(bodyHtml: string) {
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
       ${bodyHtml}
-      <p style="color:#999;font-size:12px;margin-top:32px;">Adventure Club SMI</p>
+      <p style="color:#999;font-size:12px;margin-top:32px;">NAVIRA SMI</p>
     </div>
   `;
 }

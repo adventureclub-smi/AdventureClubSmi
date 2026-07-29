@@ -46,7 +46,7 @@ export default function RegistrationStatusCard({
 
         <p>
           Your registration has been received.
-          The Adventure Club will review your
+          NAVIRA will review your
           request soon.
         </p>
       </div>

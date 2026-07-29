@@ -7,6 +7,7 @@ import UpcomingTreks from "@/components/sections/UpcomingTreks";
 import TrekRoute3D from "@/components/sections/TrekRoute3D";
 import TrekMap from "@/components/sections/TrekMap";
 import GoogleEarthExplorer from "@/components/sections/GoogleEarthExplorer";
+import GearShowcase from "@/components/sections/GearShowcase";
 import Stories from "@/components/sections/Stories";
 import FinalCTA from "@/components/sections/FinalCTA";
 import InstagramFeed from "@/components/sections/InstagramFeed";
@@ -66,6 +67,7 @@ export default async function Home() {
         earthUrl={content.googleEarth.earthUrl}
         trailStats={content.googleEarth.trailStats}
       />
+      <GearShowcase />
       <Stories scenes={storyScenes} />
       <FinalCTA content={content.finalSection} />
       <InstagramFeed posts={instagramPosts} />

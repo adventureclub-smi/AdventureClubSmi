@@ -11,26 +11,40 @@ import {
   Mountain,
   ClipboardList,
   Bell,
+  Mail,
   ShieldCheck,
   LogOut,
+  type LucideIcon,
 } from "lucide-react";
 
 import styles from "./Sidebar.module.scss";
 
-const links = [
-  { href: "/", label: "Home", icon: House },
+type NavLink = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  mobileLabel?: string;
+};
+
+// "Home" (the site's actual homepage, not this dashboard) sits right above
+// Logout rather than up top next to Dashboard — up top it reads as if it
+// means "dashboard home", which it isn't.
+const mainLinks: NavLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/profile", label: "My Profile", icon: User },
-  { href: "/dashboard/treks", label: "Treks", icon: Mountain },
+  { href: "/dashboard/treks", label: "My Treks", icon: Mountain },
   {
     href: "/dashboard/my-registrations",
     label: "My Registrations",
     icon: ClipboardList,
   },
   { href: "/dashboard/announcements", label: "Announcements", icon: Bell },
+  { href: "/contact", label: "Contact Us", icon: Mail },
 ];
 
-const adminLink = { href: "/admin", label: "Admin Panel", icon: ShieldCheck };
+const homeLink: NavLink = { href: "/", label: "Home Page", icon: House };
+
+const adminLink: NavLink = { href: "/admin", label: "Admin Panel", icon: ShieldCheck };
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -58,7 +72,9 @@ export default function Sidebar() {
     };
   }, []);
 
-  const navLinks = isAdmin ? [...links, adminLink] : links;
+  const navLinks = isAdmin
+    ? [...mainLinks, adminLink, homeLink]
+    : [...mainLinks, homeLink];
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -73,20 +89,26 @@ export default function Sidebar() {
   return (
     <>
       <aside className={styles.sidebar}>
-        <div className={styles.logo}>
+        <Link href="/" className={styles.logo}>
           <Image
-            src="/logo/logo-white.png"
-            alt="Adventure Club"
+            src="/logo/logo-green.png"
+            alt="NAVIRA"
             width={70}
-            height={70}
+            height={32}
             priority
           />
 
           <div>
-            <h2>Adventure Club</h2>
+            <Image
+              src="/logo/clubname-white.png"
+              alt="NAVIRA"
+              width={76}
+              height={22}
+              className={styles.clubname}
+            />
             <p>Srishti Manipal</p>
           </div>
-        </div>
+        </Link>
 
         <nav className={styles.nav}>
           {navLinks.map((link) => (
@@ -115,7 +137,7 @@ export default function Sidebar() {
             className={isActive(link.href) ? styles.mobileActive : ""}
           >
             <link.icon size={20} />
-            <span>{link.label.replace("My ", "")}</span>
+            <span>{link.mobileLabel || link.label.replace("My ", "")}</span>
           </Link>
         ))}
 

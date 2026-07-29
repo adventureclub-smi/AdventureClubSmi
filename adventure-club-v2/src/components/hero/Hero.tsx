@@ -1,15 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import { useRef } from "react";
 import Link from "next/link";
-import {
-  motion,
-  useMotionValueEvent,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import HeroOverlay from "./HeroOverlay";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -17,13 +10,6 @@ import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
 import { useLazyVideo } from "@/hooks/useLazyVideo";
 import type { HeroContent } from "@/types/homepage";
 import styles from "./Hero.module.scss";
-
-// Three.js touches the GPU/canvas — never render it on the server, and
-// only pull the (fairly heavy) three.js bundle in once the browser
-// actually needs it, so it can't block first paint.
-const HeroScene = dynamic(() => import("@/components/three/HeroScene"), {
-  ssr: false,
-});
 
 function HeroCountdown({
   target,
@@ -98,27 +84,9 @@ export default function Hero({
   const videoRef = useRef<HTMLVideoElement>(null);
   useLazyVideo(videoRef);
   const reducedMotion = useReducedMotion();
-  const [isMobile, setIsMobile] = useState(false);
-  const [pointerFine, setPointerFine] = useState(false);
-  const scrollProgressRef = useRef(0);
-
-  useEffect(() => {
-    const updateMobile = () => setIsMobile(window.innerWidth < 700);
-    updateMobile();
-    window.addEventListener("resize", updateMobile);
-
-    function checkPointer() {
-      setPointerFine(window.matchMedia("(pointer: fine)").matches);
-    }
-    checkPointer();
-
-    return () => window.removeEventListener("resize", updateMobile);
-  }, []);
 
   // Hero content gently recedes as the user starts scrolling into the next
-  // section, rather than cutting abruptly — the 3D scene reads the same
-  // progress (via a ref, not React state, since it updates every frame) to
-  // sink slightly further away at the same time.
+  // section, rather than cutting abruptly.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -129,32 +97,25 @@ export default function Hero({
   // the sense that the whole scene is sinking back rather than just fading.
   const videoScale = useTransform(scrollYProgress, [0, 1], [1, 1.18]);
 
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    scrollProgressRef.current = v;
-  });
-
   return (
     <section className={styles.hero} id="home" ref={sectionRef}>
+      {/* useLazyVideo's own doc comment pairs it with preload="none", but
+          the hero is always in view the instant the page loads — deferring
+          the fetch until the play() call just adds a buffering stutter
+          right at first paint with no bandwidth benefit, since "lazy" here
+          never actually meant "later." play()/pause() on scroll still runs
+          via the hook; only the eager-download behavior is opted back in. */}
       <motion.video
         ref={videoRef}
         className={styles.video}
         muted
         loop
         playsInline
-        preload="none"
+        preload="auto"
         style={reducedMotion ? undefined : { scale: videoScale }}
       >
         <source src={content.videoUrl} type="video/mp4" />
       </motion.video>
-
-      <div className={styles.scene}>
-        <HeroScene
-          interactive={pointerFine && !reducedMotion}
-          animate={!reducedMotion}
-          scrollProgress={scrollProgressRef}
-          isMobile={isMobile}
-        />
-      </div>
 
       <HeroOverlay />
 

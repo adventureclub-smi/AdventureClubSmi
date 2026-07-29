@@ -2,6 +2,34 @@ import type { StatusTone } from "@/components/dashboard/shared/StatusBadge";
 
 export type RegistrationState = "NOT_OPEN" | "OPEN" | "CLOSED";
 
+export type TrekRegistrationWindow = {
+  registrationClosedManually: boolean;
+  registrationOpenedManually: boolean;
+  registrationOpensAt?: string | Date | null;
+  registrationClosesAt?: string | Date | null;
+};
+
+// Shared with /api/dashboard/next-trek so the two places that need "is
+// registration open right now" (the hero journey card and My Treks' handful
+// of registered/register/didn't-attend split) can't drift out of sync.
+export function registrationStateFor(
+  trek: TrekRegistrationWindow,
+  now: Date = new Date()
+): RegistrationState {
+  if (trek.registrationClosedManually) return "CLOSED";
+  if (trek.registrationOpenedManually) return "OPEN";
+
+  if (trek.registrationOpensAt && now < new Date(trek.registrationOpensAt)) {
+    return "NOT_OPEN";
+  }
+
+  if (trek.registrationClosesAt && now > new Date(trek.registrationClosesAt)) {
+    return "CLOSED";
+  }
+
+  return "OPEN";
+}
+
 export type RegistrationLike = {
   id: string;
   status: string;
@@ -39,7 +67,7 @@ export type JourneyStep = {
 
 export type JourneyBadge = {
   text: string;
-  tone: "waiting" | "approved" | "open" | "rejected" | "waitlist" | "completed";
+  tone: "waiting" | "approved" | "open" | "rejected" | "waitlist" | "success";
 };
 
 export type JourneyAction = {
@@ -189,7 +217,11 @@ export function getJourneyBadge(
     case "REJECTED":
       return { text: "Rejected", tone: "rejected" };
     case "COMPLETED":
-      return { text: "Completed", tone: "completed" };
+      // Tone "completed" renders as a muted gray (StatusBadge.module.scss),
+      // which all but disappears over a trek cover photo — "success" is the
+      // same green used everywhere else for a good outcome, and reads far
+      // better here.
+      return { text: "Completed", tone: "success" };
     case "MISSED":
       return { text: "Trip Missed", tone: "rejected" };
     default:

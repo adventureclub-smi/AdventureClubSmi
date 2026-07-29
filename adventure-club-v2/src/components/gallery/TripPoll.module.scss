@@ -61,7 +61,7 @@
 }
 
 .cardVoted {
-  border-color: var(--color-accent);
+  border-color: #415027;
 }
 
 .cardImage {
@@ -85,8 +85,8 @@
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  background: var(--color-accent);
-  color: var(--color-midnight);
+  background: #415027;
+  color: var(--color-text);
 }
 
 .cardContent {
@@ -124,7 +124,7 @@
 .barFill {
   height: 100%;
   border-radius: 999px;
-  background: var(--color-accent);
+  background: #415027;
 }
 
 .percent {

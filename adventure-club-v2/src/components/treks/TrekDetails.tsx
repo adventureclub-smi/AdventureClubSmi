@@ -356,7 +356,7 @@ export default function TrekDetails({
                 <StatusBadge text="Registration Rejected" tone="danger" />
               </div>
               <p className={styles.note}>
-                Please contact Adventure Club for more details.
+                Please contact NAVIRA for more details.
               </p>
             </>
           )}

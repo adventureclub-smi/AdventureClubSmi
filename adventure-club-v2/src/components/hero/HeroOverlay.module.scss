@@ -32,8 +32,13 @@
   position: absolute;
   inset: 0;
 
+  // mix-blend-mode forces the browser to recompute blending against
+  // everything beneath this layer on every frame — sitting directly over a
+  // continuously-playing, continuously-scaling video, that's one of the
+  // most expensive things a stacked layer can do, and was the actual cause
+  // of the hero (and only the hero) feeling laggy. At this opacity, normal
+  // blending looks effectively identical to overlay blending anyway.
   opacity: 0.05;
-  mix-blend-mode: overlay;
 
   background-image: repeating-linear-gradient(
       0deg,

@@ -32,16 +32,62 @@ type Registration = {
   } | null;
 };
 
+type RegistrationMode = "auto" | "open" | "closed";
+
 export default function HistoricalRegistrationsTable({ trekId }: { trekId: string }) {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [linkTarget, setLinkTarget] = useState<Registration | null>(null);
+  const [registrationMode, setRegistrationModeState] = useState<RegistrationMode>("auto");
+  const [togglingStatus, setTogglingStatus] = useState(false);
 
   useEffect(() => {
     fetchRegistrations();
+    fetchTrekStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function fetchTrekStatus() {
+    try {
+      const res = await fetch(`/api/treks/${trekId}`);
+      const data = await res.json();
+
+      setRegistrationModeState(
+        data.registrationClosedManually
+          ? "closed"
+          : data.registrationOpenedManually
+          ? "open"
+          : "auto"
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function setRegistrationMode(mode: RegistrationMode) {
+    if (mode === registrationMode) return;
+
+    setTogglingStatus(true);
+
+    try {
+      const action = mode === "open" ? "open" : mode === "closed" ? "close" : "auto";
+
+      const res = await fetch("/api/admin/treks/registration-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trekId, action }),
+      });
+
+      if (res.ok) {
+        setRegistrationModeState(mode);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setTogglingStatus(false);
+    }
+  }
 
   async function fetchRegistrations() {
     setLoading(true);
@@ -87,6 +133,40 @@ export default function HistoricalRegistrationsTable({ trekId }: { trekId: strin
         <div>
           <h1>Archived Registrations</h1>
           <p>{registrations.length} Participants</p>
+        </div>
+
+        <div className={styles.topBarActions}>
+          <div className={styles.registrationModeGroup}>
+            <button
+              className={
+                registrationMode === "auto" ? styles.modeButtonActiveAuto : styles.modeButton
+              }
+              onClick={() => setRegistrationMode("auto")}
+              disabled={togglingStatus || registrationMode === "auto"}
+            >
+              Follow Countdown
+            </button>
+
+            <button
+              className={
+                registrationMode === "open" ? styles.modeButtonActiveOpen : styles.modeButton
+              }
+              onClick={() => setRegistrationMode("open")}
+              disabled={togglingStatus || registrationMode === "open"}
+            >
+              Open Registrations
+            </button>
+
+            <button
+              className={
+                registrationMode === "closed" ? styles.modeButtonActiveClosed : styles.modeButton
+              }
+              onClick={() => setRegistrationMode("closed")}
+              disabled={togglingStatus || registrationMode === "closed"}
+            >
+              Close Registrations
+            </button>
+          </div>
         </div>
       </div>
 

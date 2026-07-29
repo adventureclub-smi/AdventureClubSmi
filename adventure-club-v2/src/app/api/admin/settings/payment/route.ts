@@ -17,8 +17,8 @@ export async function GET() {
       settings =
         await prisma.paymentSettings.create({
           data: {
-  clubName: "Adventure Club",
-  receiverName: "Adventure Club",
+  clubName: "NAVIRA",
+  receiverName: "NAVIRA",
   upiId: "example@upi",
 },
         });
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     const created =
       await prisma.paymentSettings.create({
         data: {
-  clubName: "Adventure Club",
+  clubName: "NAVIRA",
   receiverName,
   upiId,
 },

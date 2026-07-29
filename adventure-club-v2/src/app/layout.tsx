@@ -26,9 +26,9 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Adventure Club | Srishti Manipal Institute",
+  title: "NAVIRA | Srishti Manipal Institute",
   description:
-    "Explore mountains, forests, rivers and unforgettable adventures with Adventure Club — Srishti Manipal Institute.",
+    "Explore mountains, forests, rivers and unforgettable adventures with NAVIRA — Srishti Manipal Institute.",
   manifest: "/manifest.json",
   icons: {
     icon: [

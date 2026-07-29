@@ -7,7 +7,7 @@ const DEFAULT_HERO: GalleryHeroContent = {
   heading: "Moments From Every Adventure.",
   subtitle:
     "Every trek leaves behind more than memories — it leaves a trail of photos. This is ours.",
-  buttonText: "Join Adventure Club",
+  buttonText: "Join NAVIRA",
   buttonLink: "/signup",
 };
 

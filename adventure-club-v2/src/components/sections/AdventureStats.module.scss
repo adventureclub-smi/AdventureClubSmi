@@ -1,8 +1,39 @@
 .statistics {
   position: relative;
+  // position:relative alone doesn't create a stacking context (that only
+  // happens with a non-auto z-index too) — without this, .scene's
+  // z-index:-1 stacks against the nearest ancestor that *does* have one
+  // (easily an earlier section, or the page itself), not just behind this
+  // section's own background, and can end up rendered behind unrelated
+  // page content instead of behind just this section.
+  isolation: isolate;
   background: var(--color-midnight);
   padding: 140px 0;
   overflow: hidden;
+}
+
+// The 3D forest scene moved here from the Hero — it's a solid-lit,
+// opaque background (not a subtle overlay), so it needs to sit behind
+// everything else including the parallax orbs, with a scrim on top to
+// keep the stat numbers readable over it.
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 13, 13, 0.55) 0%,
+    rgba(13, 13, 13, 0.75) 50%,
+    rgba(13, 13, 13, 0.55) 100%
+  );
 }
 
 .parallaxLayer {

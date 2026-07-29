@@ -192,7 +192,7 @@ export default function Profile() {
         <div className={styles.avatar}>{initials || "AC"}</div>
 
         <div className={styles.identity}>
-          <h1>{user.fullName || "Adventure Club Member"}</h1>
+          <h1>{user.fullName || "NAVIRA Member"}</h1>
           <p>{user.institution}</p>
 
           <div className={styles.chips}>

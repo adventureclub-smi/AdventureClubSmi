@@ -17,13 +17,19 @@ export default function Footer({ socials }: { socials: SocialLinks }) {
         <div className={styles.top}>
           <div className={styles.brand}>
             <Image
-              src="/logo/logo-white.png"
-              alt="Adventure Club"
+              src="/logo/logo-green.png"
+              alt="NAVIRA"
               width={48}
-              height={48}
+              height={22}
             />
             <div>
-              <h3>Adventure Club</h3>
+              <Image
+                src="/logo/clubname-white.png"
+                alt="NAVIRA"
+                width={69}
+                height={20}
+                className={styles.clubname}
+              />
               <span>Srishti Manipal Institute</span>
             </div>
           </div>
@@ -71,7 +77,7 @@ export default function Footer({ socials }: { socials: SocialLinks }) {
         </div>
 
         <div className={styles.bottom}>
-          <p>© {new Date().getFullYear()} Adventure Club, Srishti Manipal Institute.</p>
+          <p>© {new Date().getFullYear()} NAVIRA, Srishti Manipal Institute.</p>
           <p>Every summit begins with one step.</p>
         </div>
       </div>

@@ -10,7 +10,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
   return photos.map((photo) => ({
     id: photo.id,
     src: optimizeImage(photo.imageUrl),
-    alt: photo.caption || "Adventure Club gallery photo",
+    alt: photo.caption || "NAVIRA gallery photo",
     caption: photo.caption || undefined,
     category: photo.category || undefined,
     // Older photos uploaded before dimensions were tracked fall back to real

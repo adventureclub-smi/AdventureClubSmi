@@ -1,11 +1,20 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { motion, useInView, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { useCountUp } from "@/hooks/useCountUp";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { StatItem } from "@/types/homepage";
 import styles from "./AdventureStats.module.scss";
+
+// Three.js touches the GPU/canvas — never render it on the server, and only
+// pull the (fairly heavy) three.js bundle in once the browser actually
+// needs it, same isolation pattern as the Hero's background video used to
+// use for its 3D scene.
+const ForestScene = dynamic(() => import("@/components/three/ForestScene"), {
+  ssr: false,
+});
 
 // Each stat tilts/scales itself in as it individually crosses the viewport
 // rather than all firing off one shared section-level trigger — since
@@ -60,8 +69,23 @@ function StatCard({
 export default function AdventureStats({ stats }: { stats: StatItem[] }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
+  // Separate from `inView` above (which latches true forever once crossed,
+  // for the count-up trigger) — this one needs to flip back to false once
+  // the section scrolls out of view, or the forest scene keeps burning
+  // GPU/CPU on every frame for the rest of the page's lifetime, which is
+  // exactly what was making the whole homepage feel laggy while scrolling.
+  const sceneInView = useInView(ref, { margin: "300px" });
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
+  const reducedMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateMobile = () => setIsMobile(window.innerWidth < 700);
+    updateMobile();
+    window.addEventListener("resize", updateMobile);
+    return () => window.removeEventListener("resize", updateMobile);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -72,6 +96,12 @@ export default function AdventureStats({ stats }: { stats: StatItem[] }) {
 
   return (
     <section className={styles.statistics} ref={ref}>
+      <div className={styles.scene} aria-hidden="true">
+        <ForestScene animate={!reducedMotion && sceneInView} isMobile={isMobile} />
+      </div>
+
+      <div className={styles.scrim} aria-hidden="true" />
+
       <div className={styles.parallaxLayer} aria-hidden="true">
         <motion.div className={styles.orbA} style={{ y: orbAY }} />
         <motion.div className={styles.orbB} style={{ y: orbBY }} />

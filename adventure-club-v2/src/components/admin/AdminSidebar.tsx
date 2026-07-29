@@ -52,6 +52,12 @@ const links = [
 // item is governed by club role, not by operational access tier (see
 // src/lib/core-team.ts), so it's appended separately below rather than
 // through the tier-based filtering every other link goes through.
+//
+// Temporarily disabled site-wide (not appended in visibleLinks below, and
+// the route itself redirects — see app/admin/core-team-restructure/page.tsx)
+// while the feature is on hold. Nothing else here was touched, so
+// re-enabling is just: re-add `, CORE_TEAM_LINK` to visibleLinks and restore
+// that page.
 const CORE_TEAM_LINK = {
   href: "/admin/core-team-restructure",
   label: "Core Team Restructure",
@@ -87,10 +93,7 @@ export default function AdminSidebar({
     ? links.filter((link) => allowedHrefs.includes(link.href))
     : links;
 
-  const visibleLinks =
-    clubRole === "Admin" || isCoreTeamRole(clubRole)
-      ? [...tierLinks, CORE_TEAM_LINK]
-      : tierLinks;
+  const visibleLinks = tierLinks;
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -130,21 +133,27 @@ export default function AdminSidebar({
 
   return (
     <>
-      <aside className={styles.sidebar}>
-        <div className={styles.logo}>
+      <aside className={styles.sidebar} data-no-print>
+        <Link href="/" className={styles.logo}>
           <Image
-            src="/logo/logo-white.png"
-            alt="Adventure Club"
+            src="/logo/logo-green.png"
+            alt="NAVIRA"
             width={54}
-            height={54}
+            height={25}
             priority
           />
 
           <div>
-            <h2>Adventure Club</h2>
+            <Image
+              src="/logo/clubname-white.png"
+              alt="NAVIRA"
+              width={69}
+              height={20}
+              className={styles.clubname}
+            />
             <p>Admin Panel</p>
           </div>
-        </div>
+        </Link>
 
         {nav}
 
@@ -154,7 +163,7 @@ export default function AdminSidebar({
         </button>
       </aside>
 
-      <div className={styles.mobileTopBar}>
+      <div className={styles.mobileTopBar} data-no-print>
         <button
           className={styles.menuButton}
           aria-label="Open menu"
@@ -165,10 +174,10 @@ export default function AdminSidebar({
         </button>
 
         <Image
-          src="/logo/logo-white.png"
-          alt="Adventure Club"
+          src="/logo/logo-green.png"
+          alt="NAVIRA"
           width={28}
-          height={28}
+          height={13}
         />
 
         <button aria-label="Logout" onClick={handleLogout}>
@@ -181,7 +190,7 @@ export default function AdminSidebar({
         <div className={styles.drawerOverlay} onClick={() => setOpen(false)}>
           <div className={styles.drawer} onClick={(e) => e.stopPropagation()}>
             <div className={styles.drawerHeader}>
-              <span>Adventure Club Admin</span>
+              <span>NAVIRA Admin</span>
               <button aria-label="Close menu" onClick={() => setOpen(false)}>
                 <X size={20} />
               </button>

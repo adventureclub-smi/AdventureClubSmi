@@ -36,7 +36,7 @@ export default function DistributionChart({
         <div className={styles.chartWrap}>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-              <CartesianGrid stroke="rgba(245,245,245,0.06)" vertical={false} />
+              <CartesianGrid stroke="rgba(245, 245, 245,0.06)" vertical={false} />
               <XAxis
                 dataKey="label"
                 stroke="#9ca3af"
@@ -48,13 +48,13 @@ export default function DistributionChart({
               <Tooltip
                 contentStyle={{
                   background: "#1b1b1b",
-                  border: "1px solid rgba(245,245,245,0.1)",
+                  border: "1px solid rgba(245, 245, 245,0.1)",
                   borderRadius: 10,
                   color: "#f5f5f5",
                   fontSize: 13,
                 }}
                 labelStyle={{ color: "#9ca3af" }}
-                cursor={{ fill: "rgba(245,245,245,0.04)" }}
+                cursor={{ fill: "rgba(245, 245, 245,0.04)" }}
               />
               <Bar dataKey="value" fill="#22c55e" radius={[6, 6, 0, 0]} maxBarSize={40} />
             </BarChart>

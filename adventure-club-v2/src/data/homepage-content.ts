@@ -33,7 +33,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
 const homepageContent: HomepageContent = {
   hero: {
     videoUrl: "https://media.adventureclubsmi.com/AdventureClub/HomepageVideos/d174c44d-10df-4aac-b45e-3964941c53c4.mp4",
-    tagline: "ADVENTURE CLUB",
+    tagline: "NAVIRA",
     titleWords: ["EXPLORE.", "BEYOND.", "LIMITS."],
     leadLine: "Every summit begins with one step.",
     subtitle:
@@ -77,7 +77,7 @@ const homepageContent: HomepageContent = {
     heading: ["YOUR NEXT", "ADVENTURE", "STARTS HERE."],
     description:
       "Every summit begins with someone brave enough to take the first step. Make it yours.",
-    ctaLabel: "Join Adventure Club",
+    ctaLabel: "Join NAVIRA",
     ctaHref: "/signup",
   },
 

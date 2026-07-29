@@ -177,7 +177,7 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
           <span className={styles.eyebrow}>THE SOUNDTRACK</span>
           <h2>Club Vibe Check</h2>
           <p className={styles.tagline}>
-            More than songs—this is the spirit of Adventure Club. lets{" "}
+            More than songs—this is the spirit of NAVIRA. lets{" "}
             <span className={styles.accentPhrase}>REST IN PEAK</span>
           </p>
         </motion.div>

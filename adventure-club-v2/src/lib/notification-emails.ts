@@ -165,7 +165,7 @@ export async function notifyRegistrationStatus(registration: RegistrationWithUse
       html: emailShell(`
         <h2 style="color:#dc2626;">Registration not approved</h2>
         <p>Hi ${firstName(user.fullName)}, your registration for <strong>${trek.title}</strong> was not approved this time.</p>
-        <p>Please contact Adventure Club SMI for more details.</p>
+        <p>Please contact NAVIRA SMI for more details.</p>
       `),
     });
   }

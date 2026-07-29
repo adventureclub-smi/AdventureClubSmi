@@ -31,7 +31,7 @@ type HeroData = {
   bannerImageUrl: string | null;
 };
 
-type NextTrekData = {
+type NextTrekEntry = {
   trek: {
     id: string;
     title: string;
@@ -59,8 +59,8 @@ export default function Dashboard() {
   const [hero, setHero] =
     useState<HeroData | null>(null);
 
-  const [nextTrek, setNextTrek] =
-    useState<NextTrekData | null>(null);
+  const [nextTreks, setNextTreks] = useState<NextTrekEntry[]>([]);
+  const [selectedTrekId, setSelectedTrekId] = useState<string | null>(null);
 
   const [registrations, setRegistrations] = useState<MyRegistration[]>([]);
 
@@ -82,7 +82,8 @@ export default function Dashboard() {
         }
 
         if (trekRes.ok) {
-          setNextTrek(await trekRes.json());
+          const data = await trekRes.json();
+          setNextTreks(data?.entries ?? []);
         }
 
         if (registrationsRes.ok) {
@@ -121,11 +122,19 @@ export default function Dashboard() {
     ? `/student/trip-centre/${activeTripCentreReg.id}`
     : null;
 
-  const tripCentreAction = nextTrek?.trek
+  // Multiple simultaneous registrations can each be at a different journey
+  // stage — rather than stacking a full card per trek, the student picks
+  // which one to view via the tabs above the card, defaulting to the
+  // soonest-dated trek (entries already arrive sorted that way). The hero
+  // banner's CTA follows that same selection.
+  const selectedEntry =
+    nextTreks.find((entry) => entry.trek.id === selectedTrekId) || nextTreks[0];
+
+  const tripCentreAction = selectedEntry?.trek
     ? getJourneyAction(
-        nextTrek.trek.id,
-        nextTrek.registration,
-        nextTrek.registrationState
+        selectedEntry.trek.id,
+        selectedEntry.registration,
+        selectedEntry.registrationState
       )
     : null;
 
@@ -146,14 +155,36 @@ export default function Dashboard() {
         />
       )}
 
-      {nextTrek?.trek && (
-        <NextTrekCard
-          trek={nextTrek.trek}
-          registration={nextTrek.registration}
-          registrationState={nextTrek.registrationState}
-          registrationOpensAt={nextTrek.registrationOpensAt}
-          notifyRequested={nextTrek.notifyRequested}
-        />
+      {selectedEntry && (
+        <div>
+          {nextTreks.length > 1 && (
+            <div className={styles.trekTabs}>
+              {nextTreks.map((entry) => (
+                <button
+                  key={entry.trek.id}
+                  type="button"
+                  className={
+                    entry.trek.id === selectedEntry.trek.id
+                      ? styles.trekTabActive
+                      : styles.trekTab
+                  }
+                  onClick={() => setSelectedTrekId(entry.trek.id)}
+                >
+                  {entry.trek.title}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <NextTrekCard
+            key={selectedEntry.trek.id}
+            trek={selectedEntry.trek}
+            registration={selectedEntry.registration}
+            registrationState={selectedEntry.registrationState}
+            registrationOpensAt={selectedEntry.registrationOpensAt}
+            notifyRequested={selectedEntry.notifyRequested}
+          />
+        </div>
       )}
 
       <Stats />

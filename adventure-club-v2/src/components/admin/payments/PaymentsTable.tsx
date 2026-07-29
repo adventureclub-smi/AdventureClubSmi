@@ -42,6 +42,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 export default function PaymentsTable({ trekId }: Props) {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [trekStatus, setTrekStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
@@ -56,7 +57,8 @@ export default function PaymentsTable({ trekId }: Props) {
     try {
       const res = await fetch(`/api/admin/payments/${trekId}`);
       const data = await res.json();
-      setRegistrations(Array.isArray(data) ? data : []);
+      setRegistrations(Array.isArray(data.registrations) ? data.registrations : []);
+      setTrekStatus(data.trekStatus ?? null);
     } catch (error) {
       console.error(error);
     } finally {
@@ -71,7 +73,10 @@ export default function PaymentsTable({ trekId }: Props) {
       try {
         const res = await fetch(`/api/admin/payments/${trekId}`);
         const data = await res.json();
-        if (active) setRegistrations(Array.isArray(data) ? data : []);
+        if (active) {
+          setRegistrations(Array.isArray(data.registrations) ? data.registrations : []);
+          setTrekStatus(data.trekStatus ?? null);
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -127,11 +132,13 @@ export default function PaymentsTable({ trekId }: Props) {
   }
 
   const isSingleInstallment = registrations[0]?.trek?.installments === 1;
-  const isHistorical = registrations[0]?.trek?.isHistorical ?? false;
 
-  const trekCompleted = registrations.some(
-    (r) => r.status === "COMPLETED" || r.status === "MISSED"
-  );
+  // registrations.some(...) alone is always false on a trek with zero
+  // registrations, no matter what the trek's own status actually is — so
+  // that case falls back to trekStatus, which the API now sends directly.
+  const trekCompleted =
+    trekStatus === "Completed" ||
+    registrations.some((r) => r.status === "COMPLETED" || r.status === "MISSED");
 
   async function handleCompleteTrek() {
     const confirmComplete = confirm(
@@ -298,40 +305,34 @@ export default function PaymentsTable({ trekId }: Props) {
         </div>
       </div>
 
-      {/* Both bulk actions key off "APPROVED" status and toggle the trek's
-          live listing status — meaningless (and, for "Undo", actively
-          harmful to already-COMPLETED/MISSED historical data) for an
-          archived trek, so they're live-trek only. */}
-      {!isHistorical && (
-        <div className={styles.bulkActions}>
-          {!isSingleInstallment && (
-            <button
-              className={styles.unlockAllButton}
-              disabled={unlockingAll}
-              onClick={handleUnlockAll}
-            >
-              <Unlock size={15} />
-              {unlockingAll ? "Unlocking..." : "Unlock Final Payment for All"}
-            </button>
-          )}
-
+      <div className={styles.bulkActions}>
+        {!isSingleInstallment && (
           <button
-            className={trekCompleted ? styles.undoCompleteButton : styles.completeTrekButton}
-            disabled={completingTrek}
-            onClick={handleCompleteTrek}
+            className={styles.unlockAllButton}
+            disabled={unlockingAll}
+            onClick={handleUnlockAll}
           >
-            <FlagTriangleRight size={15} />
-            {completingTrek
-              ? "Working..."
-              : trekCompleted
-              ? "Undo Trek Completion"
-              : "Mark Trek Completed"}
+            <Unlock size={15} />
+            {unlockingAll ? "Unlocking..." : "Unlock Final Payment for All"}
           </button>
+        )}
 
-          {unlockStatus && <p className={styles.unlockStatus}>{unlockStatus}</p>}
-          {completeStatus && <p className={styles.unlockStatus}>{completeStatus}</p>}
-        </div>
-      )}
+        <button
+          className={trekCompleted ? styles.undoCompleteButton : styles.completeTrekButton}
+          disabled={completingTrek}
+          onClick={handleCompleteTrek}
+        >
+          <FlagTriangleRight size={15} />
+          {completingTrek
+            ? "Working..."
+            : trekCompleted
+            ? "Undo Trek Completion"
+            : "Mark Trek Completed"}
+        </button>
+
+        {unlockStatus && <p className={styles.unlockStatus}>{unlockStatus}</p>}
+        {completeStatus && <p className={styles.unlockStatus}>{completeStatus}</p>}
+      </div>
 
       <div className={styles.cards}>
         {filtered.length === 0 ? (

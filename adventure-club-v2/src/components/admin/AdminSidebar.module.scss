@@ -24,12 +24,8 @@
   margin-bottom: 36px;
   padding: 0 8px;
 
-  h2 {
-    font-family: var(--font-display);
-    letter-spacing: 1px;
-    color: var(--color-text);
-    font-size: 1.15rem;
-    margin: 0;
+  .clubname {
+    display: block;
   }
 
   p {

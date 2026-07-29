@@ -23,10 +23,16 @@ export async function POST(req: NextRequest) {
           data: { status: "APPROVED" },
         }),
 
-        // Re-list the trek as an upcoming trek on the public site.
+        // Re-list the trek as an upcoming trek on the public site, and hand
+        // registration control back to the countdown dates rather than
+        // leaving it stuck on the "closed" override completion set below.
         prisma.trek.update({
           where: { id: trekId },
-          data: { status: "Registration Open" },
+          data: {
+            status: "Registration Open",
+            registrationClosedManually: false,
+            registrationOpenedManually: false,
+          },
         }),
       ]);
 
@@ -60,10 +66,18 @@ export async function POST(req: NextRequest) {
         : Promise.resolve(),
 
       // Delist the trek from the public "Upcoming Treks" listings —
-      // getUpcomingTreks() only shows treks with this exact status.
+      // getUpcomingTreks() only shows treks with this exact status — and
+      // force registration closed so it can't still be picked up as
+      // "Register" (registrationStateFor only looks at these two flags plus
+      // the countdown dates, not trek.status) by a student who never signed
+      // up for it.
       prisma.trek.update({
         where: { id: trekId },
-        data: { status: "Completed" },
+        data: {
+          status: "Completed",
+          registrationClosedManually: true,
+          registrationOpenedManually: false,
+        },
       }),
     ]);
 

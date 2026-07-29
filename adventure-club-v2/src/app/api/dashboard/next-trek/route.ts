@@ -2,24 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
-import type { Trek } from "@prisma/client";
 import { optimizeImage } from "@/lib/media-optimize";
-
-function registrationStateFor(trek: Trek, now: Date) {
-  let registrationState: "NOT_OPEN" | "OPEN" | "CLOSED" = "OPEN";
-
-  if (trek.registrationClosedManually) {
-    registrationState = "CLOSED";
-  } else if (trek.registrationOpenedManually) {
-    registrationState = "OPEN";
-  } else if (trek.registrationOpensAt && now < trek.registrationOpensAt) {
-    registrationState = "NOT_OPEN";
-  } else if (trek.registrationClosesAt && now > trek.registrationClosesAt) {
-    registrationState = "CLOSED";
-  }
-
-  return registrationState;
-}
+import { registrationStateFor } from "@/lib/registration-journey";
 
 export async function GET() {
   try {
@@ -38,76 +22,62 @@ export async function GET() {
 
     const now = new Date();
 
-    // 1) An active (non-terminal) registration always wins — if the student
-    // is mid-journey for a trek (waiting, approved, paying, etc.), keep
-    // showing that rather than distracting them with a different trek.
-    const activeRegistration = await prisma.registration.findFirst({
+    // 1) Every trek the admin hasn't marked "Completed" yet shows here —
+    // registered or not. Two treks can be live at once (one the student
+    // registered for, one they haven't gotten to yet), and neither should
+    // stay hidden just because the other exists — the student picks which
+    // one's journey to view via tabs on the dashboard. A trek keeps showing
+    // right through registration/payment/trip and only drops off once the
+    // admin's "Mark Trek Completed" action flips its status, matching
+    // getUpcomingTreks()'s own status check. `isHistorical` keeps a past
+    // season's abandoned drafts from resurfacing here too.
+    const liveTreks = await prisma.trek.findMany({
       where: {
-        userId: payload.id,
-        status: { notIn: ["COMPLETED", "MISSED", "REJECTED"] },
-      },
-      orderBy: { createdAt: "desc" },
-      include: { trek: true },
-    });
-
-    if (activeRegistration) {
-      const { trek } = activeRegistration;
-      trek.coverImage = optimizeImage(trek.coverImage);
-
-      return NextResponse.json({
-        trek,
-        registration: activeRegistration,
-        registrationState: registrationStateFor(trek, now),
-        serverTime: now,
-        registrationOpensAt: trek.registrationOpensAt,
-        registrationClosesAt: trek.registrationClosesAt,
-      });
-    }
-
-    // 2) No active registration — a newly published trek the student hasn't
-    // registered for yet takes priority over an old completed/missed/
-    // rejected registration, so it surfaces here (with countdown + Register
-    // Now) the moment it's created, instead of staying hidden behind a
-    // finished trek indefinitely.
-    const myTrekIds = (
-      await prisma.registration.findMany({
-        where: { userId: payload.id },
-        select: { trekId: true },
-      })
-    ).map((r) => r.trekId);
-
-    const openTrek = await prisma.trek.findFirst({
-      where: {
-        status: "Registration Open",
-        date: { gte: now },
-        id: { notIn: myTrekIds },
+        isHistorical: false,
+        status: { not: "Completed" },
       },
       orderBy: { date: "asc" },
     });
 
-    if (openTrek) {
-      openTrek.coverImage = optimizeImage(openTrek.coverImage);
+    if (liveTreks.length > 0) {
+      const trekIds = liveTreks.map((trek) => trek.id);
 
-      const notifyRequested = await prisma.trekNotifyRequest
-        .findUnique({
-          where: { trekId_userId: { trekId: openTrek.id, userId: payload.id } },
-        })
-        .then(Boolean);
+      const [registrations, notifyRequests] = await Promise.all([
+        prisma.registration.findMany({
+          where: { userId: payload.id, trekId: { in: trekIds } },
+        }),
+        prisma.trekNotifyRequest.findMany({
+          where: { userId: payload.id, trekId: { in: trekIds } },
+        }),
+      ]);
 
-      return NextResponse.json({
-        trek: openTrek,
-        registration: null,
-        registrationState: registrationStateFor(openTrek, now),
-        serverTime: now,
-        registrationOpensAt: openTrek.registrationOpensAt,
-        registrationClosesAt: openTrek.registrationClosesAt,
-        notifyRequested,
+      const registrationByTrekId = new Map(
+        registrations.map((registration) => [registration.trekId, registration])
+      );
+      const notifiedTrekIds = new Set(notifyRequests.map((n) => n.trekId));
+
+      const entries = liveTreks.map((trek) => {
+        trek.coverImage = optimizeImage(trek.coverImage);
+
+        return {
+          trek,
+          registration: registrationByTrekId.get(trek.id) || null,
+          registrationState: registrationStateFor(trek, now),
+          serverTime: now,
+          registrationOpensAt: trek.registrationOpensAt,
+          registrationClosesAt: trek.registrationClosesAt,
+          notifyRequested: notifiedTrekIds.has(trek.id),
+        };
       });
+
+      return NextResponse.json({ entries });
     }
 
-    // 3) No new trek available either — fall back to the student's most
-    // recent registration regardless of status, so a finished trip (e.g.
-    // certificate access) still shows up instead of an empty dashboard.
+    // 2) No current-season trek exists at all (off-season, or a brand new
+    // account before this season's first trek is published) — fall back to
+    // the student's most recent registration regardless of status, so a
+    // finished trip (e.g. certificate access) still shows up instead of an
+    // empty dashboard.
     const latestRegistration = await prisma.registration.findFirst({
       where: { userId: payload.id },
       orderBy: { createdAt: "desc" },
@@ -119,16 +89,20 @@ export async function GET() {
       trek.coverImage = optimizeImage(trek.coverImage);
 
       return NextResponse.json({
-        trek,
-        registration: latestRegistration,
-        registrationState: registrationStateFor(trek, now),
-        serverTime: now,
-        registrationOpensAt: trek.registrationOpensAt,
-        registrationClosesAt: trek.registrationClosesAt,
+        entries: [
+          {
+            trek,
+            registration: latestRegistration,
+            registrationState: registrationStateFor(trek, now),
+            serverTime: now,
+            registrationOpensAt: trek.registrationOpensAt,
+            registrationClosesAt: trek.registrationClosesAt,
+          },
+        ],
       });
     }
 
-    // 4) Brand-new account with no registration history at all and nothing
+    // 3) Brand-new account with no registration history at all and nothing
     // currently open — fall back to the soonest upcoming trek of any status.
     const trek = await prisma.trek.findFirst({
       where: {
@@ -142,7 +116,7 @@ export async function GET() {
     });
 
     if (!trek) {
-      return NextResponse.json(null);
+      return NextResponse.json({ entries: [] });
     }
 
     trek.coverImage = optimizeImage(trek.coverImage);
@@ -154,13 +128,17 @@ export async function GET() {
       .then(Boolean);
 
     return NextResponse.json({
-      trek,
-      registration: null,
-      registrationState: registrationStateFor(trek, now),
-      serverTime: now,
-      registrationOpensAt: trek.registrationOpensAt,
-      registrationClosesAt: trek.registrationClosesAt,
-      notifyRequested,
+      entries: [
+        {
+          trek,
+          registration: null,
+          registrationState: registrationStateFor(trek, now),
+          serverTime: now,
+          registrationOpensAt: trek.registrationOpensAt,
+          registrationClosesAt: trek.registrationClosesAt,
+          notifyRequested,
+        },
+      ],
     });
   } catch (error) {
     console.error(error);
