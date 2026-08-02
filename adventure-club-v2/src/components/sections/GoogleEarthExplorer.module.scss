@@ -32,8 +32,8 @@
   margin: 0 auto;
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(0, 160, 115, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 160, 115, 0.08);
   padding: 56px 40px;
 }
 
@@ -73,8 +73,8 @@
   gap: 10px;
   padding: 10px 20px;
   border-radius: 999px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: rgba(0, 160, 115, 0.1);
+  border: 1px solid rgba(0, 160, 115, 0.4);
   color: var(--color-accent);
   font-size: 12px;
   font-weight: 700;
@@ -87,14 +87,14 @@
   height: 8px;
   border-radius: 50%;
   background: var(--color-accent);
-  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  box-shadow: 0 0 0 0 rgba(0, 160, 115, 0.6);
   animation: radarPulse 1.6s infinite;
 }
 
 @keyframes radarPulse {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
-  70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(0, 160, 115, 0.6); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 160, 115, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 160, 115, 0); }
 }
 
 .launchButton {
@@ -111,14 +111,14 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 0 30px rgba(34, 197, 94, 0.35);
+  box-shadow: 0 0 30px rgba(0, 160, 115, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   animation: launchGlow 2.4s ease-in-out infinite;
 }
 
 .launchButton:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 40px rgba(34, 197, 94, 0.55);
+  box-shadow: 0 0 40px rgba(0, 160, 115, 0.55);
 }
 
 .launchButton:disabled {
@@ -128,7 +128,7 @@
 }
 
 @keyframes launchGlow {
-  0%, 100% { box-shadow: 0 0 24px rgba(34, 197, 94, 0.3); }
+  0%, 100% { box-shadow: 0 0 24px rgba(0, 160, 115, 0.3); }
   50% { box-shadow: 0 0 40px rgba(56, 189, 248, 0.4); }
 }
 
@@ -154,8 +154,8 @@
 }
 
 .statBlock:hover {
-  border-color: rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.06);
+  border-color: rgba(0, 160, 115, 0.5);
+  background: rgba(0, 160, 115, 0.06);
 }
 
 .statValue {
@@ -224,7 +224,7 @@
   color: var(--color-accent);
   background: conic-gradient(
     from 0deg,
-    rgba(34, 197, 94, 0.6),
+    rgba(0, 160, 115, 0.6),
     transparent 60%
   );
   animation: radarSpin 1s linear infinite;
@@ -266,8 +266,8 @@
   padding: 48px 36px;
   border-radius: 20px;
   background: var(--color-charcoal);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  box-shadow: 0 0 60px rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(0, 160, 115, 0.3);
+  box-shadow: 0 0 60px rgba(0, 160, 115, 0.15);
 
   h3 {
     font-family: var(--font-display);
@@ -293,8 +293,8 @@
   align-items: center;
   justify-content: center;
   color: var(--color-accent);
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: rgba(0, 160, 115, 0.1);
+  border: 1px solid rgba(0, 160, 115, 0.4);
   animation: radarPulse 1.6s infinite;
 }
 

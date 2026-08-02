@@ -25,6 +25,26 @@
   background: var(--color-accent-hover);
 }
 
+.deleteButton {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.deleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .pendingBanner {
   display: flex;
   align-items: center;
@@ -71,8 +91,8 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  background: rgba(34, 197, 94, 0.08);
-  border: 1px solid rgba(34, 197, 94, 0.25);
+  background: rgba(0, 160, 115, 0.08);
+  border: 1px solid rgba(0, 160, 115, 0.25);
   border-radius: 14px;
   padding: 18px 22px;
   margin-bottom: 24px;
@@ -222,12 +242,56 @@
 
 .fields select:focus {
   outline: none;
-  border-color: rgba(34, 197, 94, 0.5);
+  border-color: rgba(0, 160, 115, 0.5);
 }
 
 .fields select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.clubIdField {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+
+  label {
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+}
+
+.clubIdEditor {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  background: rgba(245, 245, 245, 0.05);
+  overflow: hidden;
+
+  span {
+    padding: 0 0 0 14px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 14px;
+    border: none;
+    background: none;
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  input:focus {
+    outline: none;
+  }
 }
 
 .accessNote {

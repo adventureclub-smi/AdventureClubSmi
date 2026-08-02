@@ -38,7 +38,7 @@ function ensureMarkerStyles() {
       border: 2px solid var(--color-midnight, #0d0d0d);
     }
     .trek-pin--upcoming {
-      background: var(--color-accent, #22c55e);
+      background: var(--color-accent, #00a073);
       animation: trekPinPulse 2s infinite;
     }
     .trek-pin--completed {
@@ -46,17 +46,17 @@ function ensureMarkerStyles() {
       border-color: var(--color-midnight, #0d0d0d);
     }
     @keyframes trekPinPulse {
-      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
-      70% { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(0, 160, 115, 0.55); }
+      70% { box-shadow: 0 0 0 14px rgba(0, 160, 115, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 160, 115, 0); }
     }
     .college-pin {
       width: 20px;
       height: 20px;
-      background: var(--color-accent, #22c55e);
+      background: var(--color-accent, #00a073);
       border: 2px solid var(--color-midnight, #0d0d0d);
       transform: rotate(45deg);
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+      box-shadow: 0 0 0 4px rgba(0, 160, 115, 0.25);
     }
     .leaflet-popup-content-wrapper {
       background: var(--color-charcoal, #1b1b1b);
@@ -82,8 +82,8 @@ function popupHtml(pin: TrekMapPin) {
   });
 
   const actionHtml = pin.isHistorical
-    ? `<span style="display:inline-block;padding:6px 14px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(34, 197, 94,0.18);color:var(--color-accent, #22c55e);">Completed</span>`
-    : `<a href="/treks/${pin.id}" style="font-size:13px;font-weight:600;color:var(--color-accent, #22c55e);text-decoration:none;">View Trek &rarr;</a>`;
+    ? `<span style="display:inline-block;padding:6px 14px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(0, 160, 115,0.18);color:var(--color-accent, #00a073);">Completed</span>`
+    : `<a href="/treks/${pin.id}" style="font-size:13px;font-weight:600;color:var(--color-accent, #00a073);text-decoration:none;">View Trek &rarr;</a>`;
 
   return `
     <div style="font-family:inherit;">

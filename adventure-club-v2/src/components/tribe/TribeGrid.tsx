@@ -17,6 +17,18 @@ function degreeOnly(course: string) {
   return course.split(/[-(]/)[0].trim();
 }
 
+// Faculty/non-student members don't have a real year or course — admin can
+// leave either blank or pick "Not Specified" rather than being forced to
+// invent one, and this is what keeps that from printing a stray "Not
+// Specified" or a dangling " · " separator on the public page.
+function isUnset(value: string) {
+  return !value.trim() || value.trim().toLowerCase() === "not specified";
+}
+
+function yearCourseLine(year: string, course: string) {
+  return [year, course].filter((part) => !isUnset(part)).join(" · ");
+}
+
 function TribeCard({
   member,
   size,
@@ -29,7 +41,7 @@ function TribeCard({
   isPlaying,
 }: {
   member: TribeMemberSummary;
-  size: "lg" | "sm";
+  size: "lg" | "sm" | "xs";
   active: boolean;
   selected: boolean;
   expanded: boolean;
@@ -82,7 +94,10 @@ function TribeCard({
           <span className={styles.role}>{member.role}</span>
           <h3>{member.name}</h3>
           <p>
-            {member.year} · {expanded ? member.course : degreeOnly(member.course)}
+            {yearCourseLine(
+              member.year,
+              expanded ? member.course : degreeOnly(member.course)
+            )}
           </p>
 
           {expanded && (
@@ -389,7 +404,7 @@ export default function TribeGrid({
                   <TribeCard
                     key={member.id}
                     member={member}
-                    size="sm"
+                    size="xs"
                     active={!!selectedMember && !isMobile}
                     selected={selectedId === member.id}
                     expanded={isMobile && selectedId === member.id}
@@ -433,7 +448,7 @@ export default function TribeGrid({
                   <span className={styles.role}>{selectedMember.role}</span>
                   <h2>{selectedMember.name}</h2>
                   <p className={styles.detailMeta}>
-                    {selectedMember.year} · {selectedMember.course}
+                    {yearCourseLine(selectedMember.year, selectedMember.course)}
                   </p>
                   <p className={styles.detailBio}>{selectedMember.bio}</p>
 

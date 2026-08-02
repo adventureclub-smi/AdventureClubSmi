@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Images, Pencil, Trash2, UploadCloud, X } from "lucide-react";
+import { GripVertical, Images, Pencil, Trash2, UploadCloud, X } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./GalleryManager.module.scss";
@@ -113,6 +113,41 @@ export default function GalleryManager({
     }
   }
 
+  const draggedId = useRef<string | null>(null);
+
+  function handleDragStart(id: string) {
+    draggedId.current = id;
+  }
+
+  // Reorders the local list live as you drag over each row, so the drop
+  // target is obvious — the actual save only fires once on drop, not on
+  // every row crossed, to avoid a request per pixel of drag movement.
+  function handleDragOver(e: React.DragEvent, overId: string) {
+    e.preventDefault();
+    if (!draggedId.current || draggedId.current === overId) return;
+
+    setPhotos((prev) => {
+      const fromIndex = prev.findIndex((p) => p.id === draggedId.current);
+      const toIndex = prev.findIndex((p) => p.id === overId);
+      if (fromIndex === -1 || toIndex === -1) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  }
+
+  async function handleDragEnd() {
+    draggedId.current = null;
+
+    await fetch("/api/admin/homepage-gallery/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: photos.map((p) => p.id) }),
+    });
+  }
+
   return (
     <div className={styles.container}>
       <PageHeader
@@ -191,7 +226,18 @@ export default function GalleryManager({
         ) : (
           <div className={styles.list}>
             {photos.map((photo) => (
-              <div key={photo.id} className={styles.row}>
+              <div
+                key={photo.id}
+                className={styles.row}
+                draggable
+                onDragStart={() => handleDragStart(photo.id)}
+                onDragOver={(e) => handleDragOver(e, photo.id)}
+                onDragEnd={handleDragEnd}
+              >
+                <span className={styles.dragHandle} aria-hidden="true">
+                  <GripVertical size={16} />
+                </span>
+
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photo.imageUrl} alt="" className={styles.thumb} />
 
@@ -223,7 +269,10 @@ export default function GalleryManager({
         )}
       </section>
 
-      <p className={styles.hint}>New photos are added to the end of the gallery.</p>
+      <p className={styles.hint}>
+        Drag a row by its handle to reorder — the public gallery page updates to match. New
+        photos are added to the end.
+      </p>
     </div>
   );
 }

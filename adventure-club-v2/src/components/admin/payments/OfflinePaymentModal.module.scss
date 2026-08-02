@@ -59,7 +59,7 @@
 .modal input:focus,
 .modal select:focus {
   outline: none;
-  border-color: #22c55e;
+  border-color: #00a073;
 }
 
 .buttons {
@@ -79,7 +79,7 @@
 }
 
 .save {
-  background: #22c55e;
+  background: #00a073;
   color: white;
   border: none;
   border-radius: 10px;
@@ -89,7 +89,7 @@
 }
 
 .save:hover {
-  background: #16a34a;
+  background: #008862;
 }
 
 .save:disabled {

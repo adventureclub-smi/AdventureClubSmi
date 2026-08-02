@@ -55,7 +55,7 @@ export default function Portfolio() {
     <div className={styles.container}>
       <BackButton />
 
-      <h1>Portfolio</h1>
+      <h1>Overview</h1>
       <p className={styles.subtitle}>
         A record of every summit, kilometre and camp night you&apos;ve earned.
       </p>

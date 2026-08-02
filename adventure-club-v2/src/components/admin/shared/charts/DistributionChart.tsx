@@ -56,7 +56,7 @@ export default function DistributionChart({
                 labelStyle={{ color: "#9ca3af" }}
                 cursor={{ fill: "rgba(245, 245, 245,0.04)" }}
               />
-              <Bar dataKey="value" fill="#22c55e" radius={[6, 6, 0, 0]} maxBarSize={40} />
+              <Bar dataKey="value" fill="#00a073" radius={[6, 6, 0, 0]} maxBarSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>

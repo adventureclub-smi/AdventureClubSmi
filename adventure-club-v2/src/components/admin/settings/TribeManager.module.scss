@@ -66,7 +66,7 @@
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: rgba(34, 197, 94, 0.5);
+    border-color: rgba(0, 160, 115, 0.5);
   }
 }
 
@@ -167,6 +167,26 @@
   background: var(--color-charcoal);
   border: 1px solid rgba(245, 245, 245, 0.06);
   border-radius: 12px;
+  transition: opacity 0.15s ease;
+}
+
+.row[draggable="true"]:active {
+  opacity: 0.6;
+}
+
+.dragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  cursor: grab;
+}
+
+.hint {
+  margin-top: 16px;
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .rowInfo {

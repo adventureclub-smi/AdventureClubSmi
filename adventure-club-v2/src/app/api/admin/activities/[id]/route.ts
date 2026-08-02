@@ -49,6 +49,7 @@ export async function PATCH(
       const imageBytes = Buffer.from(await imageFile.arrayBuffer());
       const uploaded = await uploadBuffer(imageBytes, imageFile.type, {
         folder: "AdventureClub/Activities",
+        cropTo: { width: 1920, height: 1080 },
       });
       imageUrl = uploaded.secure_url;
     }

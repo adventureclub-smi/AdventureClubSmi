@@ -183,8 +183,10 @@ export default function ThingsWeDo({ activities }: { activities: ActivityCard[] 
           key={active.id}
           layoutId={`visual-${active.id}`}
           className={styles.activeVisual}
-          transition={SPRING}
-          exit={{ opacity: 1 }}
+          transition={{ layout: SPRING, opacity: { duration: 0.4, ease: "easeOut" } }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
         >
           <motion.div
             className={styles.parallaxWrap}

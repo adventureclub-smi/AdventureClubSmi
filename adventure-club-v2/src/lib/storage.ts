@@ -43,6 +43,12 @@ type UploadOptions = {
   // limit. Left unset everywhere else, which keeps today's flat quality-80
   // behavior for every other upload path.
   maxSizeKB?: number;
+  // Opt-in fixed output size for cards/backgrounds that all need to render
+  // identically regardless of what an admin happens to upload (e.g. one
+  // portrait phone photo next to a landscape screenshot). "attention"
+  // cropping keeps whatever region of the source sharp has the most detail
+  // (faces, edges, contrast) in frame instead of blindly center-cropping.
+  cropTo?: { width: number; height: number };
 };
 
 // A source photo downscaled to a sane display resolution loses far less
@@ -113,7 +119,16 @@ export async function uploadBuffer(
   if (isImage) {
     let result;
 
-    if (options.maxSizeKB) {
+    if (options.cropTo) {
+      result = await sharp(buffer)
+        .rotate()
+        .resize(options.cropTo.width, options.cropTo.height, {
+          fit: "cover",
+          position: "attention",
+        })
+        .webp({ quality: 80 })
+        .toBuffer({ resolveWithObject: true });
+    } else if (options.maxSizeKB) {
       result = await compressToTarget(buffer, options.maxSizeKB * 1024);
     } else {
       const metadata = await sharp(buffer).rotate().metadata();

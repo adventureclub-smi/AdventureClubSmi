@@ -29,6 +29,8 @@
   backdrop-filter: blur(18px);
 
   border: 1px solid rgba(255,255,255,.08);
+
+  zoom: 90%;
 }
 
 /* ---------- LEFT ---------- */
@@ -47,15 +49,8 @@
   text-decoration: none;
 }
 
-.clubname {
+.navira {
   display: block;
-  margin-bottom: 2px;
-}
-
-.left span {
-  color: rgba(255,255,255,.7);
-
-  font-size: 13px;
 }
 
 /* ---------- COLLEGE ---------- */
@@ -152,9 +147,9 @@
 
   border-radius: 999px;
 
-  background: var(--color-accent);
+  background: #008668;
 
-  color: var(--color-midnight);
+  color: var(--color-text);
 
   text-decoration: none;
 
@@ -164,7 +159,7 @@
 }
 
 .join:hover {
-  background: var(--color-accent-hover);
+  background: #007258;
 
   transform: translateY(-2px);
 }
@@ -177,10 +172,10 @@
   padding: 10px 20px;
 
   border-radius: 999px;
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(0, 134, 104, 0.45);
+  background: rgba(0, 134, 104, 0.12);
 
-  color: var(--color-accent);
+  color: #008668;
   font-size: 14px;
   font-weight: 600;
 
@@ -188,7 +183,7 @@
 }
 
 .install:hover {
-  background: rgba(34, 197, 94, 0.18);
+  background: rgba(0, 134, 104, 0.24);
 }
 
 /* ---------- MOBILE MENU TRIGGER ---------- */

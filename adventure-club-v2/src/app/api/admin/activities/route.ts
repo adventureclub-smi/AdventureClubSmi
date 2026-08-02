@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
 
     const uploaded = await uploadBuffer(imageBytes, imageFile.type, {
       folder: "AdventureClub/Activities",
+      cropTo: { width: 1920, height: 1080 },
     });
 
     const count = await prisma.homepageActivity.count();

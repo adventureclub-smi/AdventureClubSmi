@@ -17,16 +17,16 @@ export default function Footer({ socials }: { socials: SocialLinks }) {
         <div className={styles.top}>
           <div className={styles.brand}>
             <Image
-              src="/logo/logo-green.png"
+              src="/logo/logo-bluegreen.png"
               alt="NAVIRA"
               width={48}
-              height={22}
+              height={27}
             />
             <div>
               <Image
-                src="/logo/clubname-white.png"
+                src="/logo/clubname-typography.png"
                 alt="NAVIRA"
-                width={69}
+                width={119}
                 height={20}
                 className={styles.clubname}
               />

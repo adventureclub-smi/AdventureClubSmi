@@ -150,9 +150,34 @@ export async function DELETE(
   try {
     const { id } = await context.params;
 
-    await prisma.trek.delete({
-      where: { id },
+    // Every one of these has a required (non-optional) relation back to
+    // either this trek or one of its registrations, and MongoDB has no
+    // native FK enforcement of its own — Prisma emulates that check at the
+    // query-engine level regardless, so `trek.delete` fails outright the
+    // moment a single registration (or payment, waypoint, etc.) still
+    // points at this trek. Deleting every dependent first, deepest first,
+    // is what actually lets a trek with real history be removed.
+    const registrations = await prisma.registration.findMany({
+      where: { trekId: id },
+      select: { id: true },
     });
+    const registrationIds = registrations.map((r) => r.id);
+
+    await prisma.$transaction([
+      prisma.payment.deleteMany({ where: { registrationId: { in: registrationIds } } }),
+      prisma.refund.deleteMany({ where: { registrationId: { in: registrationIds } } }),
+      prisma.attendance.deleteMany({ where: { registrationId: { in: registrationIds } } }),
+      prisma.emergencyContact.deleteMany({ where: { registrationId: { in: registrationIds } } }),
+      prisma.certificate.deleteMany({ where: { registrationId: { in: registrationIds } } }),
+      prisma.registration.deleteMany({ where: { trekId: id } }),
+      prisma.trekWaypoint.deleteMany({ where: { trekId: id } }),
+      prisma.expense.deleteMany({ where: { trekId: id } }),
+      prisma.income.deleteMany({ where: { trekId: id } }),
+      prisma.gallery.deleteMany({ where: { trekId: id } }),
+      prisma.tripAnnouncement.deleteMany({ where: { trekId: id } }),
+      prisma.trekNotifyRequest.deleteMany({ where: { trekId: id } }),
+      prisma.trek.delete({ where: { id } }),
+    ]);
 
     return NextResponse.json({
       message: "Trek deleted successfully!",

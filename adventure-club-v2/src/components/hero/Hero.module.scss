@@ -37,6 +37,16 @@
   will-change: transform;
 }
 
+// Sits above the video but below HeroOverlay's darkening gradient (z-index
+// 2), so the same tuning that keeps the text legible also keeps this
+// ambient wireframe subtle rather than needing separate opacity tuning.
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .content {
   position: relative;
   z-index: 3;
@@ -46,7 +56,9 @@
 
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
+  text-align: center;
 
   height: 100%;
 
@@ -60,10 +72,16 @@
   // space, so this reserves that zone unconditionally instead of just
   // usually clearing it.
   padding-top: 140px;
+
+  zoom: 130%;
+}
+
+.heroLogo {
+  margin-bottom: 20px;
 }
 
 .tag {
-  color: var(--color-accent);
+  color: #008668;
 
   text-transform: uppercase;
   letter-spacing: 8px;
@@ -76,20 +94,24 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: clamp(64px, 11vw, 140px);
-  line-height: 0.92;
+  // A single line across the viewport needs a much smaller ceiling than
+  // the old three-stacked-words version (140px) — this still scales down
+  // gracefully on narrow screens via the vw component.
+  font-size: clamp(26px, 5.8vw, 64px);
+  line-height: 1.05;
   font-weight: 700;
 
   margin-bottom: 34px;
 
   color: var(--color-text);
-
-  display: flex;
-  flex-direction: column;
 }
 
 .word {
   display: inline-block;
+
+  &:not(:last-child) {
+    margin-right: 0.28em;
+  }
 }
 
 .lead {
@@ -105,6 +127,7 @@
   width: 600px;
   max-width: 100%;
 
+  font-family: var(--font-body);
   font-size: 18px;
   line-height: 1.8;
 
@@ -115,6 +138,7 @@
 
 .actions {
   display: flex;
+  justify-content: center;
   gap: 22px;
   flex-wrap: wrap;
 }
@@ -124,24 +148,24 @@
   display: inline-block;
   border-radius: 999px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .buttonInner {
   display: block;
-  padding: 18px 40px;
+  padding: 14px 32px;
   border-radius: 999px;
   transition: 0.35s ease;
 }
 
 .primaryButton {
   .buttonInner {
-    background: var(--color-accent);
-    color: var(--color-midnight);
+    background: #008668;
+    color: var(--color-text);
   }
 
   &:hover .buttonInner {
-    background: var(--color-accent-hover);
+    background: #007258;
   }
 }
 
@@ -175,7 +199,7 @@
 .countdown {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
 
   margin-top: 38px;
@@ -227,15 +251,15 @@
   align-items: center;
   padding: 9px 20px;
   border-radius: 999px;
-  background: var(--color-accent);
-  color: var(--color-midnight);
+  background: #008668;
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 700;
   transition: 0.2s ease;
 }
 
 .countdownRegister:hover {
-  background: var(--color-accent-hover);
+  background: #007258;
   transform: translateY(-2px);
 }
 
@@ -255,6 +279,15 @@
     // min-height reasoning as the desktop rule above still applies on top
     // of that.
     min-height: 100svh;
+  }
+
+  .heroLogo {
+    margin-bottom: 6px;
+  }
+
+  .heroLogo img {
+    width: 140px;
+    height: auto;
   }
 
   .tag {

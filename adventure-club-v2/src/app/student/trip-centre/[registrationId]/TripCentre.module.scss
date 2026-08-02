@@ -157,8 +157,8 @@
   div {
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, #22c55e, #c8ff7a);
-    box-shadow: 0 0 24px rgba(34, 197, 94, 0.42);
+    background: linear-gradient(90deg, #00a073, #c8ff7a);
+    box-shadow: 0 0 24px rgba(0, 160, 115, 0.42);
   }
 }
 
@@ -258,7 +258,7 @@
       font-weight: 800;
 
       color: #07100b;
-      background: #22c55e;
+      background: #00a073;
     }
   }
 
@@ -299,12 +299,12 @@
   gap: 9px;
   border-radius: 12px;
   color: #07100b;
-  background: #22c55e;
+  background: #00a073;
   font-weight: 700;
   transition: 0.25s ease;
 
   &:hover {
-    background: #16a34a;
+    background: #008862;
     transform: translateY(-2px);
   }
 }
@@ -329,7 +329,7 @@
   padding: 18px;
   border-radius: 20px;
   color: #dfffe8;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(34, 197, 94, 0.12));
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(0, 160, 115, 0.12));
 }
 
 .actionRow {
@@ -473,10 +473,10 @@
 
 .quickActions .whatsapp {
   color: #07100b;
-  background: #22c55e;
+  background: #00a073;
 
   &:hover {
-    background: #16a34a;
+    background: #008862;
   }
 }
 

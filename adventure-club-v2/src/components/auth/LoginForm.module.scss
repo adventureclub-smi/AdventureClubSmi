@@ -23,8 +23,8 @@
 }
 
 .inputGroup:focus-within {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+  border-color: #00a073;
+  box-shadow: 0 0 0 4px rgba(0, 160, 115, 0.12);
 }
 
 .icon {
@@ -73,7 +73,7 @@
 }
 
 .eye:hover {
-  color: #22c55e;
+  color: #00a073;
 }
 
 /* ---------------- OPTIONS ---------------- */
@@ -95,16 +95,16 @@
 }
 
 .options input[type="checkbox"] {
-  accent-color: #22c55e;
+  accent-color: #00a073;
 }
 
 .options a {
-  color: #22c55e;
+  color: #00a073;
   transition: 0.3s;
 }
 
 .options a:hover {
-  color: #16a34a;
+  color: #008862;
 }
 
 /* ---------------- BUTTON ---------------- */
@@ -115,7 +115,7 @@
   border: none;
   border-radius: 16px;
 
-  background: #22c55e;
+  background: #00a073;
 
   color: white;
 
@@ -128,7 +128,7 @@
 }
 
 .loginBtn:hover {
-  background: #16a34a;
+  background: #008862;
   transform: translateY(-2px);
 }
 
@@ -147,7 +147,7 @@
 .signup a {
   margin-left: 8px;
 
-  color: #22c55e;
+  color: #00a073;
 
   font-weight: 600;
 
@@ -155,7 +155,7 @@
 }
 
 .signup a:hover {
-  color: #16a34a;
+  color: #008862;
 }
 
 /* ---------------- MOBILE ---------------- */

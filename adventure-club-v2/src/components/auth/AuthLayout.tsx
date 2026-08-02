@@ -58,10 +58,10 @@ export default function AuthLayout({
         {/* Logo */}
 
         <Image
-          src="/logo/logo-green.png"
+          src="/logo/logo-bluegreen.png"
           alt="NAVIRA"
           width={112}
-          height={51}
+          height={63}
           className={styles.logo}
         />
 

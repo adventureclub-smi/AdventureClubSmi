@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { BookOpen, UploadCloud, Trash2 } from "lucide-react";
+import { BookOpen, GripVertical, UploadCloud, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./StoriesManager.module.scss";
@@ -98,6 +98,41 @@ export default function StoriesManager({
     }
   }
 
+  const draggedId = useRef<string | null>(null);
+
+  function handleDragStart(id: string) {
+    draggedId.current = id;
+  }
+
+  // Reorders the local list live as you drag over each row, so the drop
+  // target is obvious — the actual save only fires once on drop, not on
+  // every row crossed, to avoid a request per pixel of drag movement.
+  function handleDragOver(e: React.DragEvent, overId: string) {
+    e.preventDefault();
+    if (!draggedId.current || draggedId.current === overId) return;
+
+    setStories((prev) => {
+      const fromIndex = prev.findIndex((s) => s.id === draggedId.current);
+      const toIndex = prev.findIndex((s) => s.id === overId);
+      if (fromIndex === -1 || toIndex === -1) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  }
+
+  async function handleDragEnd() {
+    draggedId.current = null;
+
+    await fetch("/api/admin/stories/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: stories.map((s) => s.id) }),
+    });
+  }
+
   return (
     <div className={styles.container}>
       <PageHeader
@@ -165,7 +200,18 @@ export default function StoriesManager({
         ) : (
           <div className={styles.list}>
             {stories.map((story) => (
-              <div key={story.id} className={styles.row}>
+              <div
+                key={story.id}
+                className={styles.row}
+                draggable
+                onDragStart={() => handleDragStart(story.id)}
+                onDragOver={(e) => handleDragOver(e, story.id)}
+                onDragEnd={handleDragEnd}
+              >
+                <span className={styles.dragHandle} aria-hidden="true">
+                  <GripVertical size={16} />
+                </span>
+
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={story.imageUrl} alt="" className={styles.thumb} />
 
@@ -187,7 +233,10 @@ export default function StoriesManager({
         )}
       </section>
 
-      <p className={styles.hint}>New stories are added to the end of the section.</p>
+      <p className={styles.hint}>
+        Drag a row by its handle to reorder — the homepage section updates to match. New
+        stories are added to the end.
+      </p>
     </div>
   );
 }

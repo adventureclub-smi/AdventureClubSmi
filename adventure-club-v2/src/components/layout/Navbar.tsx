@@ -80,22 +80,19 @@ export default function Navbar() {
         <div className={styles.brandGroup}>
           <Link href="/" className={styles.left}>
             <Image
-              src="/logo/logo-green.png"
+              src="/logo/logo-bluegreen.png"
               alt="NAVIRA"
               width={72}
-              height={33}
+              height={41}
             />
 
-            <div>
-              <Image
-                src="/logo/clubname-white.png"
-                alt="NAVIRA"
-                width={76}
-                height={22}
-                className={styles.clubname}
-              />
-              <span>Srishti Manipal</span>
-            </div>
+            <Image
+              src="/logo/clubname-typography.png"
+              alt="NAVIRA"
+              width={131}
+              height={22}
+              className={styles.navira}
+            />
           </Link>
 
           <div className={styles.college}>
@@ -177,10 +174,10 @@ export default function Navbar() {
             >
               <div className={styles.drawerHeader}>
                 <Image
-                  src="/logo/logo-green.png"
+                  src="/logo/logo-bluegreen.png"
                   alt="NAVIRA"
                   width={52}
-                  height={24}
+                  height={29}
                 />
 
                 <button

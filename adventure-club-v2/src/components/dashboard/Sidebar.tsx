@@ -91,18 +91,18 @@ export default function Sidebar() {
       <aside className={styles.sidebar}>
         <Link href="/" className={styles.logo}>
           <Image
-            src="/logo/logo-green.png"
+            src="/logo/logo-bluegreen.png"
             alt="NAVIRA"
             width={70}
-            height={32}
+            height={40}
             priority
           />
 
           <div>
             <Image
-              src="/logo/clubname-white.png"
+              src="/logo/clubname-typography.png"
               alt="NAVIRA"
-              width={76}
+              width={131}
               height={22}
               className={styles.clubname}
             />

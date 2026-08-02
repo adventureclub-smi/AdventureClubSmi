@@ -136,18 +136,18 @@ export default function AdminSidebar({
       <aside className={styles.sidebar} data-no-print>
         <Link href="/" className={styles.logo}>
           <Image
-            src="/logo/logo-green.png"
+            src="/logo/logo-bluegreen.png"
             alt="NAVIRA"
             width={54}
-            height={25}
+            height={31}
             priority
           />
 
           <div>
             <Image
-              src="/logo/clubname-white.png"
+              src="/logo/clubname-typography.png"
               alt="NAVIRA"
-              width={69}
+              width={119}
               height={20}
               className={styles.clubname}
             />
@@ -174,10 +174,10 @@ export default function AdminSidebar({
         </button>
 
         <Image
-          src="/logo/logo-green.png"
+          src="/logo/logo-bluegreen.png"
           alt="NAVIRA"
           width={28}
-          height={13}
+          height={16}
         />
 
         <button aria-label="Logout" onClick={handleLogout}>

@@ -65,7 +65,7 @@
   position: absolute;
   inset: -12%;
   z-index: 1;
-  background: radial-gradient(circle at 30% 30%, rgba(34, 197, 94, 0.2), transparent 60%);
+  background: radial-gradient(circle at 30% 30%, rgba(0, 160, 115, 0.2), transparent 60%);
   mix-blend-mode: screen;
   animation: washMove 16s ease-in-out infinite;
   pointer-events: none;
@@ -136,8 +136,8 @@
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: rgba(34, 197, 94, 0.16);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(0, 160, 115, 0.16);
+  border: 1px solid rgba(0, 160, 115, 0.3);
   color: var(--color-accent);
 }
 

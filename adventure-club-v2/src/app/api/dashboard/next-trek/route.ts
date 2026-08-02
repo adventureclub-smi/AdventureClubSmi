@@ -43,8 +43,14 @@ export async function GET() {
       const trekIds = liveTreks.map((trek) => trek.id);
 
       const [registrations, notifyRequests] = await Promise.all([
+        // include: { trek: true } is required here — getJourneyAction() (used
+        // by NextTrekCard to decide its own CTA) reads registration.trek
+        // .tripCentrePublished and .installments directly, and without the
+        // join those are silently undefined, so the CTA can never show "Open
+        // Trip Centre" regardless of whether the admin actually published it.
         prisma.registration.findMany({
           where: { userId: payload.id, trekId: { in: trekIds } },
+          include: { trek: true },
         }),
         prisma.trekNotifyRequest.findMany({
           where: { userId: payload.id, trekId: { in: trekIds } },

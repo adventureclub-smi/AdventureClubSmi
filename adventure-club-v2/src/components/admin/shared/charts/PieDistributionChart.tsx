@@ -10,7 +10,7 @@ type Point = { label: string; value: number };
 // "the club's color"), then a spread of hues distinct enough to tell apart
 // across 6+ slices on a dark background.
 const COLORS = [
-  "#22c55e",
+  "#00a073",
   "#3b82f6",
   "#eab308",
   "#a855f7",

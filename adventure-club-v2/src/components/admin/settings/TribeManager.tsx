@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Users, UploadCloud, Trash2, Pencil, X, Music } from "lucide-react";
+import { Users, UploadCloud, Trash2, Pencil, X, Music, GripVertical } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./TribeManager.module.scss";
@@ -30,6 +30,8 @@ const ROLE_SUGGESTIONS = [
   "Social Media Head",
   "Web & Tech Head",
   "Event Head",
+  "Finance Head",
+  "Faculty Head",
   "Team Logistics",
   "Team Web & Tech",
   "Team Events",
@@ -128,8 +130,8 @@ export default function TribeManager({
 
     const { name, role, year, course, bio, songTitle } = fields;
 
-    if (!name.trim() || !role.trim() || !year.trim() || !course.trim() || !bio.trim()) {
-      setStatus("Name, role, year, course and bio are all required.");
+    if (!name.trim() || !role.trim() || !bio.trim()) {
+      setStatus("Name, role and bio are all required.");
       return;
     }
 
@@ -188,6 +190,44 @@ export default function TribeManager({
       setMembers((prev) => prev.filter((m) => m.id !== id));
       if (editingId === id) resetForm();
     }
+  }
+
+  const draggedId = useRef<string | null>(null);
+
+  function handleDragStart(id: string) {
+    draggedId.current = id;
+  }
+
+  // Reorders the local list live as you drag over each row, so the drop
+  // target is obvious — the actual save only fires once on drop, not on
+  // every row crossed, to avoid a request per pixel of drag movement. This
+  // is one flat order across all tiers, but the public Tribe page filters
+  // by tier before rendering, so dragging within/across tiers here still
+  // reorders correctly within each tier's section on the live page.
+  function handleDragOver(e: React.DragEvent, overId: string) {
+    e.preventDefault();
+    if (!draggedId.current || draggedId.current === overId) return;
+
+    setMembers((prev) => {
+      const fromIndex = prev.findIndex((m) => m.id === draggedId.current);
+      const toIndex = prev.findIndex((m) => m.id === overId);
+      if (fromIndex === -1 || toIndex === -1) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  }
+
+  async function handleDragEnd() {
+    draggedId.current = null;
+
+    await fetch("/api/admin/tribe/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: members.map((m) => m.id) }),
+    });
   }
 
   return (
@@ -265,6 +305,10 @@ export default function TribeManager({
               <option>2nd Year</option>
               <option>3rd Year</option>
               <option>4th Year</option>
+              {/* For faculty/non-student members — the Tribe card and detail
+                  panel skip the year entirely when it's this value rather
+                  than printing "Not Specified" on the public page. */}
+              <option value="Not Specified">Not Specified</option>
             </select>
           </div>
 
@@ -273,7 +317,7 @@ export default function TribeManager({
             <input
               value={fields.course}
               onChange={(e) => handleField("course", e.target.value)}
-              placeholder="e.g. B.Des"
+              placeholder="e.g. B.Des — leave blank if not applicable"
             />
           </div>
         </div>
@@ -348,7 +392,18 @@ export default function TribeManager({
         ) : (
           <div className={styles.list}>
             {members.map((member) => (
-              <div key={member.id} className={styles.row}>
+              <div
+                key={member.id}
+                className={styles.row}
+                draggable
+                onDragStart={() => handleDragStart(member.id)}
+                onDragOver={(e) => handleDragOver(e, member.id)}
+                onDragEnd={handleDragEnd}
+              >
+                <span className={styles.dragHandle} aria-hidden="true">
+                  <GripVertical size={16} />
+                </span>
+
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={member.photoUrl} alt={member.name} className={styles.thumb} />
 
@@ -386,6 +441,11 @@ export default function TribeManager({
           </div>
         )}
       </section>
+
+      <p className={styles.hint}>
+        Drag a row by its handle to reorder — the public Tribe page updates to match within
+        each display group.
+      </p>
     </div>
   );
 }

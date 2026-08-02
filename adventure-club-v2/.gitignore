@@ -59,3 +59,7 @@ next-env.d.ts
 # one-off zip drops from teammates (source bundles, asset packs) — never
 # meant to be committed, just extracted from locally
 *.zip
+
+# local tool/editor config — machine-specific, not shared
+.claude/
+.vscode/

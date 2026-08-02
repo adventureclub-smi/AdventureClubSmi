@@ -162,7 +162,7 @@ export default function SignupForm() {
     <form className={styles.form} onSubmit={handleSubmit}>
       {/* Row 1 */}
 
-      <div className={styles.row}>
+      <div className={styles.rowFull}>
         <div className={styles.inputGroup}>
           <User size={20} className={styles.icon} />
 
@@ -174,25 +174,6 @@ export default function SignupForm() {
             onChange={handleChange}
             required
           />
-        </div>
-
-        <div className={styles.inputGroup}>
-          <GraduationCap size={20} className={styles.icon} />
-
-          <select
-            name="year"
-            value={formData.year}
-            onChange={handleChange}
-            required
-          >
-            <option value="" disabled>
-              Year
-            </option>
-            <option>1st Year</option>
-            <option>2nd Year</option>
-            <option>3rd Year</option>
-            <option>4th Year</option>
-          </select>
         </div>
       </div>
 
@@ -226,9 +207,28 @@ export default function SignupForm() {
         </div>
       </div>
 
-      {/* Department / Institute */}
+      {/* Year / Department */}
 
-      <div className={styles.rowFull}>
+      <div className={styles.row}>
+        <div className={styles.inputGroup}>
+          <GraduationCap size={20} className={styles.icon} />
+
+          <select
+            name="year"
+            value={formData.year}
+            onChange={handleChange}
+            required
+          >
+            <option value="" disabled>
+              Year
+            </option>
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+          </select>
+        </div>
+
         <div className={styles.inputGroup}>
           <GraduationCap size={20} className={styles.icon} />
 

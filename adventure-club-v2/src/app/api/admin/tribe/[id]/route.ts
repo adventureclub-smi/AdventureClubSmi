@@ -36,9 +36,9 @@ export async function PUT(
     const photoFile = form.get("photoFile");
     const songFile = form.get("songFile");
 
-    if (!name.trim() || !role.trim() || !year.trim() || !course.trim() || !bio.trim()) {
+    if (!name.trim() || !role.trim() || !bio.trim()) {
       return NextResponse.json(
-        { message: "Name, role, year, course and bio are all required." },
+        { message: "Name, role and bio are all required." },
         { status: 400 }
       );
     }

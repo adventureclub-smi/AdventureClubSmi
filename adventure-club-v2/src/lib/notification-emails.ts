@@ -28,7 +28,7 @@ export async function notifyTrekCreated(trek: Trek) {
       to: member.email,
       subject: `New Trek Announced: ${trek.title}`,
       html: emailShell(`
-        <h2 style="color:#16a34a;">${trek.title}</h2>
+        <h2 style="color:#008862;">${trek.title}</h2>
         <p>Hi ${firstName(member.fullName)}, a new expedition to ${trek.destination} has just been announced.</p>
         <p>${trek.trekDay} &middot; ${formatTrekDate(trek.date)}</p>
         ${emailButton(url, "View Trek Details")}
@@ -54,7 +54,7 @@ export async function notifyWorkshopCreated(workshop: Trek) {
       to: member.email,
       subject: `New Workshop Announced: ${workshop.title}`,
       html: emailShell(`
-        <h2 style="color:#16a34a;">${workshop.title}</h2>
+        <h2 style="color:#008862;">${workshop.title}</h2>
         <p>Hi ${firstName(member.fullName)}, a new workshop at ${workshop.destination} has just been announced.</p>
         <p>${formatTrekDate(workshop.date)}${workshop.time ? ` &middot; ${workshop.time}` : ""}</p>
         <p>${isFree ? "Free to attend." : `Registration fee: ₹${workshop.price}`}</p>
@@ -116,7 +116,7 @@ async function notifyRegistrationOpenForTrek(trekId: string) {
       to: user.email,
       subject: `Registrations are open: ${trek.title}`,
       html: emailShell(`
-        <h2 style="color:#16a34a;">Registrations are now open!</h2>
+        <h2 style="color:#008862;">Registrations are now open!</h2>
         <p>Hi ${firstName(user.fullName)}, registrations for <strong>${trek.title}</strong> are now open. Seats are limited, so register soon to secure your spot.</p>
         ${emailButton(url, "Register Now")}
       `),
@@ -142,7 +142,7 @@ export async function notifyRegistrationStatus(registration: RegistrationWithUse
       to: user.email,
       subject: `Registration approved: ${trek.title}`,
       html: emailShell(`
-        <h2 style="color:#16a34a;">You're approved!</h2>
+        <h2 style="color:#008862;">You're approved!</h2>
         <p>Hi ${firstName(user.fullName)}, your registration for <strong>${trek.title}</strong> has been approved.</p>
         <p>Your initial payment is now open${deadline ? ` — please complete it before ${deadline} to confirm your seat.` : "."}</p>
         ${emailButton(`${getSiteUrl()}/student/payments/${registration.id}`, "Pay Initial Payment")}
@@ -153,7 +153,7 @@ export async function notifyRegistrationStatus(registration: RegistrationWithUse
       to: user.email,
       subject: `You're on the waitlist: ${trek.title}`,
       html: emailShell(`
-        <h2 style="color:#16a34a;">You're on the waitlist</h2>
+        <h2 style="color:#008862;">You're on the waitlist</h2>
         <p>Hi ${firstName(user.fullName)}, all seats for <strong>${trek.title}</strong> are currently full. You've been placed on the waiting list and we'll notify you if a seat opens up.</p>
         ${emailButton(url, "View Trek")}
       `),
@@ -181,7 +181,7 @@ export async function notifyFinalPaymentOpen(registration: RegistrationWithUserA
     to: user.email,
     subject: `Final payment is open: ${trek.title}`,
     html: emailShell(`
-      <h2 style="color:#16a34a;">Final payment is now open</h2>
+      <h2 style="color:#008862;">Final payment is now open</h2>
       <p>Hi ${firstName(user.fullName)}, the final payment for <strong>${trek.title}</strong> is now open.</p>
       ${emailButton(`${getSiteUrl()}/student/payments/${registration.id}`, "Pay Final Payment")}
     `),
@@ -201,7 +201,7 @@ export async function notifyCertificateReady(
     to: user.email,
     subject: `Your certificate is ready: ${trek.title}`,
     html: emailShell(`
-      <h2 style="color:#16a34a;">Your certificate is ready!</h2>
+      <h2 style="color:#008862;">Your certificate is ready!</h2>
       <p>Hi ${firstName(user.fullName)}, your certificate for <strong>${trek.title}</strong> has been issued.</p>
       ${emailButton(certificateUrl, "View Certificate")}
     `),
@@ -221,7 +221,7 @@ export async function notifyReimbursementDone(
     to: user.email,
     subject: `Reimbursement processed: ${trek.title}`,
     html: emailShell(`
-      <h2 style="color:#16a34a;">Your reimbursement has been processed</h2>
+      <h2 style="color:#008862;">Your reimbursement has been processed</h2>
       <p>Hi ${firstName(user.fullName)}, your college reimbursement for <strong>${trek.title}</strong>${amount ? ` of ₹${amount}` : ""} has been processed.</p>
       ${emailButton(`${getSiteUrl()}/dashboard`, "View Dashboard")}
     `),

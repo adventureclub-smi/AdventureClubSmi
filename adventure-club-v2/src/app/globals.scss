@@ -9,8 +9,8 @@
     --color-charcoal: #1b1b1b;
     --color-forest: #234b36;
     --color-moss: #4f6f52;
-    --color-accent: #22c55e;
-    --color-accent-hover: #16a34a;
+    --color-accent: #00a073;
+    --color-accent-hover: #008862;
     --color-danger: #ef4444;
     --color-danger-hover: #dc2626;
     --color-text: #f5f5f5;
@@ -31,6 +31,7 @@ html{
 }
 
 body{
+
     background:var(--color-midnight);
     color:var(--color-text);
     overflow-x:hidden;
@@ -86,8 +87,8 @@ option {
 
         --color-midnight: #ffffff;
         --color-charcoal: #f4f4f5;
-        --color-accent: #16a34a;
-        --color-accent-hover: #15803d;
+        --color-accent: #008862;
+        --color-accent-hover: #007051;
         --color-danger: #dc2626;
         --color-danger-hover: #b91c1c;
         --color-text: #111111;

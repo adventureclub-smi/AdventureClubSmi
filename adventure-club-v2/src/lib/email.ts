@@ -16,7 +16,7 @@ export function getSiteUrl() {
 export function emailButton(href: string, label: string) {
   return `
     <p>
-      <a href="${href}" style="display:inline-block;padding:12px 24px;background:#22c55e;color:#0d0d0d;font-weight:700;text-decoration:none;border-radius:10px;">
+      <a href="${href}" style="display:inline-block;padding:12px 24px;background:#00a073;color:#0d0d0d;font-weight:700;text-decoration:none;border-radius:10px;">
         ${label}
       </a>
     </p>

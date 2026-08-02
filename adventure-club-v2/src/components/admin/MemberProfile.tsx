@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ShieldCheck, Lock, Unlock, ExternalLink } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
@@ -14,6 +15,17 @@ const ID_TYPE_LABELS: Record<string, string> = {
   PASSPORT: "Passport",
   DRIVING_LICENSE: "Driving License",
 };
+
+// Club IDs are "AC{yearCode}-{number}" (e.g. "AC26-0001") — the prefix marks
+// which signup year a student belongs to, so only the number after the dash
+// is ever meant to move (e.g. fixing a typo or resolving a duplicate).
+function splitClubId(clubId: string) {
+  const dashIndex = clubId.lastIndexOf("-");
+
+  if (dashIndex === -1) return { prefix: "", suffix: clubId };
+
+  return { prefix: clubId.slice(0, dashIndex + 1), suffix: clubId.slice(dashIndex + 1) };
+}
 
 type Member = {
   fullName: string;
@@ -44,8 +56,11 @@ export default function MemberProfile({
   userId: string;
   canEditAccess: boolean;
 }) {
+  const router = useRouter();
   const [user, setUser] = useState<Member | null>(null);
   const [status, setStatus] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [clubIdSuffix, setClubIdSuffix] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -54,7 +69,10 @@ export default function MemberProfile({
       try {
         const res = await fetch(`/api/admin/members/${userId}`);
         if (!res.ok || !active) return;
-        setUser(await res.json());
+
+        const data: Member = await res.json();
+        setUser(data);
+        setClubIdSuffix(splitClubId(data.clubId).suffix);
       } catch {
         // non-critical
       }
@@ -70,16 +88,28 @@ export default function MemberProfile({
   async function save() {
     if (!user) return;
 
-    await fetch(`/api/admin/members/${userId}`, {
+    const clubIdPrefix = splitClubId(user.clubId).prefix;
+
+    const res = await fetch(`/api/admin/members/${userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         membershipStatus: user.membershipStatus,
         clubRole: user.clubRole,
         adminAccessLevel: user.adminAccessLevel,
+        clubId: `${clubIdPrefix}${clubIdSuffix.trim()}`,
       }),
     });
 
+    const data = await res.json();
+
+    if (!res.ok) {
+      setStatus(data.message || "Failed to save changes.");
+      return;
+    }
+
+    setUser({ ...user, clubId: data.clubId });
+    setClubIdSuffix(splitClubId(data.clubId).suffix);
     setStatus("Changes saved.");
   }
 
@@ -113,6 +143,34 @@ export default function MemberProfile({
 
     setUser({ ...user, membershipStatus: "PENDING" });
     setStatus("Approval undone — back to pending.");
+  }
+
+  async function deleteStudent() {
+    if (!user) return;
+
+    const confirmDelete = confirm(
+      `Delete ${user.fullName} (${user.clubId})? This permanently removes their account, registrations, payments and certificates. This cannot be undone.`
+    );
+    if (!confirmDelete) return;
+
+    setDeleting(true);
+
+    try {
+      const res = await fetch(`/api/admin/members/${userId}`, { method: "DELETE" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Failed to delete student.");
+        setDeleting(false);
+        return;
+      }
+
+      router.push("/admin/members");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete student.");
+      setDeleting(false);
+    }
   }
 
   async function toggleGovtVerified() {
@@ -157,9 +215,19 @@ export default function MemberProfile({
           { label: user.fullName },
         ]}
         quickActions={
-          <button className={styles.saveButton} onClick={save}>
-            Save Changes
-          </button>
+          <>
+            <button
+              className={styles.deleteButton}
+              onClick={deleteStudent}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Student"}
+            </button>
+
+            <button className={styles.saveButton} onClick={save}>
+              Save Changes
+            </button>
+          </>
         }
       />
 
@@ -211,9 +279,19 @@ export default function MemberProfile({
           <p>
             <strong>Year:</strong> {user.year}
           </p>
-          <p>
-            <strong>Club ID:</strong> {user.clubId}
-          </p>
+          <div className={styles.clubIdField}>
+            <label>Club ID</label>
+
+            <div className={styles.clubIdEditor}>
+              <span>{splitClubId(user.clubId).prefix}</span>
+
+              <input
+                type="text"
+                value={clubIdSuffix}
+                onChange={(e) => setClubIdSuffix(e.target.value)}
+              />
+            </div>
+          </div>
         </section>
 
         <section className={styles.card}>

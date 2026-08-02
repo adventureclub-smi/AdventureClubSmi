@@ -210,7 +210,7 @@ export default function Dashboard() {
           />
           <QuickActionCard
             icon={Sparkles}
-            label="Portfolio"
+            label="Overview"
             href="/dashboard/portfolio"
           />
           <QuickActionCard icon={User} label="Profile" href="/dashboard/profile" />

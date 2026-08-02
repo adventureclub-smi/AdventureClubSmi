@@ -52,7 +52,7 @@ function ensureRoute3DStyles() {
       width: 26px;
       height: 26px;
       border-radius: 50%;
-      background: var(--color-accent, #22c55e);
+      background: var(--color-accent, #00a073);
       border: 2px solid var(--color-midnight, #0d0d0d);
       color: var(--color-midnight, #0d0d0d);
       display: flex;
@@ -61,7 +61,7 @@ function ensureRoute3DStyles() {
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+      box-shadow: 0 0 0 4px rgba(0, 160, 115, 0.25);
     }
     .route3d-panel {
       position: absolute;
@@ -90,7 +90,7 @@ function ensureRoute3DStyles() {
       transition: 0.2s;
     }
     .route3d-panel button:hover {
-      background: var(--color-accent, #22c55e);
+      background: var(--color-accent, #00a073);
       color: var(--color-midnight, #0d0d0d);
     }
     .route3d-popup .maplibregl-popup-content {

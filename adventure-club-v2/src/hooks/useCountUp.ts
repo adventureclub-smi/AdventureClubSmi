@@ -8,11 +8,18 @@ export function useCountUp(
   duration = 1800
 ) {
   const [value, setValue] = useState(0);
-  const started = useRef(false);
+  // Tracks the last target actually animated to, rather than a plain
+  // started-or-not flag — the card mounts before its real stats have
+  // loaded (target starts at 0), plays a no-op 0-to-0 animation the
+  // instant it scrolls into view, and only *then* does the fetch resolve
+  // and hand it the real number. A plain "already started" latch would
+  // permanently ignore that later, real target change and leave every
+  // card frozen at 0.
+  const lastAnimatedTarget = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!active || started.current) return;
-    started.current = true;
+    if (!active || lastAnimatedTarget.current === target) return;
+    lastAnimatedTarget.current = target;
 
     const start = performance.now();
 
