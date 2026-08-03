@@ -5,6 +5,11 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+
+  // If the background video fails to load on some phone/network, this
+  // keeps the section dark instead of showing the browser's default
+  // white through the semi-transparent overlay.
+  background: var(--color-midnight);
 }
 
 .bg {

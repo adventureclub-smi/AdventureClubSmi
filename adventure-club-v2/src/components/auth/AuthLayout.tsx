@@ -32,6 +32,7 @@ export default function AuthLayout({
         loop
         playsInline
         preload="none"
+        poster="/videos/hero-poster.jpg"
         className={styles.video}
       >
         <source

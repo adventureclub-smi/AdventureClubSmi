@@ -8,6 +8,13 @@
   justify-content: center;
 
   overflow: hidden;
+
+  // The overlay gradient below is semi-transparent by design (it's meant
+  // to darken the video, not replace it) — with no background color here
+  // and no poster on the video, a failed video load on some phone/network
+  // showed through as a stark white page instead of just a slightly
+  // brighter dark one. Same fix as the homepage hero's video.
+  background: var(--color-midnight);
 }
 
 .video {

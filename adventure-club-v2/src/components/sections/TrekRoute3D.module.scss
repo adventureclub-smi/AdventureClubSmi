@@ -67,6 +67,12 @@
   overflow: hidden;
   border: 1px solid rgba(0, 160, 115, 0.25);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 160, 115, 0.08);
+
+  // No poster/still-frame data exists for the per-trek preview video, so
+  // this is the fallback if it fails to load on some phone/network — a
+  // plain dark box that blends with the page instead of a stark white
+  // rectangle standing out against it.
+  background: var(--color-midnight);
 }
 
 .previewVideo {

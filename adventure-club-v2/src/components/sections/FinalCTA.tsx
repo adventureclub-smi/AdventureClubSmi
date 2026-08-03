@@ -46,6 +46,7 @@ export default function FinalCTA({
             loop
             playsInline
             preload="none"
+            poster={content.imageUrl}
           />
         ) : (
           <Image
