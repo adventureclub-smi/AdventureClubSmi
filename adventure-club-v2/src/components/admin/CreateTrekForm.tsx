@@ -170,8 +170,8 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setStatus("Maximum image size is 5MB.");
+    if (file.size > 4 * 1024 * 1024) {
+      setStatus("Maximum image size is 4MB.");
       return;
     }
 
@@ -196,10 +196,15 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
         body: imageData,
       });
 
-      const upload = await uploadRes.json();
+      const upload = await uploadRes.json().catch(() => null);
 
       if (!uploadRes.ok) {
-        setStatus(upload.message);
+        setStatus(
+          upload?.message ||
+            (uploadRes.status === 413
+              ? "That image is too large for the server to accept. Please choose a smaller one."
+              : "Failed to upload the cover image.")
+        );
         setLoading(false);
         return;
       }
@@ -226,12 +231,12 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => null);
 
     setLoading(false);
 
     if (!res.ok) {
-      setStatus(data.message || "Something went wrong.");
+      setStatus(data?.message || "Something went wrong.");
       return;
     }
 

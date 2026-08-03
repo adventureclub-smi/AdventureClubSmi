@@ -80,6 +80,13 @@ export default function TribeManager({
       return;
     }
 
+    if (file.size > 4 * 1024 * 1024) {
+      setStatus(
+        "That photo is too large (over 4MB) for the server to accept. Please choose a smaller one, or crop/resize it first."
+      );
+      return;
+    }
+
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
     setStatus("");
@@ -160,10 +167,15 @@ export default function TribeManager({
         { method: editingId ? "PUT" : "POST", body: form }
       );
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        setStatus(data.message || "Failed to save tribe member.");
+        setStatus(
+          data?.message ||
+            (res.status === 413
+              ? "That file is too large for the server to accept. Please choose a smaller one."
+              : "Failed to save tribe member.")
+        );
         return;
       }
 

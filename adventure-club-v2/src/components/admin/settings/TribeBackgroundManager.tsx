@@ -60,10 +60,15 @@ export default function TribeBackgroundManager() {
         body: form,
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        setStatus(data.message || "Failed to save background.");
+        setStatus(
+          data?.message ||
+            (res.status === 413
+              ? "That file is too large for the server to accept. Please choose a smaller one."
+              : "Failed to save background.")
+        );
         return;
       }
 

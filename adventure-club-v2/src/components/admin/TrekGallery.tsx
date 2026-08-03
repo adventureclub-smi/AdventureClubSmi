@@ -49,7 +49,7 @@ export default function TrekGallery({ trekId }: { trekId: string }) {
       formData.append("file", file);
 
       const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      const upload = await uploadRes.json();
+      const upload = await uploadRes.json().catch(() => null);
 
       if (!uploadRes.ok) return;
 
