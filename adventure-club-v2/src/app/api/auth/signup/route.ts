@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
+import { notifyAccountCreated } from "@/lib/notification-emails";
 
 export async function POST(req: Request) {
   try {
@@ -63,6 +64,12 @@ export async function POST(req: Request) {
         password: hashedPassword,
       },
     });
+
+    try {
+      await notifyAccountCreated({ email, fullName, clubId });
+    } catch (emailError) {
+      console.error("Failed to send account-created email:", emailError);
+    }
 
     return NextResponse.json(
       {

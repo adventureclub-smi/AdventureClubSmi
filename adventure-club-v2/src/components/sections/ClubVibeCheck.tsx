@@ -150,10 +150,9 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
           transition={{ duration: 0.7 }}
         >
           <span className={styles.eyebrow}>THE SOUNDTRACK</span>
-          <h2>Club Vibe Check</h2>
+          <h2>Club Vibe</h2>
           <p className={styles.tagline}>
-            More than songs—this is the spirit of NAVIRA. lets{" "}
-            <span className={styles.accentPhrase}>REST IN PEAK</span>
+            They&apos;re not just songs, they&apos;re more than that
           </p>
         </motion.div>
 

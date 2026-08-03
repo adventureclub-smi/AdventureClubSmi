@@ -126,6 +126,20 @@ async function notifyRegistrationOpenForTrek(trekId: string) {
 
 type RegistrationWithUserAndTrek = Registration & { user: User | null; trek: Trek };
 
+// ===== Account created -> that student =====
+export async function notifyAccountCreated(user: { email: string; fullName: string; clubId: string }) {
+  await sendEmail({
+    to: user.email,
+    subject: "Welcome to NAVIRA SMI — your account is ready",
+    html: emailShell(`
+      <h2 style="color:#008862;">Welcome to NAVIRA, ${firstName(user.fullName)}!</h2>
+      <p>Your account has been created successfully. Your club ID is <strong>${user.clubId}</strong>.</p>
+      <p>You can now log in, browse upcoming treks, and register whenever you're ready.</p>
+      ${emailButton(`${getSiteUrl()}/login`, "Log In")}
+    `),
+  });
+}
+
 // ===== Registration approved / waitlisted / rejected -> that student =====
 export async function notifyRegistrationStatus(registration: RegistrationWithUserAndTrek) {
   if (!registration.user) return; // guest registrations have no account/email
