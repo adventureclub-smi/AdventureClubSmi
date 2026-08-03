@@ -26,11 +26,11 @@ export default function InstagramFeed({ posts }: { posts: InstagramPostSummary[]
             <p>
               Follow{" "}
               <a
-                href="https://www.instagram.com/adventure_smi"
+                href="https://www.instagram.com/navira_smi"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                @adventure_smi
+                @navira_smi
               </a>{" "}
               — recent posts will show up here.
             </p>

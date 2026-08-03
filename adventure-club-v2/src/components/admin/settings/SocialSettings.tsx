@@ -89,7 +89,7 @@ export default function SocialSettings() {
       <div className={styles.form}>
         <label>Instagram URL</label>
         <input
-          placeholder="https://www.instagram.com/adventure_smi"
+          placeholder="https://www.instagram.com/navira_smi"
           value={instagram}
           onChange={(e) => setInstagram(e.target.value)}
         />

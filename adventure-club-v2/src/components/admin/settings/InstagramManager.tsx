@@ -107,11 +107,11 @@ export default function InstagramManager({
       <p className={styles.subtitle}>
         Whenever the club posts something new on{" "}
         <a
-          href="https://www.instagram.com/adventure_smi"
+          href="https://www.instagram.com/navira_smi"
           target="_blank"
           rel="noopener noreferrer"
         >
-          @adventure_smi
+          @navira_smi
         </a>
         , paste that post&apos;s link and a thumbnail image here to show it on
         the homepage.
