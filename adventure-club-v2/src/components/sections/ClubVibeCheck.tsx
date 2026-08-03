@@ -28,6 +28,13 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
 
     audioRef.current.src = songs[currentIndex].audioUrl;
     ensureAudioGraph();
+    // A freshly-created AudioContext can start "suspended" depending on
+    // browser autoplay heuristics — the click that got us here satisfies
+    // the gesture requirement, but only resume() actually lifts the
+    // suspension. Audio was routed entirely through this graph the moment
+    // createMediaElementSource ran, so without this the <audio> element
+    // itself plays "successfully" while producing total silence.
+    audioCtxRef.current?.resume();
     // Switching songs quickly (rapid next/cover clicks) can set a new src
     // before the previous play() promise settles, which rejects it with an
     // AbortError — expected and harmless, so it's swallowed rather than

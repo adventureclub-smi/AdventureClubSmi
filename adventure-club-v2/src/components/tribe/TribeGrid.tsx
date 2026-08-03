@@ -204,6 +204,13 @@ export default function TribeGrid({
     audioRef.current.src = selectedMember.songUrl;
     audioRef.current.currentTime = 0;
     ensureAudioGraph();
+    // A freshly-created AudioContext can start "suspended" depending on
+    // browser autoplay heuristics — the click that got us here satisfies
+    // the gesture requirement, but only resume() actually lifts the
+    // suspension. Audio was routed entirely through this graph the moment
+    // createMediaElementSource ran, so without this the <audio> element
+    // itself plays "successfully" while producing total silence.
+    audioCtxRef.current?.resume();
     // Switching between members' anthems quickly can set a new src before
     // the previous play() promise settles, which rejects it with an
     // AbortError — expected and harmless, so it's swallowed rather than
