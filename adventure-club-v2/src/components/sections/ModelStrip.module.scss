@@ -45,7 +45,13 @@
 }
 
 .card {
-  width: 240px;
+  // A fixed 240px width overflowed its own 1fr grid column at plenty of
+  // real desktop widths (7 columns don't all need to be exactly 240px+
+  // gap wide) — since .section clips overflow, that overflow rendered as
+  // cards getting visually cropped instead of the grid just being tight.
+  // Filling the column and capping at 240px lets it shrink to fit instead.
+  width: 100%;
+  max-width: 240px;
   height: 200px;
 
   display: flex;
