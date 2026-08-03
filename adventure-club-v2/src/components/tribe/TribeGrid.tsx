@@ -198,26 +198,6 @@ export default function TribeGrid({
     }
   }
 
-  useEffect(() => {
-    if (!selectedMember?.songUrl || !audioRef.current) return;
-
-    audioRef.current.src = selectedMember.songUrl;
-    audioRef.current.currentTime = 0;
-    ensureAudioGraph();
-    // A freshly-created AudioContext can start "suspended" depending on
-    // browser autoplay heuristics — the click that got us here satisfies
-    // the gesture requirement, but only resume() actually lifts the
-    // suspension. Audio was routed entirely through this graph the moment
-    // createMediaElementSource ran, so without this the <audio> element
-    // itself plays "successfully" while producing total silence.
-    audioCtxRef.current?.resume();
-    // Switching between members' anthems quickly can set a new src before
-    // the previous play() promise settles, which rejects it with an
-    // AbortError — expected and harmless, so it's swallowed rather than
-    // surfacing as an unhandled rejection (same pattern as Club Vibe Check).
-    audioRef.current.play().catch(() => {});
-  }, [selectedMember]);
-
   // Drives the frequency-reactive bars from the live audio, same technique
   // as the homepage's Club Vibe Check section.
   useEffect(() => {
@@ -266,7 +246,29 @@ export default function TribeGrid({
     };
   }, []);
 
+  // Runs synchronously inside the click handler itself rather than in a
+  // useEffect keyed on state — some mobile browsers only honor a "user
+  // gesture" for creating/resuming an AudioContext if it happens in the
+  // exact same task as the tap. Deferring any of this through a state
+  // update + effect adds enough of a gap that the context can be created
+  // (or stay) suspended, which plays the <audio> element "successfully"
+  // while producing total silence.
   function select(id: string) {
+    const member = members.find((m) => m.id === id) ?? null;
+    const audio = audioRef.current;
+
+    if (member?.songUrl && audio) {
+      audio.src = member.songUrl;
+      audio.currentTime = 0;
+      ensureAudioGraph();
+      audioCtxRef.current?.resume();
+      // Switching between members' anthems quickly can set a new src
+      // before the previous play() promise settles, which rejects it with
+      // an AbortError — expected and harmless, so it's swallowed rather
+      // than surfacing as an unhandled rejection.
+      audio.play().catch(() => {});
+    }
+
     setSelectedId(id);
   }
 

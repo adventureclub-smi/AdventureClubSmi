@@ -23,25 +23,11 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
   const revealStyle = useScrollReveal(revealRef);
   const frameRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (currentIndex === null || !audioRef.current) return;
-
-    audioRef.current.src = songs[currentIndex].audioUrl;
-    ensureAudioGraph();
-    // A freshly-created AudioContext can start "suspended" depending on
-    // browser autoplay heuristics — the click that got us here satisfies
-    // the gesture requirement, but only resume() actually lifts the
-    // suspension. Audio was routed entirely through this graph the moment
-    // createMediaElementSource ran, so without this the <audio> element
-    // itself plays "successfully" while producing total silence.
-    audioCtxRef.current?.resume();
-    // Switching songs quickly (rapid next/cover clicks) can set a new src
-    // before the previous play() promise settles, which rejects it with an
-    // AbortError — expected and harmless, so it's swallowed rather than
-    // surfacing as an unhandled rejection.
-    audioRef.current.play().catch(() => {});
-    setIsPlaying(true);
-  }, [currentIndex, songs]);
+  function resetBars() {
+    barRefs.current.forEach((bar) => {
+      if (bar) bar.style.transform = "scaleY(0.08)";
+    });
+  }
 
   // Drives the background visualizer bars from the live audio frequency data.
   useEffect(() => {
@@ -86,12 +72,6 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
     };
   }, [isPlaying]);
 
-  function resetBars() {
-    barRefs.current.forEach((bar) => {
-      if (bar) bar.style.transform = "scaleY(0.08)";
-    });
-  }
-
   function ensureAudioGraph() {
     if (audioCtxRef.current || !audioRef.current) return;
 
@@ -112,13 +92,37 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
     }
   }
 
+  // Everything here runs synchronously inside the click handler itself
+  // rather than in a useEffect keyed on state — some mobile browsers only
+  // honor a "user gesture" for creating/resuming an AudioContext if it
+  // happens in the exact same task as the tap. Deferring any of this
+  // through a state update + effect adds enough of a gap that the
+  // context can be created (or stay) suspended, which plays the <audio>
+  // element "successfully" while producing total silence.
+  function loadAndPlay(index: number) {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.src = songs[index].audioUrl;
+    ensureAudioGraph();
+    audioCtxRef.current?.resume();
+    // Switching songs quickly (rapid next/cover clicks) can set a new src
+    // before the previous play() promise settles, which rejects it with an
+    // AbortError — expected and harmless, so it's swallowed rather than
+    // surfacing as an unhandled rejection.
+    audio.play().catch(() => {});
+
+    setCurrentIndex(index);
+    setIsPlaying(true);
+  }
+
   function playSong(index: number) {
     if (index === currentIndex) {
       togglePlay();
       return;
     }
 
-    setCurrentIndex(index);
+    loadAndPlay(index);
   }
 
   function togglePlay() {
@@ -137,7 +141,7 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
 
   function nextSong() {
     const from = currentIndex ?? Math.floor((songs.length - 1) / 2);
-    setCurrentIndex((from + 1) % songs.length);
+    loadAndPlay((from + 1) % songs.length);
   }
 
   if (songs.length === 0) return null;
