@@ -85,12 +85,50 @@ function ModelCard({
   // mobile keeps it down to roughly whatever's actually on screen.
   const inView = useInView(ref, { margin: isMobile ? "20px 0px" : "150px 0px" });
 
+  const [shouldMount, setShouldMount] = useState(false);
+  const [mountKey, setMountKey] = useState(0);
+
+  // The very first row(s) to scroll into view all flip inView on the same
+  // frame, so they'd otherwise all create a WebGL context in the exact
+  // same tick — a burst several GPUs/drivers hiccup on right at cold
+  // start, even when the sustained count afterward is fine (which is why
+  // only the first card or two, not a random scattering, ever showed the
+  // lost-context icon). A small random stagger spreads that first burst
+  // out over a fraction of a second instead.
+  useEffect(() => {
+    // Rendering already gates on `inView && shouldMount` below, so a stale
+    // `true` left over from a previous visit doesn't render anything while
+    // out of view — no need to reset it back to false here too.
+    if (!inView || shouldMount) return;
+
+    const delay = Math.random() * 260;
+    const timer = setTimeout(() => setShouldMount(true), delay);
+    return () => clearTimeout(timer);
+  }, [inView, shouldMount]);
+
+  // Belt-and-suspenders: if a context is lost anyway (cold-start hiccup,
+  // memory pressure, whatever), remount this one card's Canvas from
+  // scratch a moment later instead of leaving the lost-context icon up
+  // for the rest of the page's life.
+  function handleContextLost(gl: { domElement: HTMLCanvasElement }) {
+    gl.domElement.addEventListener(
+      "webglcontextlost",
+      (event) => {
+        event.preventDefault();
+        setTimeout(() => setMountKey((k) => k + 1), 300);
+      },
+      { once: true }
+    );
+  }
+
   return (
     <div className={styles.card} ref={ref}>
-      {inView && (
+      {inView && shouldMount && (
         <Canvas
+          key={mountKey}
           camera={{ position: [0, 0.6, 7], fov: 45 }}
           dpr={isMobile ? 1 : [1, 2]}
+          onCreated={({ gl }) => handleContextLost(gl)}
         >
           <ambientLight intensity={1.3} />
 
