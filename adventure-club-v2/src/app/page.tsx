@@ -9,6 +9,7 @@ import TrekMap from "@/components/sections/TrekMap";
 import GoogleEarthExplorer from "@/components/sections/GoogleEarthExplorer";
 import ModelStrip from "@/components/sections/ModelStrip";
 import Stories from "@/components/sections/Stories";
+import TribeTeaser from "@/components/sections/TribeTeaser";
 import FinalCTA from "@/components/sections/FinalCTA";
 import InstagramFeed from "@/components/sections/InstagramFeed";
 import Footer from "@/components/layout/Footer";
@@ -18,6 +19,7 @@ import { getUpcomingTreks, getTrekMapPins, getUpcomingTrekRoutes } from "@/data/
 import { getSongs } from "@/data/songs";
 import { getInstagramPosts } from "@/data/instagram";
 import { getStoryScenes } from "@/data/story-scenes";
+import { getTribeMembers } from "@/data/tribe";
 
 // Trek listings and the music playlist can change any time from the admin
 // panel (a trek being marked completed, a song added/removed), so this can't
@@ -34,7 +36,7 @@ import { getStoryScenes } from "@/data/story-scenes";
 export const revalidate = 30;
 
 export default async function Home() {
-  const [content, treks, songs, instagramPosts, mapPins, trekRoutes, storyScenes] =
+  const [content, treks, songs, instagramPosts, mapPins, trekRoutes, storyScenes, tribeMembers] =
     await Promise.all([
       getHomepageContent(),
       getUpcomingTreks(),
@@ -43,6 +45,7 @@ export default async function Home() {
       getTrekMapPins(),
       getUpcomingTrekRoutes(),
       getStoryScenes(),
+      getTribeMembers(),
     ]);
 
   return (
@@ -69,6 +72,7 @@ export default async function Home() {
       />
       <ModelStrip />
       <Stories scenes={storyScenes} />
+      <TribeTeaser members={tribeMembers} />
       <FinalCTA content={content.finalSection} />
       <InstagramFeed posts={instagramPosts} />
       <Footer socials={content.socials} />
