@@ -31,6 +31,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [dashboardHref, setDashboardHref] = useState<string | null>(null);
   const lastScrollY = useRef(0);
   const { canInstall, promptInstall } = useInstallPrompt();
   const { scrollY } = useScroll();
@@ -43,6 +44,27 @@ export default function Navbar() {
     updateIsMobile();
     window.addEventListener("resize", updateIsMobile);
     return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
+
+  // The login cookie already lasts 7 days regardless of "Remember me" (it's
+  // httpOnly, so this is the only way a client component can find out
+  // whether that cookie is still valid) — a returning, already-logged-in
+  // visitor should land straight on their dashboard instead of being shown
+  // "Login" again every single visit.
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!active) return;
+        setDashboardHref(data.loggedIn ? (data.clubRole === "Admin" ? "/admin" : "/dashboard") : null);
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -134,13 +156,21 @@ export default function Navbar() {
             </button>
           )}
 
-          <Link href="/login" className={styles.login}>
-            Login
-          </Link>
+          {dashboardHref ? (
+            <Link href={dashboardHref} className={styles.join}>
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className={styles.login}>
+                Login
+              </Link>
 
-          <Link href="/signup" className={styles.join}>
-            Join Club
-          </Link>
+              <Link href="/signup" className={styles.join}>
+                Join Club
+              </Link>
+            </>
+          )}
         </div>
 
         {/* MOBILE MENU TRIGGER */}
@@ -214,21 +244,33 @@ export default function Navbar() {
                   </button>
                 )}
 
-                <Link
-                  href="/login"
-                  className={styles.login}
-                  onClick={() => setOpen(false)}
-                >
-                  Login
-                </Link>
+                {dashboardHref ? (
+                  <Link
+                    href={dashboardHref}
+                    className={styles.join}
+                    onClick={() => setOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className={styles.login}
+                      onClick={() => setOpen(false)}
+                    >
+                      Login
+                    </Link>
 
-                <Link
-                  href="/signup"
-                  className={styles.join}
-                  onClick={() => setOpen(false)}
-                >
-                  Join Club
-                </Link>
+                    <Link
+                      href="/signup"
+                      className={styles.join}
+                      onClick={() => setOpen(false)}
+                    >
+                      Join Club
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>

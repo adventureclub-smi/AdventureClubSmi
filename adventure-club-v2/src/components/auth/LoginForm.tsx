@@ -11,6 +11,7 @@ export default function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const [formData, setFormData] = useState({
     identifier: "",
@@ -39,7 +40,7 @@ export default function LoginForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, rememberMe }),
       });
 
       const data = await res.json();
@@ -113,7 +114,11 @@ export default function LoginForm() {
 
       <div className={styles.options}>
         <label>
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
           Remember me
         </label>
 
@@ -131,7 +136,7 @@ export default function LoginForm() {
       </button>
 
       <p className={styles.signup}>
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <Link href="/signup">
           Create one
         </Link>

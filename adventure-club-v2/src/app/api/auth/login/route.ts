@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 
 export async function POST(req: Request) {
   try {
-    const { identifier, password } = await req.json();
+    const { identifier, password, rememberMe } = await req.json();
 
     const user = await prisma.user.findFirst({
       where: {
@@ -76,7 +76,11 @@ export async function POST(req: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+      // Unchecking "Remember me" drops maxAge entirely, making this a
+      // session cookie that the browser clears on its own once closed —
+      // checked (the default) keeps the 7-day persistent cookie so a
+      // returning visitor stays logged in instead of being asked again.
+      ...(rememberMe === false ? {} : { maxAge: 60 * 60 * 24 * 7 }),
       path: "/",
     });
 
