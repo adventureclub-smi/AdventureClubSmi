@@ -77,7 +77,13 @@ function ModelCard({
   // Mounting only the handful of cards actually near the viewport, and
   // unmounting (and disposing) the rest as they scroll away, keeps the
   // live context count low no matter how long this grid is.
-  const inView = useInView(ref, { margin: "150px 0px" });
+  //
+  // The mobile layout is 2 columns × 7 rows — a 150px margin above/below
+  // the viewport was still generous enough to keep 3-4 rows (6-8
+  // contexts) mounted at once on a short phone screen, which is still
+  // past what a weak Android GPU can hold. A much tighter margin on
+  // mobile keeps it down to roughly whatever's actually on screen.
+  const inView = useInView(ref, { margin: isMobile ? "20px 0px" : "150px 0px" });
 
   return (
     <div className={styles.card} ref={ref}>
@@ -263,6 +269,7 @@ export default function ModelStrip() {
   );
 }
 
+useGLTF.preload("/models/frooti.glb");
 useGLTF.preload("/models/reload2.glb");
 useGLTF.preload("/models/tent.glb");
 useGLTF.preload("/models/backpack.glb");
@@ -273,5 +280,6 @@ useGLTF.preload("/models/cap.glb");
 useGLTF.preload("/models/firstAid.glb");
 useGLTF.preload("/models/protein.glb");
 useGLTF.preload("/models/banana.glb");
-useGLTF.preload("/models/pole.glb");
+useGLTF.preload("/models/shoes.glb");
 useGLTF.preload("/models/noodles.glb");
+useGLTF.preload("/models/glasses.glb");
