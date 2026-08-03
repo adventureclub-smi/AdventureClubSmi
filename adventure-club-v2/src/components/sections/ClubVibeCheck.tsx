@@ -16,8 +16,6 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
   const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
@@ -29,34 +27,31 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
     });
   }
 
-  // Drives the background visualizer bars from the live audio frequency data.
+  // Bars used to be driven by a Web Audio AnalyserNode reading real
+  // frequency data — but that requires routing the <audio> element's
+  // output through an AudioContext via createMediaElementSource, and
+  // that routing turned out to be unreliable: playback would report
+  // "playing" (currentTime advancing, no errors) while producing no
+  // audible sound at all, across desktop and mobile alike. Simulating a
+  // lively pulse with layered sine waves keeps the visual without
+  // touching the audio element's actual output path at all.
   useEffect(() => {
-    if (!isPlaying || !analyserRef.current) {
+    if (!isPlaying) {
       resetBars();
       return;
     }
 
-    const analyser = analyserRef.current;
-    const data = new Uint8Array(analyser.frequencyBinCount);
+    const start = performance.now();
 
-    // Real frequency data is bass-heavy at low bin indices and trails off
-    // to near-silence at high indices — mapping bars 0..N straight across
-    // the width made the left side (bass) dance and the right side (treble)
-    // sit nearly flat. Mirror outward from the center instead so both sides
-    // pull from the same energetic low/mid bins and react symmetrically.
-    const center = (BAR_COUNT - 1) / 2;
-    const maxDist = Math.ceil(BAR_COUNT / 2);
-    const chunk = Math.max(1, Math.floor(analyser.frequencyBinCount / maxDist));
-
-    function tick() {
-      analyser.getByteFrequencyData(data);
+    function tick(now: number) {
+      const t = (now - start) / 1000;
 
       for (let i = 0; i < BAR_COUNT; i++) {
-        const dist = Math.round(Math.abs(i - center));
-
-        let sum = 0;
-        for (let j = 0; j < chunk; j++) sum += data[dist * chunk + j] || 0;
-        const scale = Math.max(0.08, sum / chunk / 255);
+        const wave =
+          Math.sin(t * 2.4 + i * 0.35) * 0.5 +
+          Math.sin(t * 4.1 + i * 0.12) * 0.3 +
+          Math.sin(t * 1.1 + i * 0.6) * 0.2;
+        const scale = Math.max(0.08, 0.5 + wave * 0.45);
 
         const bar = barRefs.current[i];
         if (bar) bar.style.transform = `scaleY(${scale})`;
@@ -65,47 +60,18 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
       frameRef.current = requestAnimationFrame(tick);
     }
 
-    tick();
+    frameRef.current = requestAnimationFrame(tick);
 
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
   }, [isPlaying]);
 
-  function ensureAudioGraph() {
-    if (audioCtxRef.current || !audioRef.current) return;
-
-    try {
-      const ctx = new AudioContext();
-      const source = ctx.createMediaElementSource(audioRef.current);
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 128;
-      analyser.smoothingTimeConstant = 0.8;
-
-      source.connect(analyser);
-      analyser.connect(ctx.destination);
-
-      audioCtxRef.current = ctx;
-      analyserRef.current = analyser;
-    } catch (err) {
-      console.error("Audio visualizer unavailable:", err);
-    }
-  }
-
-  // Everything here runs synchronously inside the click handler itself
-  // rather than in a useEffect keyed on state — some mobile browsers only
-  // honor a "user gesture" for creating/resuming an AudioContext if it
-  // happens in the exact same task as the tap. Deferring any of this
-  // through a state update + effect adds enough of a gap that the
-  // context can be created (or stay) suspended, which plays the <audio>
-  // element "successfully" while producing total silence.
   function loadAndPlay(index: number) {
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.src = songs[index].audioUrl;
-    ensureAudioGraph();
-    audioCtxRef.current?.resume();
     // Switching songs quickly (rapid next/cover clicks) can set a new src
     // before the previous play() promise settles, which rejects it with an
     // AbortError — expected and harmless, so it's swallowed rather than
@@ -127,8 +93,6 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
 
   function togglePlay() {
     if (!audioRef.current) return;
-
-    audioCtxRef.current?.resume();
 
     if (isPlaying) {
       audioRef.current.pause();

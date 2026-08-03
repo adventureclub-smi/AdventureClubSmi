@@ -150,8 +150,6 @@ export default function TribeGrid({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
   const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const frameRef = useRef<number | null>(null);
 
@@ -178,50 +176,31 @@ export default function TribeGrid({
     });
   }
 
-  function ensureAudioGraph() {
-    if (audioCtxRef.current || !audioRef.current) return;
-
-    try {
-      const ctx = new AudioContext();
-      const source = ctx.createMediaElementSource(audioRef.current);
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 128;
-      analyser.smoothingTimeConstant = 0.8;
-
-      source.connect(analyser);
-      analyser.connect(ctx.destination);
-
-      audioCtxRef.current = ctx;
-      analyserRef.current = analyser;
-    } catch (err) {
-      console.error("Audio visualizer unavailable:", err);
-    }
-  }
-
-  // Drives the frequency-reactive bars from the live audio, same technique
-  // as the homepage's Club Vibe Check section.
+  // Bars used to be driven by a Web Audio AnalyserNode reading real
+  // frequency data — but that requires routing the <audio> element's
+  // output through an AudioContext via createMediaElementSource, and
+  // that routing turned out to be unreliable: playback would report
+  // "playing" (currentTime advancing, no errors) while producing no
+  // audible sound at all, across desktop and mobile alike. Simulating a
+  // lively pulse with layered sine waves keeps the visual without
+  // touching the audio element's actual output path at all.
   useEffect(() => {
-    if (!isPlaying || !analyserRef.current) {
+    if (!isPlaying) {
       resetBars();
       return;
     }
 
-    const analyser = analyserRef.current;
-    const data = new Uint8Array(analyser.frequencyBinCount);
+    const start = performance.now();
 
-    const center = (BAR_COUNT - 1) / 2;
-    const maxDist = Math.ceil(BAR_COUNT / 2);
-    const chunk = Math.max(1, Math.floor(analyser.frequencyBinCount / maxDist));
-
-    function tick() {
-      analyser.getByteFrequencyData(data);
+    function tick(now: number) {
+      const t = (now - start) / 1000;
 
       for (let i = 0; i < BAR_COUNT; i++) {
-        const dist = Math.round(Math.abs(i - center));
-
-        let sum = 0;
-        for (let j = 0; j < chunk; j++) sum += data[dist * chunk + j] || 0;
-        const scale = Math.max(0.08, sum / chunk / 255);
+        const wave =
+          Math.sin(t * 2.4 + i * 0.35) * 0.5 +
+          Math.sin(t * 4.1 + i * 0.12) * 0.3 +
+          Math.sin(t * 1.1 + i * 0.6) * 0.2;
+        const scale = Math.max(0.08, 0.5 + wave * 0.45);
 
         const bar = barRefs.current[i];
         if (bar) bar.style.transform = `scaleY(${scale})`;
@@ -230,7 +209,7 @@ export default function TribeGrid({
       frameRef.current = requestAnimationFrame(tick);
     }
 
-    tick();
+    frameRef.current = requestAnimationFrame(tick);
 
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
@@ -246,13 +225,6 @@ export default function TribeGrid({
     };
   }, []);
 
-  // Runs synchronously inside the click handler itself rather than in a
-  // useEffect keyed on state — some mobile browsers only honor a "user
-  // gesture" for creating/resuming an AudioContext if it happens in the
-  // exact same task as the tap. Deferring any of this through a state
-  // update + effect adds enough of a gap that the context can be created
-  // (or stay) suspended, which plays the <audio> element "successfully"
-  // while producing total silence.
   function select(id: string) {
     const member = members.find((m) => m.id === id) ?? null;
     const audio = audioRef.current;
@@ -260,8 +232,6 @@ export default function TribeGrid({
     if (member?.songUrl && audio) {
       audio.src = member.songUrl;
       audio.currentTime = 0;
-      ensureAudioGraph();
-      audioCtxRef.current?.resume();
       // Switching between members' anthems quickly can set a new src
       // before the previous play() promise settles, which rejects it with
       // an AbortError — expected and harmless, so it's swallowed rather
