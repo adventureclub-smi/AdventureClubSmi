@@ -102,6 +102,7 @@ export default function Hero({
   const reducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   const [pointerFine, setPointerFine] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
   const scrollProgressRef = useRef(0);
 
   useEffect(() => {
@@ -115,6 +116,24 @@ export default function Hero({
     checkPointer();
 
     return () => window.removeEventListener("resize", updateMobile);
+  }, []);
+
+  // "Join Adventure" only makes sense for a visitor who isn't a member yet —
+  // same session check the navbar uses (the token cookie is httpOnly, so
+  // client JS can't just read it directly).
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (active) setLoggedIn(!!data.loggedIn);
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Hero content gently recedes as the user starts scrolling into the next
@@ -230,25 +249,27 @@ export default function Hero({
           transition={{ duration: 0.8, delay: 1.35 }}
           className={styles.actions}
         >
-          {content.buttons.map((button) => (
-            <Link
-              key={button.label}
-              href={button.href}
-              className={
-                button.style === "primary"
-                  ? styles.primaryButton
-                  : styles.secondaryButton
-              }
-            >
-              <motion.span
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className={styles.buttonInner}
+          {content.buttons
+            .filter((button) => !(loggedIn && button.href === "/signup"))
+            .map((button) => (
+              <Link
+                key={button.label}
+                href={button.href}
+                className={
+                  button.style === "primary"
+                    ? styles.primaryButton
+                    : styles.secondaryButton
+                }
               >
-                {button.label}
-              </motion.span>
-            </Link>
-          ))}
+                <motion.span
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={styles.buttonInner}
+                >
+                  {button.label}
+                </motion.span>
+              </Link>
+            ))}
         </motion.div>
 
         {content.showCountdown && nextTrekDate && (
