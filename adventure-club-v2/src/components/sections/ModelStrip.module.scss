@@ -68,6 +68,69 @@
   height: 200px !important;
 }
 
+// Mobile-only single-model carousel — replaces the grid there entirely
+// (see the "one WebGL context at a time" comment in ModelStrip.tsx), so
+// this never needs its own media-query gating; JS already only renders
+// it when isMobile is true.
+.carousel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.carouselCardWrap {
+  width: 260px;
+  height: 260px;
+
+  // Overrides the smaller grid-card sizing below — this is the sole
+  // focus of the carousel, not one of many tiny cells, and a two-class
+  // selector like this wins over the mobile media query's bare .card
+  // rule regardless of source order.
+  .card {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+  }
+
+  .card canvas {
+    height: 100% !important;
+  }
+}
+
+.carouselControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid rgba(245, 245, 245, 0.18);
+    background: rgba(245, 245, 245, 0.06);
+    color: white;
+    transition: 0.2s ease;
+  }
+
+  button:hover {
+    background: rgba(245, 245, 245, 0.14);
+    border-color: rgba(134, 239, 172, 0.4);
+  }
+}
+
+.carouselCounter {
+  min-width: 54px;
+  text-align: center;
+  color: rgba(245, 245, 245, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
 
 @media (max-width: 1300px) {
   .grid {
@@ -86,19 +149,6 @@
     padding: 3rem 1rem;
   }
 
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    column-gap: 0.5rem;
-    row-gap: 2.5rem;
-  }
-
-  .card {
-    width: 100%;
-    max-width: 160px;
-    height: 140px;
-  }
-
-  .card canvas {
-    height: 140px !important;
-  }
+  // .grid never renders below this width (JS swaps to .carousel instead,
+  // same 600px threshold), so no .grid/.card overrides are needed here.
 }

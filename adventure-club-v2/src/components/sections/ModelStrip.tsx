@@ -11,6 +11,7 @@ import {
   useGLTF,
 } from "@react-three/drei";
 import * as THREE from "three";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import styles from "./ModelStrip.module.scss";
 
 type CardProps = {
@@ -19,6 +20,32 @@ type CardProps = {
   rotation?: [number, number, number];
   position?: [number, number, number];
 };
+
+// One live WebGL context per card was reliable on desktop but kept
+// failing intermittently on real phones even after lazy-mounting,
+// tightening the viewport margin, staggering mounts, and adding
+// context-loss recovery — mobile GPUs/drivers are just inconsistent
+// about how many contexts (plus HDRI environment maps) they'll hold, no
+// matter how carefully the burst is managed. Below, mobile renders one
+// model at a time in a carousel instead of a grid — by construction
+// there is never more than a single context alive on mobile, which
+// sidesteps the whole problem rather than continuing to mitigate it.
+const MODELS: CardProps[] = [
+  { path: "/models/frooti.glb", scale: 0.27, rotation: [0, 0, 0], position: [0, 0, 0] },
+  { path: "/models/tent.glb", scale: 0.2, rotation: [0, 0, 0], position: [0, -0.8, 0] },
+  { path: "/models/backpack.glb", scale: 1, rotation: [0, Math.PI / 4, 0], position: [0, -0.25, 0] },
+  { path: "/models/flashlight.glb", scale: 5.5, rotation: [0, -Math.PI / 3, Math.PI / 5.5], position: [0, 0, 0] },
+  { path: "/models/kayak.glb", scale: 1.4, rotation: [0, Math.PI / 2, -Math.PI / 7], position: [0, -0.15, 0] },
+  { path: "/models/waterBottle.glb", scale: 4.2, rotation: [0, 0, Math.PI / 7], position: [0, 0, 0] },
+  { path: "/models/cap.glb", scale: 4.2, rotation: [0, 0, 0], position: [0, 0, 0] },
+  { path: "/models/banana.glb", scale: 0.035, rotation: [0, 0, 0], position: [0, 5, 0] },
+  { path: "/models/firstAid.glb", scale: 1.4, rotation: [Math.PI / 3.5, Math.PI / 3.5, 0], position: [0, 0, 0] },
+  { path: "/models/protein.glb", scale: 0.47, rotation: [Math.PI / 4, 0, 0], position: [0, 0, 0] },
+  { path: "/models/shoes.glb", scale: 0.12, rotation: [0, 0, 0], position: [0, 0, 0] },
+  { path: "/models/reload2.glb", scale: 0.5, rotation: [0, 0, 0], position: [0, 0, 0] },
+  { path: "/models/noodles.glb", scale: 0.5, rotation: [0, 0, 0], position: [0, -1.5, 0] },
+  { path: "/models/glasses.glb", scale: 3.7, rotation: [0, 0, 0], position: [0, 0, 0] },
+];
 
 function Model({
   path,
@@ -168,6 +195,7 @@ function ModelCard({
 
 export default function ModelStrip() {
   const [isMobile, setIsMobile] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const update = () => setIsMobile(window.innerWidth < 600);
@@ -176,148 +204,54 @@ export default function ModelStrip() {
     return () => window.removeEventListener("resize", update);
   }, []);
 
+  function prevModel() {
+    setActiveIndex((i) => (i - 1 + MODELS.length) % MODELS.length);
+  }
+
+  function nextModel() {
+    setActiveIndex((i) => (i + 1) % MODELS.length);
+  }
+
+  const active = MODELS[activeIndex];
+
   return (
     <section className={styles.section}>
-
       <div className={styles.heading}>
         <p>INTERACT WITH THE ADVENTURE ESSENTIALS</p>
       </div>
 
-<div className={styles.grid}>
-  {/* Row 1 */}
-  <ModelCard
-    path="/models/frooti.glb"
-    scale={0.27}
-    rotation={[0, 0, 0]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
+      {isMobile ? (
+        <div className={styles.carousel}>
+          <div className={styles.carouselCardWrap}>
+            {/* A fresh `key` per model forces a full unmount of the old
+                canvas before the new one mounts, so exactly one WebGL
+                context is ever alive here — never two, even briefly. */}
+            <ModelCard key={active.path} {...active} isMobile={isMobile} />
+          </div>
 
-  <ModelCard
-    path="/models/tent.glb"
-    scale={0.2}
-    rotation={[0, 0, 0]}
-    position={[0, -0.8, 0]}
-    isMobile={isMobile}
-  />
+          <div className={styles.carouselControls}>
+            <button type="button" onClick={prevModel} aria-label="Previous model">
+              <ChevronLeft size={20} />
+            </button>
 
-  <ModelCard
-    path="/models/backpack.glb"
-    scale={1}
-    rotation={[0, Math.PI / 4, 0]}
-    position={[0, -0.25, 0]}
-    isMobile={isMobile}
-  />
+            <span className={styles.carouselCounter}>
+              {activeIndex + 1} / {MODELS.length}
+            </span>
 
-  <ModelCard
-    path="/models/flashlight.glb"
-    scale={5.5}
-    rotation={[0, -Math.PI / 3, Math.PI / 5.5]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-  <ModelCard
-    path="/models/kayak.glb"
-    scale={1.4}
-    rotation={[0, Math.PI / 2, -Math.PI / 7]}
-    position={[0, -0.15, 0]}
-    isMobile={isMobile}
-  />
-
-    <ModelCard
-    path="/models/waterBottle.glb"
-    scale={4.2}
-    rotation={[0, 0, Math.PI / 7]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-  <ModelCard
-    path="/models/cap.glb"
-    scale={4.2}
-    rotation={[0, 0, 0]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-  {/* Row 2 */}
-
-  <ModelCard
-    path="/models/banana.glb"
-    scale={0.035}
-    rotation={[0, 0, 0]}
-    position={[0, 5, 0]}
-    isMobile={isMobile}
-  />
-
-
-  <ModelCard
-    path="/models/firstAid.glb"
-    scale={1.4}
-    rotation={[Math.PI / 3.5, Math.PI / 3.5 , 0]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-  <ModelCard
-    path="/models/protein.glb"
-    scale={0.47}
-    rotation={[Math.PI / 4,0,0]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-    <ModelCard
-    path="/models/shoes.glb"
-    scale={0.12}
-    rotation={[0,0,0]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-  <ModelCard
-    path="/models/reload2.glb"
-    scale={0.5}
-    rotation={[0, 0, 0]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-
-    <ModelCard
-    path="/models/noodles.glb"
-    scale={0.5}
-    rotation={[0,0,0]}
-    position={[0,-1.5, 0]}
-    isMobile={isMobile}
-  />
-
-
-    <ModelCard
-    path="/models/glasses.glb"
-    scale={3.7}
-    rotation={[0,0,0]}
-    position={[0, 0, 0]}
-    isMobile={isMobile}
-  />
-
-</div>
+            <button type="button" onClick={nextModel} aria-label="Next model">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.grid}>
+          {MODELS.map((model) => (
+            <ModelCard key={model.path} {...model} isMobile={isMobile} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
 
-useGLTF.preload("/models/frooti.glb");
-useGLTF.preload("/models/reload2.glb");
-useGLTF.preload("/models/tent.glb");
-useGLTF.preload("/models/backpack.glb");
-useGLTF.preload("/models/flashlight.glb");
-useGLTF.preload("/models/kayak.glb");
-useGLTF.preload("/models/waterBottle.glb");
-useGLTF.preload("/models/cap.glb");
-useGLTF.preload("/models/firstAid.glb");
-useGLTF.preload("/models/protein.glb");
-useGLTF.preload("/models/banana.glb");
-useGLTF.preload("/models/shoes.glb");
-useGLTF.preload("/models/noodles.glb");
-useGLTF.preload("/models/glasses.glb");
+MODELS.forEach((model) => useGLTF.preload(model.path));
