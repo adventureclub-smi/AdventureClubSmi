@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
-import { uploadBuffer } from "@/lib/storage";
+import { ImageProcessingError, uploadBuffer } from "@/lib/storage";
 
 const VALID_TYPES = ["PAN", "VOTER_ID", "PASSPORT", "DRIVING_LICENSE"];
 
@@ -95,7 +95,12 @@ export async function POST(req: NextRequest) {
     console.error(error);
 
     return NextResponse.json(
-      { message: "Failed to submit government ID." },
+      {
+        message:
+          error instanceof ImageProcessingError
+            ? error.message
+            : "Failed to submit government ID.",
+      },
       { status: 500 }
     );
   }

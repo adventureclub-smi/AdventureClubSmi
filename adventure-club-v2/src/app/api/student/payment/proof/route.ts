@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadBuffer } from "@/lib/storage";
+import { ImageProcessingError, uploadBuffer } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
 import {
   PaymentMethod,
@@ -135,7 +135,7 @@ if (screenshot instanceof File) {
     return NextResponse.json(
       {
         message:
-          "Failed to submit payment",
+          err instanceof ImageProcessingError ? err.message : "Failed to submit payment",
       },
       {
         status: 500,

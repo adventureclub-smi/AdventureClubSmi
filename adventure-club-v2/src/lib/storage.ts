@@ -13,6 +13,14 @@ function getClient() {
   });
 }
 
+// Thrown specifically when sharp can't process an uploaded image (most
+// commonly: iPhone photos saved as HEIC, which most sharp/libvips builds
+// can't decode — the codec is patent-encumbered and excluded by default).
+// Callers can safely show this message to the user, unlike an arbitrary
+// error (R2 credentials, network, etc.) which might leak details it
+// shouldn't.
+export class ImageProcessingError extends Error {}
+
 function extensionFromContentType(contentType: string) {
   const known: Record<string, string> = {
     "image/jpeg": "jpg",
@@ -119,27 +127,37 @@ export async function uploadBuffer(
   if (isImage) {
     let result;
 
-    if (options.cropTo) {
-      result = await sharp(buffer)
-        .rotate()
-        .resize(options.cropTo.width, options.cropTo.height, {
-          fit: "cover",
-          position: "attention",
-        })
-        .webp({ quality: 80 })
-        .toBuffer({ resolveWithObject: true });
-    } else if (options.maxSizeKB) {
-      result = await compressToTarget(buffer, options.maxSizeKB * 1024);
-    } else {
-      const metadata = await sharp(buffer).rotate().metadata();
-      const targetWidth =
-        metadata.width && metadata.width > DEFAULT_MAX_WIDTH ? DEFAULT_MAX_WIDTH : metadata.width;
+    try {
+      if (options.cropTo) {
+        result = await sharp(buffer)
+          .rotate()
+          .resize(options.cropTo.width, options.cropTo.height, {
+            fit: "cover",
+            position: "attention",
+          })
+          .webp({ quality: 80 })
+          .toBuffer({ resolveWithObject: true });
+      } else if (options.maxSizeKB) {
+        result = await compressToTarget(buffer, options.maxSizeKB * 1024);
+      } else {
+        const metadata = await sharp(buffer).rotate().metadata();
+        const targetWidth =
+          metadata.width && metadata.width > DEFAULT_MAX_WIDTH ? DEFAULT_MAX_WIDTH : metadata.width;
 
-      result = await sharp(buffer)
-        .rotate()
-        .resize({ width: targetWidth })
-        .webp({ quality: 80 })
-        .toBuffer({ resolveWithObject: true });
+        result = await sharp(buffer)
+          .rotate()
+          .resize({ width: targetWidth })
+          .webp({ quality: 80 })
+          .toBuffer({ resolveWithObject: true });
+      }
+    } catch {
+      const isHeic = contentType === "image/heic" || contentType === "image/heif";
+
+      throw new ImageProcessingError(
+        isHeic
+          ? "HEIC photos (the default format on iPhone) aren't supported. In your phone's Camera settings, switch Formats to \"Most Compatible,\" or convert the photo to JPG/PNG before uploading."
+          : "That image couldn't be processed — try a JPG, PNG, or WebP file instead."
+      );
     }
 
     finalBuffer = result.data;

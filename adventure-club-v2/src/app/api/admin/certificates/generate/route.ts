@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { uploadBuffer } from "@/lib/storage";
+import { ImageProcessingError, uploadBuffer } from "@/lib/storage";
 import { generateCertificateImage } from "@/lib/certificate/generate";
 import { getCertificateSettings } from "@/data/certificate-settings";
 import { notifyCertificateReady } from "@/lib/notification-emails";
@@ -88,7 +88,12 @@ export async function POST(req: NextRequest) {
     console.error(error);
 
     return NextResponse.json(
-      { message: "Failed to generate certificate." },
+      {
+        message:
+          error instanceof ImageProcessingError
+            ? error.message
+            : "Failed to generate certificate.",
+      },
       { status: 500 }
     );
   }

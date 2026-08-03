@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { uploadBuffer } from "@/lib/storage";
+import { ImageProcessingError, uploadBuffer } from "@/lib/storage";
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -62,7 +62,10 @@ export async function POST(req: NextRequest) {
     console.error(error);
 
     return NextResponse.json(
-      { message: "Failed to add gallery photo." },
+      {
+        message:
+          error instanceof ImageProcessingError ? error.message : "Failed to add gallery photo.",
+      },
       { status: 500 }
     );
   }

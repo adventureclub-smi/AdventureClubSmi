@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { uploadBuffer } from "@/lib/storage";
+import { ImageProcessingError, uploadBuffer } from "@/lib/storage";
 import { compressVideo } from "@/lib/video-compress";
 
 export async function POST(req: Request) {
@@ -33,7 +33,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        message: "Image upload failed.",
+        message:
+          error instanceof ImageProcessingError ? error.message : "Image upload failed.",
       },
       {
         status: 500,

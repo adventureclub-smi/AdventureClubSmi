@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { uploadBuffer } from "@/lib/storage";
+import { ImageProcessingError, uploadBuffer } from "@/lib/storage";
 
 function parseHighlights(raw: string): string[] {
   return raw
@@ -75,7 +75,13 @@ export async function PATCH(
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json({ message: "Failed to update activity." }, { status: 500 });
+    return NextResponse.json(
+      {
+        message:
+          error instanceof ImageProcessingError ? error.message : "Failed to update activity.",
+      },
+      { status: 500 }
+    );
   }
 }
 
