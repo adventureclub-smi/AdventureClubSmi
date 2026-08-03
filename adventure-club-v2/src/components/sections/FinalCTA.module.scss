@@ -84,6 +84,13 @@
   font-weight: 700;
   font-size: 17px;
   transition: 0.3s ease;
+
+  // Same fix as the hero's buttons: button labels shouldn't be
+  // selectable text — on some mobile browsers, tapping selectable inline
+  // text nested in a focusable element can trigger the OS's native
+  // text-selection caret UI, showing up as a persistent cursor-like mark.
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .buttonInner:hover {

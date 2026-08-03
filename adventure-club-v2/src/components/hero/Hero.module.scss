@@ -156,6 +156,16 @@
   padding: 14px 32px;
   border-radius: 999px;
   transition: 0.35s ease;
+
+  // Button labels shouldn't be selectable text in the first place — on
+  // some mobile browsers, tapping selectable inline text can trigger the
+  // OS's native text-selection caret UI, which persists as a visible
+  // cursor-like mark right where you tapped (reported between "Explore"
+  // and "Treks"). Framer Motion also makes this span keyboard-focusable
+  // for whileTap, nested inside the already-focusable <a> — disabling
+  // selection removes the trigger without touching that.
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .primaryButton {
