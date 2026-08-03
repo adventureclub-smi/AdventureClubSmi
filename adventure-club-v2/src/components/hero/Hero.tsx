@@ -154,6 +154,7 @@ export default function Hero({
         loop
         playsInline
         preload="auto"
+        poster="/videos/hero-poster.jpg"
         style={reducedMotion ? undefined : { scale: videoScale }}
       >
         <source src={content.videoUrl} type="video/mp4" />

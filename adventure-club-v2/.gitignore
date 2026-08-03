@@ -43,11 +43,14 @@ next-env.d.ts
 /src/generated/prisma
 
 # large raw video assets — everything in here is unused raw footage
-# except the two web-optimized files below, which are the actual hero
-# and drone background videos served in production.
+# except the files below: the two web-optimized hero/drone background
+# videos served in production, and a static poster frame for the hero
+# video (shown if playback ever fails on a device/network, instead of
+# Chrome's broken-video icon).
 /public/videos/*
 !/public/videos/hero-compressed.mp4
 !/public/videos/drone-compressed.mp4
+!/public/videos/hero-poster.jpg
 
 .vercel
 

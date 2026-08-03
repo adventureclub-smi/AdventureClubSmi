@@ -1,6 +1,7 @@
 "use client";
 
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useInView } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Environment,
@@ -66,49 +67,71 @@ function ModelCard({
   scale,
   rotation,
   position,
-}: CardProps) {
+  isMobile,
+}: CardProps & { isMobile: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  // Every card used to mount its own <Canvas> up front — 14 simultaneous
+  // WebGL contexts (plus an HDRI environment map each) is well past what
+  // mobile GPUs can hold at once, so phones silently lost contexts and
+  // rendered the browser's "sad face" placeholder instead of the model.
+  // Mounting only the handful of cards actually near the viewport, and
+  // unmounting (and disposing) the rest as they scroll away, keeps the
+  // live context count low no matter how long this grid is.
+  const inView = useInView(ref, { margin: "150px 0px" });
+
   return (
-    <div className={styles.card}>
-      <Canvas
-        camera={{ position: [0, 0.6, 7], fov: 45 }}
-        dpr={[1, 2]}
-      >
-        <ambientLight intensity={1.3} />
+    <div className={styles.card} ref={ref}>
+      {inView && (
+        <Canvas
+          camera={{ position: [0, 0.6, 7], fov: 45 }}
+          dpr={isMobile ? 1 : [1, 2]}
+        >
+          <ambientLight intensity={1.3} />
 
-        <directionalLight
-          position={[3, 5, 5]}
-          intensity={2}
-        />
+          <directionalLight
+            position={[3, 5, 5]}
+            intensity={2}
+          />
 
-        <pointLight
-          position={[-2, 2, 2]}
-          intensity={1.5}
-        />
+          <pointLight
+            position={[-2, 2, 2]}
+            intensity={1.5}
+          />
 
-        <Environment preset="sunset" />
+          <Environment preset="sunset" resolution={isMobile ? 32 : 256} />
 
-        <Center>
-          <Suspense fallback={null}>
-            <Model
-              path={path}
-              scale={scale}
-              rotation={rotation}
-              position={position}
-            />
-          </Suspense>
-        </Center>
+          <Center>
+            <Suspense fallback={null}>
+              <Model
+                path={path}
+                scale={scale}
+                rotation={rotation}
+                position={position}
+              />
+            </Suspense>
+          </Center>
 
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          autoRotate={false}
-        />
-      </Canvas>
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+            autoRotate={false}
+          />
+        </Canvas>
+      )}
     </div>
   );
 }
 
 export default function ModelStrip() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 600);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   return (
     <section className={styles.section}>
 
@@ -123,6 +146,7 @@ export default function ModelStrip() {
     scale={0.27}
     rotation={[0, 0, 0]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
   <ModelCard
@@ -130,6 +154,7 @@ export default function ModelStrip() {
     scale={0.2}
     rotation={[0, 0, 0]}
     position={[0, -0.8, 0]}
+    isMobile={isMobile}
   />
 
   <ModelCard
@@ -137,6 +162,7 @@ export default function ModelStrip() {
     scale={1}
     rotation={[0, Math.PI / 4, 0]}
     position={[0, -0.25, 0]}
+    isMobile={isMobile}
   />
 
   <ModelCard
@@ -144,6 +170,7 @@ export default function ModelStrip() {
     scale={5.5}
     rotation={[0, -Math.PI / 3, Math.PI / 5.5]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
   <ModelCard
@@ -151,6 +178,7 @@ export default function ModelStrip() {
     scale={1.4}
     rotation={[0, Math.PI / 2, -Math.PI / 7]}
     position={[0, -0.15, 0]}
+    isMobile={isMobile}
   />
 
     <ModelCard
@@ -158,13 +186,15 @@ export default function ModelStrip() {
     scale={4.2}
     rotation={[0, 0, Math.PI / 7]}
     position={[0, 0, 0]}
-  />  
+    isMobile={isMobile}
+  />
 
   <ModelCard
     path="/models/cap.glb"
     scale={4.2}
     rotation={[0, 0, 0]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
   {/* Row 2 */}
@@ -174,6 +204,7 @@ export default function ModelStrip() {
     scale={0.035}
     rotation={[0, 0, 0]}
     position={[0, 5, 0]}
+    isMobile={isMobile}
   />
 
 
@@ -182,6 +213,7 @@ export default function ModelStrip() {
     scale={1.4}
     rotation={[Math.PI / 3.5, Math.PI / 3.5 , 0]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
   <ModelCard
@@ -189,6 +221,7 @@ export default function ModelStrip() {
     scale={0.47}
     rotation={[Math.PI / 4,0,0]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
     <ModelCard
@@ -196,6 +229,7 @@ export default function ModelStrip() {
     scale={0.12}
     rotation={[0,0,0]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
   <ModelCard
@@ -203,6 +237,7 @@ export default function ModelStrip() {
     scale={0.5}
     rotation={[0, 0, 0]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
 
@@ -211,6 +246,7 @@ export default function ModelStrip() {
     scale={0.5}
     rotation={[0,0,0]}
     position={[0,-1.5, 0]}
+    isMobile={isMobile}
   />
 
 
@@ -219,6 +255,7 @@ export default function ModelStrip() {
     scale={3.7}
     rotation={[0,0,0]}
     position={[0, 0, 0]}
+    isMobile={isMobile}
   />
 
 </div>
