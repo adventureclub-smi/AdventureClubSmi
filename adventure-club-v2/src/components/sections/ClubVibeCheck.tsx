@@ -251,7 +251,14 @@ export default function ClubVibeCheck({ songs }: { songs: SongSummary[] }) {
         </motion.div>
       </motion.div>
 
-      <audio ref={audioRef} crossOrigin="anonymous" onEnded={nextSong} />
+      {/* No crossOrigin here: the R2 CDN these songs are hosted on doesn't
+          send Access-Control-Allow-Origin, and "crossOrigin" forces the
+          browser to fetch in CORS mode — which fails the load outright
+          (no playback at all) instead of just losing the visualizer.
+          Without it, playback works normally; the analyser below just
+          can't read frequency data from a cross-origin, non-CORS source,
+          so the bars stay flat rather than erroring. */}
+      <audio ref={audioRef} onEnded={nextSong} />
     </section>
   );
 }
