@@ -279,14 +279,22 @@ export default function Hero({
             registrationOpensAt={nextTrekRegistrationOpensAt}
           />
         )}
-      </motion.div>
 
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 1.8 }}
-        className={styles.scroll}
-      >
-        <ChevronDown size={30} strokeWidth={1.5} />
+        {/* Used to be absolutely positioned a fixed 40px from the bottom
+            of the whole hero section, independent of how tall the content
+            above it actually rendered — on shorter screens (or with the
+            content block's zoom scaling), the buttons could end up tall
+            enough to collide with it, showing the chevron poking through
+            the bottom of "Explore Treks". Flowing it here as the last
+            piece of content guarantees it always sits below everything
+            else, however tall that turns out to be. */}
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.8 }}
+          className={styles.scroll}
+        >
+          <ChevronDown size={30} strokeWidth={1.5} />
+        </motion.div>
       </motion.div>
     </section>
   );

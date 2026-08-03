@@ -193,14 +193,11 @@
 }
 
 .scroll {
-  position: absolute;
-
-  bottom: 40px;
-  left: 50%;
-
-  transform: translateX(-50%);
-
-  z-index: 3;
+  // Now a normal-flow child of .content (already centered via
+  // align-items: center) instead of absolutely positioned a fixed
+  // distance from the section's bottom — see the comment in Hero.tsx for
+  // why that could overlap the buttons above it.
+  margin-top: 28px;
 
   color: var(--color-text);
   opacity: 0.75;
