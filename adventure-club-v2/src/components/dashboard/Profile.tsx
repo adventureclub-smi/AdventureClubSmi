@@ -9,7 +9,17 @@ import BackButton from "./shared/BackButton";
 import StatCard from "./shared/StatCard";
 import GovtIdVerification, { type GovtIdData } from "./GovtIdVerification";
 import { getBadges, getPortfolioPoints, type PortfolioTotals } from "@/lib/portfolio";
+import {
+  SMI,
+  OTHER_DEPARTMENTS,
+  SMI_UNDERGRAD_PROGRAMS,
+  SMI_POSTGRAD_PROGRAMS,
+  YEARS,
+} from "@/lib/academic-options";
 import styles from "./Profile.module.scss";
+
+const KNOWN_INSTITUTIONS = [SMI, ...OTHER_DEPARTMENTS];
+const SMI_PROGRAMS = [...SMI_UNDERGRAD_PROGRAMS, ...SMI_POSTGRAD_PROGRAMS, "PhD"];
 
 type UserProfile = {
   fullName: string;
@@ -140,8 +150,37 @@ export default function Profile() {
     router.push("/login");
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setUser({ ...user, [e.target.name]: e.target.value });
+  }
+
+  const isKnownInstitution = KNOWN_INSTITUTIONS.includes(user.institution);
+  const institutionSelectValue = user.institution
+    ? isKnownInstitution
+      ? user.institution
+      : "Other"
+    : "";
+  const isSMI = user.institution === SMI;
+
+  function handleInstitutionSelectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value;
+
+    if (value === "Other") {
+      // Keep whatever custom institution was already on file (if any) so
+      // switching to "Other" and back doesn't wipe a value that was fine.
+      setUser((prev) => ({
+        ...prev,
+        institution: isKnownInstitution ? "" : prev.institution,
+        department: "",
+      }));
+      return;
+    }
+
+    setUser((prev) => ({ ...prev, institution: value, department: "" }));
+  }
+
+  function handleDepartmentSelectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setUser((prev) => ({ ...prev, department: e.target.value }));
   }
 
   const requiredFields = [
@@ -356,17 +395,61 @@ export default function Profile() {
           <div className={styles.fields}>
             <div>
               <label>Institution</label>
-              <input name="institution" value={user.institution} onChange={handleChange} />
+              <select value={institutionSelectValue} onChange={handleInstitutionSelectChange}>
+                <option value="" disabled>
+                  Select institution
+                </option>
+                <option value={SMI}>{SMI}</option>
+                <option disabled>──────────</option>
+                {OTHER_DEPARTMENTS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+                <option value="Other">Other</option>
+              </select>
             </div>
+
+            {!isKnownInstitution && (
+              <div>
+                <label>Institution (specify)</label>
+                <input
+                  name="institution"
+                  value={user.institution}
+                  onChange={handleChange}
+                  placeholder="Enter your institution/department"
+                />
+              </div>
+            )}
 
             <div>
               <label>Department</label>
-              <input name="department" value={user.department} onChange={handleChange} />
+              {isSMI ? (
+                <select value={user.department} onChange={handleDepartmentSelectChange}>
+                  <option value="" disabled>
+                    Select program
+                  </option>
+                  {SMI_PROGRAMS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input value={user.department} disabled />
+              )}
             </div>
 
             <div>
               <label>Year</label>
-              <input name="year" value={user.year} onChange={handleChange} />
+              <select name="year" value={user.year} onChange={handleChange}>
+                <option value="" disabled>
+                  Select year
+                </option>
+                {YEARS.map((y) => (
+                  <option key={y}>{y}</option>
+                ))}
+              </select>
             </div>
           </div>
         </section>

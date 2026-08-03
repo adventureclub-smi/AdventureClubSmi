@@ -15,37 +15,17 @@ import {
 } from "lucide-react";
 
 import styles from "./SignupForm.module.scss";
-
-const SMI = "Srishti Manipal Institute of Art, Design and Technology (SMI)";
-
-const OTHER_DEPARTMENTS = [
-  "Manipal Institute of Technology (MIT)",
-  "Department of Commerce (DOC)",
-  "T. A. Pai Management Institute (TAPMI)",
-  "Manipal Law School (MLS)",
-  "Department of Liberal Arts, Humanities and Social Sciences (DLHS)",
-  "Department of Public Policy (DPP)",
-];
-
-const BDES = "Bachelor of Design (B.Des)";
-const BFA = "Bachelor of Fine Arts (BFA)";
-
-const SMI_UNDERGRAD_PROGRAMS = [BDES, BFA, "Bachelor of Vocation (B.Voc - 3 Years)"];
-const SMI_POSTGRAD_PROGRAMS = ["Master of Design (M.Des)", "Master of Arts (MA)", "Master of Planning (M.Plan)"];
-
-const BDES_COURSES = [
-  "Business Service and Systems Design (BSSD)",
-  "Creative and Applied Computation (CAC)",
-  "Creative Education (CE)",
-  "Human Centered Design (HCD)",
-  "Information Arts and Information Design Practices (IAIDP)",
-  "Spatial Design*",
-  "Textile Futures",
-  "Visual Communication & Strategic Branding (VCSB)",
-  "Industrial Arts and Design Practices (IAID)",
-];
-
-const BFA_COURSES = ["Contemporary Art Practice", "Digital Media Arts", "Film"];
+import {
+  SMI,
+  OTHER_DEPARTMENTS,
+  BDES,
+  BFA,
+  SMI_UNDERGRAD_PROGRAMS,
+  SMI_POSTGRAD_PROGRAMS,
+  BDES_COURSES,
+  BFA_COURSES,
+  YEARS,
+} from "@/lib/academic-options";
 
 export default function SignupForm() {
   const router = useRouter();
@@ -222,10 +202,9 @@ export default function SignupForm() {
             <option value="" disabled>
               Year
             </option>
-            <option>1st Year</option>
-            <option>2nd Year</option>
-            <option>3rd Year</option>
-            <option>4th Year</option>
+            {YEARS.map((y) => (
+              <option key={y}>{y}</option>
+            ))}
           </select>
         </div>
 
