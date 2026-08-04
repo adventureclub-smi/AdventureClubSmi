@@ -34,10 +34,16 @@ type Member = {
   phoneNumber: string;
   institution: string;
   department: string;
+  course: string | null;
   year: string;
   membershipStatus: string;
   clubRole: string;
   adminAccessLevel: string;
+  bloodGroup: string | null;
+  dateOfBirth: string | null;
+  collegeRollNumber: string | null;
+  upiId: string | null;
+  upiPhone: string | null;
   emergencyContactName: string | null;
   emergencyContactRelation: string | null;
   emergencyContactPhone: string | null;
@@ -48,6 +54,16 @@ type Member = {
   govtIdStatus: string;
   govtIdLocked: boolean;
 };
+
+function formatDate(value: string | null) {
+  if (!value) return "-";
+
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export default function MemberProfile({
   userId,
@@ -265,11 +281,41 @@ export default function MemberProfile({
             <strong>Name:</strong> {user.fullName}
           </p>
           <p>
+            <strong>Date of Birth:</strong> {formatDate(user.dateOfBirth)}
+          </p>
+          <p>
+            <strong>Blood Group:</strong> {user.bloodGroup || "-"}
+          </p>
+          <p>
+            <strong>College Roll Number:</strong> {user.collegeRollNumber || "-"}
+          </p>
+        </section>
+
+        <section className={styles.card}>
+          <h2>Contact Details</h2>
+
+          <p>
             <strong>Email:</strong> {user.email}
           </p>
           <p>
             <strong>Phone:</strong> {user.phoneNumber}
           </p>
+        </section>
+
+        <section className={styles.card}>
+          <h2>Reimbursement Details</h2>
+
+          <p>
+            <strong>UPI ID:</strong> {user.upiId || "-"}
+          </p>
+          <p>
+            <strong>UPI Phone Number:</strong> {user.upiPhone || "-"}
+          </p>
+        </section>
+
+        <section className={styles.card}>
+          <h2>Academic Information</h2>
+
           <p>
             <strong>Institution:</strong> {user.institution}
           </p>
@@ -277,8 +323,30 @@ export default function MemberProfile({
             <strong>Department:</strong> {user.department}
           </p>
           <p>
+            <strong>Course:</strong> {user.course || "-"}
+          </p>
+          <p>
             <strong>Year:</strong> {user.year}
           </p>
+        </section>
+
+        <section className={styles.card}>
+          <h2>Emergency Contact</h2>
+
+          <p>
+            <strong>Name:</strong> {user.emergencyContactName || "-"}
+          </p>
+          <p>
+            <strong>Relationship:</strong> {user.emergencyContactRelation || "-"}
+          </p>
+          <p>
+            <strong>Phone:</strong> {user.emergencyContactPhone || "-"}
+          </p>
+        </section>
+
+        <section className={styles.card}>
+          <h2>Club Information</h2>
+
           <div className={styles.clubIdField}>
             <label>Club ID</label>
 
@@ -292,10 +360,6 @@ export default function MemberProfile({
               />
             </div>
           </div>
-        </section>
-
-        <section className={styles.card}>
-          <h2>Membership</h2>
 
           <div className={styles.fields}>
             <div>
@@ -358,20 +422,6 @@ export default function MemberProfile({
               )}
             </div>
           </div>
-        </section>
-
-        <section className={styles.card}>
-          <h2>Emergency Contact</h2>
-
-          <p>
-            <strong>Name:</strong> {user.emergencyContactName || "-"}
-          </p>
-          <p>
-            <strong>Relationship:</strong> {user.emergencyContactRelation || "-"}
-          </p>
-          <p>
-            <strong>Phone:</strong> {user.emergencyContactPhone || "-"}
-          </p>
         </section>
 
         <section className={styles.card}>
