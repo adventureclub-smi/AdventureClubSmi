@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Lock, Unlock, ExternalLink } from "lucide-react";
+import { ShieldCheck, Lock, Unlock, ExternalLink, Mail, MessageCircle } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./MemberProfile.module.scss";
@@ -63,6 +63,14 @@ function formatDate(value: string | null) {
     month: "long",
     year: "numeric",
   });
+}
+
+// wa.me needs a country code with no leading "+"/"0" — every stored number
+// is a plain 10-digit Indian mobile, so a bare 10-digit value gets "91"
+// prepended; anything already longer is left alone rather than guessed at.
+function whatsappLink(phoneNumber: string) {
+  const digits = phoneNumber.replace(/\D/g, "");
+  return `https://wa.me/${digits.length === 10 ? `91${digits}` : digits}`;
 }
 
 export default function MemberProfile({
@@ -296,9 +304,27 @@ export default function MemberProfile({
 
           <p>
             <strong>Email:</strong> {user.email}
+            <a
+              href={`mailto:${user.email}`}
+              className={styles.contactIcon}
+              title="Send email"
+              aria-label="Send email"
+            >
+              <Mail size={14} />
+            </a>
           </p>
           <p>
             <strong>Phone:</strong> {user.phoneNumber}
+            <a
+              href={whatsappLink(user.phoneNumber)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.contactIconWhatsapp}
+              title="Message on WhatsApp"
+              aria-label="Message on WhatsApp"
+            >
+              <MessageCircle size={14} />
+            </a>
           </p>
         </section>
 

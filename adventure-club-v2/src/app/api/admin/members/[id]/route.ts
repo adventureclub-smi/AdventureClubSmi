@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { clubRoleBucket } from "@/lib/core-team-roles";
+import { notifyMembershipUpdated } from "@/lib/notification-emails";
 
 const VALID_ACCESS_LEVELS = new Set(["NONE", "FULL", "FINANCE", "VISUAL", "BOOKING"]);
 
@@ -63,7 +64,13 @@ export async function PUT(
 
   const existing = await prisma.user.findUnique({
     where: { id },
-    select: { clubRole: true, clubId: true },
+    select: {
+      clubRole: true,
+      clubId: true,
+      membershipStatus: true,
+      email: true,
+      fullName: true,
+    },
   });
 
   if (!existing) {
@@ -168,6 +175,23 @@ export async function PUT(
     },
     data,
   });
+
+  const membershipStatusChanged =
+    typeof body.membershipStatus === "string" &&
+    body.membershipStatus !== existing.membershipStatus;
+  const clubRoleChanged =
+    typeof body.clubRole === "string" && body.clubRole !== existing.clubRole;
+
+  if (membershipStatusChanged || clubRoleChanged) {
+    try {
+      await notifyMembershipUpdated(existing, {
+        membershipStatus: membershipStatusChanged,
+        clubRole: clubRoleChanged,
+      });
+    } catch (error) {
+      console.error("Failed to send membership-updated email:", error);
+    }
+  }
 
   return NextResponse.json(user);
 }

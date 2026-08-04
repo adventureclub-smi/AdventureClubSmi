@@ -222,6 +222,34 @@ export async function notifyCertificateReady(
   });
 }
 
+// ===== Membership status and/or club role changed by an admin -> that student =====
+export async function notifyMembershipUpdated(
+  user: { email: string; fullName: string },
+  changed: { membershipStatus: boolean; clubRole: boolean }
+) {
+  const parts = [
+    changed.membershipStatus && "membership status",
+    changed.clubRole && "club role",
+  ].filter(Boolean);
+
+  if (parts.length === 0) return;
+
+  await sendEmail({
+    to: user.email,
+    subject: "Your NAVIRA profile has been updated",
+    html: emailShell(`
+      <h2 style="color:#008862;">Your ${parts.join(" and ")} has been updated</h2>
+      <p>Hi ${firstName(user.fullName)}, your ${parts.join(" and ")} on NAVIRA has just been updated by an admin. Please check your profile for the latest details.</p>
+      ${emailButton(`${getSiteUrl()}/dashboard/profile`, "View Profile")}
+      <p style="margin-top:24px;color:#666;font-size:13px;">
+        Also, if you haven't already, it'd really help to fill in the rest of your profile
+        (emergency contact, reimbursement UPI details, government ID, etc.) — if you've
+        already done this, please ignore this note.
+      </p>
+    `),
+  });
+}
+
 // ===== Reimbursement processed -> that student =====
 export async function notifyReimbursementDone(
   registration: RegistrationWithUserAndTrek,

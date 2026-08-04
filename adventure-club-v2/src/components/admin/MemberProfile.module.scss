@@ -215,6 +215,37 @@
   }
 }
 
+.contactIcon,
+.contactIconWhatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+  transition: 0.2s;
+}
+
+.contactIcon {
+  background: rgba(0, 160, 115, 0.12);
+  color: var(--color-accent);
+}
+
+.contactIcon:hover {
+  background: rgba(0, 160, 115, 0.22);
+}
+
+.contactIconWhatsapp {
+  background: rgba(37, 211, 102, 0.12);
+  color: #25d366;
+}
+
+.contactIconWhatsapp:hover {
+  background: rgba(37, 211, 102, 0.22);
+}
+
 .fields {
   display: grid;
   gap: 16px;
