@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, Lock, Unlock, ExternalLink, Mail, MessageCircle } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
+import { getProfileCompletion } from "@/lib/profile-completion";
 import styles from "./MemberProfile.module.scss";
 
 type Registration = { id: string; status: string; trek: { title: string } };
@@ -229,6 +230,8 @@ export default function MemberProfile({
     return <div className={styles.container}>Loading...</div>;
   }
 
+  const completion = getProfileCompletion(user);
+
   return (
     <div className={styles.container}>
       <PageHeader
@@ -280,6 +283,44 @@ export default function MemberProfile({
           </button>
         </div>
       )}
+
+      <div className={styles.completionCard}>
+        <div className={styles.completionHeader}>
+          <div>
+            <h3>Profile Completion</h3>
+            <p>
+              {completion.isComplete
+                ? "This student's profile is fully filled in."
+                : "Fields below still need to be filled in by the student."}
+            </p>
+          </div>
+
+          <span
+            className={`${styles.completionPercent} ${
+              completion.isComplete ? styles.completionPercentDone : ""
+            }`}
+          >
+            {completion.percent}%
+          </span>
+        </div>
+
+        <div className={styles.progressTrack}>
+          <div
+            className={styles.progressFill}
+            style={{ width: `${completion.percent}%` }}
+          />
+        </div>
+
+        {!completion.isComplete && (
+          <div className={styles.missingFields}>
+            {completion.missingFields.map((f) => (
+              <span key={f.label} className={styles.missingChip}>
+                {f.label}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className={styles.grid}>
         <section className={styles.card}>

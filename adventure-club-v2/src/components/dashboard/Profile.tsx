@@ -9,6 +9,7 @@ import BackButton from "./shared/BackButton";
 import StatCard from "./shared/StatCard";
 import GovtIdVerification, { type GovtIdData } from "./GovtIdVerification";
 import { getBadges, getPortfolioPoints, type PortfolioTotals } from "@/lib/portfolio";
+import { getProfileCompletion } from "@/lib/profile-completion";
 import {
   SMI,
   OTHER_DEPARTMENTS,
@@ -183,29 +184,11 @@ export default function Profile() {
     setUser((prev) => ({ ...prev, department: e.target.value }));
   }
 
-  const requiredFields = [
-    { label: "Full Name", filled: !!user.fullName },
-    { label: "Date of Birth", filled: !!user.dateOfBirth },
-    { label: "Blood Group", filled: !!user.bloodGroup },
-    { label: "College Roll Number", filled: !!user.collegeRollNumber },
-    { label: "Phone Number", filled: !!user.phoneNumber },
-    { label: "UPI ID", filled: !!user.upiId },
-    { label: "UPI Phone Number", filled: !!user.upiPhone },
-    { label: "Institution", filled: !!user.institution },
-    { label: "Department", filled: !!user.department },
-    { label: "Year", filled: !!user.year },
-    { label: "Emergency Contact Name", filled: !!user.emergencyContactName },
-    { label: "Emergency Contact Relation", filled: !!user.emergencyContactRelation },
-    { label: "Emergency Contact Phone", filled: !!user.emergencyContactPhone },
-    {
-      label: "Government ID",
-      filled: !!(user.govtIdType && user.govtIdNumber && user.govtIdImageUrl),
-    },
-  ];
-
-  const filledCount = requiredFields.filter((f) => f.filled).length;
-  const completionPercent = Math.round((filledCount / requiredFields.length) * 100);
-  const isProfileComplete = completionPercent === 100;
+  const {
+    requiredFields,
+    percent: completionPercent,
+    isComplete: isProfileComplete,
+  } = getProfileCompletion(user);
 
   const badges = getBadges(portfolioTotals);
   const points = getPortfolioPoints(portfolioTotals);
