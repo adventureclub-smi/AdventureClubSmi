@@ -259,11 +259,6 @@ export async function notifyMembershipUpdated(
       <h2 style="color:#008862;">Your ${parts.join(" and ")} has been updated</h2>
       <p>Hi ${firstName(user.fullName)}, your ${parts.join(" and ")} on NAVIRA has just been updated by an admin. Please check your profile for the latest details.</p>
       ${emailButton(`${getSiteUrl()}/dashboard/profile`, "View Profile")}
-      <p style="margin-top:24px;color:#666;font-size:13px;">
-        Also, if you haven't already, it'd really help to fill in the rest of your profile
-        (emergency contact, reimbursement UPI details, government ID, etc.) — if you've
-        already done this, please ignore this note.
-      </p>
     `),
   });
 }
