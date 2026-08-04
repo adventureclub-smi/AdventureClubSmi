@@ -389,7 +389,7 @@ export default function MemberProfile({
 
           <div className={styles.fields}>
             <div>
-              <label>Membership Status</label>
+              <label>Status</label>
 
               <select
                 value={user.membershipStatus}
@@ -412,6 +412,7 @@ export default function MemberProfile({
                 <option>President</option>
                 <option>Treasurer</option>
                 <option>Member</option>
+                <option>Registered Member</option>
                 <option>Participant</option>
                 <option>Guides</option>
                 <option>Logistics Head</option>

@@ -14,7 +14,7 @@ export const ELEVATED_CLUB_ROLES = new Set([
 ]);
 
 // Club roles that are attendance tiers, not team positions — never core team.
-export const NON_CORE_CLUB_ROLES = new Set(["Member", "Participant"]);
+export const NON_CORE_CLUB_ROLES = new Set(["Member", "Registered Member", "Participant"]);
 
 // Every other position: real team roles that aren't already elevated.
 export const PLAIN_CORE_CLUB_ROLES = new Set([

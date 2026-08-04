@@ -222,13 +222,31 @@ export async function notifyCertificateReady(
   });
 }
 
-// ===== Membership status and/or club role changed by an admin -> that student =====
+// ===== Status and/or club role changed by an admin -> that student =====
 export async function notifyMembershipUpdated(
   user: { email: string; fullName: string },
-  changed: { membershipStatus: boolean; clubRole: boolean }
+  changed: { membershipStatus: boolean; clubRole: boolean },
+  newMembershipStatus?: string
 ) {
+  // Becoming Active is the common case (approving a new sign-up) and gets
+  // its own copy nudging the student toward the "Registered Member" role,
+  // which an admin only grants once a profile is actually filled in.
+  if (changed.membershipStatus && newMembershipStatus === "ACTIVE") {
+    await sendEmail({
+      to: user.email,
+      subject: "Your NAVIRA account status is Active",
+      html: emailShell(`
+        <h2 style="color:#008862;">Your account status is "Active"!</h2>
+        <p>Hi ${firstName(user.fullName)}, your account status on NAVIRA is now <strong>Active</strong>.</p>
+        <p>It'd be appreciated if you could complete your profile — doing so gets you the <strong>"Registered Member"</strong> role.</p>
+        ${emailButton(`${getSiteUrl()}/dashboard/profile`, "Complete Profile")}
+      `),
+    });
+    return;
+  }
+
   const parts = [
-    changed.membershipStatus && "membership status",
+    changed.membershipStatus && "status",
     changed.clubRole && "club role",
   ].filter(Boolean);
 

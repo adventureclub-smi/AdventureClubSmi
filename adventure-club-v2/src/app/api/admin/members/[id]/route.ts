@@ -184,10 +184,14 @@ export async function PUT(
 
   if (membershipStatusChanged || clubRoleChanged) {
     try {
-      await notifyMembershipUpdated(existing, {
-        membershipStatus: membershipStatusChanged,
-        clubRole: clubRoleChanged,
-      });
+      await notifyMembershipUpdated(
+        existing,
+        {
+          membershipStatus: membershipStatusChanged,
+          clubRole: clubRoleChanged,
+        },
+        body.membershipStatus
+      );
     } catch (error) {
       console.error("Failed to send membership-updated email:", error);
     }
