@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import { isSmiInstitution } from "@/lib/institution";
+import { getProfileCompletion } from "@/lib/profile-completion";
 import styles from "./MembersTable.module.scss";
 
 interface Member {
@@ -22,6 +23,17 @@ interface Member {
   clubRole: string;
   govtIdStatus: string;
   govtIdLocked: boolean;
+  bloodGroup: string | null;
+  dateOfBirth: string | null;
+  collegeRollNumber: string | null;
+  upiId: string | null;
+  upiPhone: string | null;
+  emergencyContactName: string | null;
+  emergencyContactRelation: string | null;
+  emergencyContactPhone: string | null;
+  govtIdType: string | null;
+  govtIdNumber: string | null;
+  govtIdImageUrl: string | null;
 }
 
 const YEAR_OPTIONS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
@@ -200,83 +212,100 @@ export default function MembersTable() {
               <th>Status</th>
               <th>Role</th>
               <th>Govt ID</th>
+              <th>Profile %</th>
               <th></th>
             </tr>
           </thead>
 
           <tbody>
-            {filtered.map((member) => (
-              <tr key={member.id}>
-                <td>{member.clubId}</td>
+            {filtered.map((member) => {
+              const completionPercent = getProfileCompletion(member).percent;
 
-                <td>
-                  <strong>{member.fullName}</strong>
-                  <p>{member.email}</p>
-                </td>
+              return (
+                <tr key={member.id}>
+                  <td>{member.clubId}</td>
 
-                <td>{member.year}</td>
+                  <td>
+                    <strong>{member.fullName}</strong>
+                    <p>{member.email}</p>
+                  </td>
 
-                <td>
-                  {activeTab === "other" ? (
-                    <>
-                      <strong>{member.institution}</strong>
-                      <p>{member.department}</p>
-                    </>
-                  ) : (
-                    member.department
-                  )}
-                </td>
+                  <td>{member.year}</td>
 
-                <td>
-                  <span
-                    className={
-                      member.membershipStatus === "ACTIVE" ? styles.active : styles.pending
-                    }
-                  >
-                    {member.membershipStatus}
-                  </span>
-                </td>
-
-                <td>{member.clubRole}</td>
-
-                <td>
-                  {member.govtIdLocked ? (
-                    <StatusBadge text="Verified & Locked" tone="success" />
-                  ) : member.govtIdStatus === "VERIFIED" ? (
-                    <StatusBadge text="Verified" tone="success" />
-                  ) : member.govtIdStatus === "PENDING" ? (
-                    <StatusBadge text="Pending Review" tone="waiting" />
-                  ) : (
-                    <StatusBadge text="Not Submitted" tone="neutral" />
-                  )}
-                </td>
-
-                <td>
-                  <div className={styles.rowActions}>
-                    <Link href={`/admin/members/${member.id}`}>
-                      <button className={styles.viewButton}>
-                        {member.membershipStatus === "PENDING" ? "View & Approve" : "Manage"}
-                      </button>
-                    </Link>
-
-                    {member.membershipStatus === "PENDING" && (
-                      <button onClick={() => setMembership(member.id, "ACTIVE", "Member")}>
-                        Quick Approve
-                      </button>
+                  <td>
+                    {activeTab === "other" ? (
+                      <>
+                        <strong>{member.institution}</strong>
+                        <p>{member.department}</p>
+                      </>
+                    ) : (
+                      member.department
                     )}
+                  </td>
 
-                    {member.membershipStatus === "ACTIVE" && (
-                      <button
-                        className={styles.undoButton}
-                        onClick={() => setMembership(member.id, "PENDING")}
-                      >
-                        Undo Approval
-                      </button>
+                  <td>
+                    <span
+                      className={
+                        member.membershipStatus === "ACTIVE" ? styles.active : styles.pending
+                      }
+                    >
+                      {member.membershipStatus}
+                    </span>
+                  </td>
+
+                  <td>{member.clubRole}</td>
+
+                  <td>
+                    {member.govtIdLocked ? (
+                      <StatusBadge text="Verified & Locked" tone="success" />
+                    ) : member.govtIdStatus === "VERIFIED" ? (
+                      <StatusBadge text="Verified" tone="success" />
+                    ) : member.govtIdStatus === "PENDING" ? (
+                      <StatusBadge text="Pending Review" tone="waiting" />
+                    ) : (
+                      <StatusBadge text="Not Submitted" tone="neutral" />
                     )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+
+                  <td>
+                    <span
+                      className={
+                        completionPercent === 100
+                          ? styles.profileComplete
+                          : styles.profileIncomplete
+                      }
+                    >
+                      {completionPercent}%
+                    </span>
+                  </td>
+
+                  <td>
+                    <div className={styles.rowActions}>
+                      <Link href={`/admin/members/${member.id}`}>
+                        <button className={styles.viewButton}>
+                          {member.membershipStatus === "PENDING" ? "View & Approve" : "Manage"}
+                        </button>
+                      </Link>
+
+                      {member.membershipStatus === "PENDING" && (
+                        <button onClick={() => setMembership(member.id, "ACTIVE", "Member")}>
+                          Quick Approve
+                        </button>
+                      )}
+
+                      {member.membershipStatus === "ACTIVE" && (
+                        <button
+                          className={styles.undoButton}
+                          onClick={() => setMembership(member.id, "PENDING")}
+                        >
+                          Undo Approval
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 

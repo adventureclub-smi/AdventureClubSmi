@@ -127,6 +127,18 @@
   font-weight: 700;
 }
 
+.profileComplete {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.profileIncomplete {
+  color: #eab308;
+  font-weight: 700;
+  font-size: 13px;
+}
+
 .table button {
   background: var(--color-accent);
   border: none;
