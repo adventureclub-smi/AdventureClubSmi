@@ -70,7 +70,7 @@ model User {
 
   membershipStatus String @default("PENDING")
 
-  clubRole String @default("Member")
+  clubRole String @default("Pending")
 
   // Admin panel sub-permission tier: NONE | FULL | FINANCE | VISUAL | BOOKING
   adminAccessLevel String @default("NONE")
