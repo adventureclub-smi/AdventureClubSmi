@@ -497,7 +497,7 @@ export default function Profile() {
             </div>
 
             <div>
-              <label>Membership Status</label>
+              <label>Status</label>
               <input value={user.membershipStatus} disabled />
             </div>
 
