@@ -76,6 +76,24 @@
   zoom: 130%;
 }
 
+.announcement {
+  display: inline-block;
+  background: rgba(0, 134, 104, 0.18);
+  border: 1px solid rgba(0, 134, 104, 0.45);
+  color: var(--color-text);
+
+  padding: 9px 22px;
+  border-radius: 999px;
+
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+
+  max-width: 90%;
+
+  margin-bottom: 22px;
+}
+
 .heroLogo {
   margin-bottom: 20px;
 }
@@ -286,6 +304,12 @@
     // min-height reasoning as the desktop rule above still applies on top
     // of that.
     min-height: 100svh;
+  }
+
+  .announcement {
+    font-size: 11.5px;
+    padding: 7px 16px;
+    margin-bottom: 16px;
   }
 
   .heroLogo {

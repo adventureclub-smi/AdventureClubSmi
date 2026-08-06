@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2, Mountain, Film, Hash, Compass, ImagePlay } from "lucide-react";
+import { Wallet, Music, Users, Camera, Link2, Images, Award, LayoutDashboard, BookOpen, Globe2, Mountain, Film, Hash, Compass, ImagePlay, Megaphone } from "lucide-react";
 import QuickActionCard from "@/components/dashboard/shared/QuickActionCard";
 
 export default function SettingsQuickLinks() {
@@ -94,6 +94,12 @@ export default function SettingsQuickLinks() {
         icon={Compass}
         label="Things We Do"
         href="/admin/settings/activities"
+      />
+
+      <QuickActionCard
+        icon={Megaphone}
+        label="Homepage Announcement"
+        href="/admin/settings/announcement"
       />
     </div>
   );

@@ -12,6 +12,9 @@ export interface HeroContent {
   subtitle: string;
   buttons: CTAButton[];
   showCountdown: boolean;
+  // Site-wide banner text shown to every visitor, admin-editable from
+  // Settings > Homepage Announcement — null whenever there's nothing active.
+  announcement: string | null;
 }
 
 export interface StatItem {

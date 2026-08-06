@@ -4,6 +4,7 @@ import { getStories } from "@/data/stories";
 import { getGoogleEarthSettings } from "@/data/google-earth-settings";
 import { getHomepageStats } from "@/data/homepage-stats";
 import { getActivities } from "@/data/homepage-activities";
+import { getHomepageAnnouncement } from "@/data/homepage-announcement";
 
 /**
  * Single centralized source for all non-database homepage content.
@@ -19,15 +20,24 @@ import { getActivities } from "@/data/homepage-activities";
  * placeholder content.
  */
 export async function getHomepageContent(): Promise<HomepageContent> {
-  const [socials, stories, googleEarth, stats, activities] = await Promise.all([
+  const [socials, stories, googleEarth, stats, activities, announcement] = await Promise.all([
     getSocialSettings(),
     getStories(),
     getGoogleEarthSettings(),
     getHomepageStats(),
     getActivities(),
+    getHomepageAnnouncement(),
   ]);
 
-  return { ...homepageContent, socials, stories, googleEarth, stats, activities };
+  return {
+    ...homepageContent,
+    hero: { ...homepageContent.hero, announcement },
+    socials,
+    stories,
+    googleEarth,
+    stats,
+    activities,
+  };
 }
 
 const homepageContent: HomepageContent = {
@@ -43,6 +53,9 @@ const homepageContent: HomepageContent = {
       { label: "Explore Treks", href: "/treks", style: "secondary" },
     ],
     showCountdown: true,
+    // Always overridden by getHomepageAnnouncement() in getHomepageContent()
+    // above — kept here only to satisfy the HomepageContent type.
+    announcement: null,
   },
 
   // Always overridden by getHomepageStats() in getHomepageContent() above —

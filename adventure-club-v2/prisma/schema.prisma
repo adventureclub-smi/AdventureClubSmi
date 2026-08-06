@@ -685,6 +685,19 @@ model GoogleEarthSettings {
   updatedAt DateTime @updatedAt
 }
 
+// Singleton banner shown in the homepage hero to every visitor (logged in
+// or not) — isActive lets an admin turn it off without losing the drafted
+// text, rather than deleting/retyping it each time.
+model HomepageAnnouncement {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  message String
+
+  isActive Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+}
+
 // The homepage "Things We Do" interactive section — one card per activity,
 // admin-editable image + copy instead of the old hardcoded array.
 model HomepageActivity {
