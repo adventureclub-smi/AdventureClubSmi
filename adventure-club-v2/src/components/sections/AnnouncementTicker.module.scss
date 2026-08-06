@@ -1,0 +1,42 @@
+.ticker {
+  overflow: hidden;
+
+  background: var(--color-charcoal);
+  border-top: 1px solid rgba(245, 245, 245, 0.08);
+  border-bottom: 1px solid rgba(245, 245, 245, 0.08);
+
+  padding: 8px 0;
+}
+
+.track {
+  display: inline-flex;
+  animation: marquee 22s linear infinite;
+}
+
+.item {
+  white-space: nowrap;
+  padding-right: 64px;
+
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--color-accent);
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    // Exactly one item-width (the track is always precisely two identical
+    // items wide) — moving further would skip past the seamless handoff.
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
+}
