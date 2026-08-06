@@ -27,6 +27,8 @@ type Trek = {
   duration: string;
   registrationClosesAt?: string | Date | null;
   registrationOpensAt?: string | Date | null;
+  registrationOpenedManually?: boolean;
+  registrationClosedManually?: boolean;
   type?: string;
   time?: string | null;
 };
@@ -54,7 +56,14 @@ export default function TrekDetails({
   const [notified, setNotified] = useState(notifyRequested);
   const [notifyLoading, setNotifyLoading] = useState(false);
 
-  const { phase } = useRegistrationPhase(trek.date, trek.registrationOpensAt);
+  const { phase: countdownPhase } = useRegistrationPhase(trek.date, trek.registrationOpensAt);
+  // An admin's manual "Open Registrations" override (see the admin trek
+  // panel) is meant to unconditionally beat the scheduled opensAt date —
+  // registrationStateFor() already encodes that precedence for the
+  // dashboard/homepage; mirroring just the "still waiting to open" half of
+  // it here keeps this page in sync with that override instead of only
+  // ever looking at the countdown date.
+  const phase = trek.registrationOpenedManually ? "trekDay" : countdownPhase;
 
   const isWorkshop = trek.type === "WORKSHOP";
   const isFree = trek.price === 0;
