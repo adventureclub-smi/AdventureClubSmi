@@ -24,6 +24,7 @@ import {
   Menu,
   X,
   MessageCircle,
+  Mail,
 } from "lucide-react";
 
 import type { AdminAccessLevel } from "@/lib/admin-access";
@@ -40,6 +41,7 @@ const links = [
   { href: "/admin/attendance", label: "Attendance", icon: CheckSquare },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
+  { href: "/admin/email", label: "Email Students", icon: Mail },
   { href: "/admin/contact", label: "Contact", icon: MessageCircle },
   { href: "/admin/portfolio", label: "Portfolio", icon: Sparkles },
   { href: "/admin/reports", label: "Reports", icon: BarChart3 },

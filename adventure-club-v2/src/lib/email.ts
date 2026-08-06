@@ -13,6 +13,19 @@ export function getSiteUrl() {
   return process.env.SITE_URL || "http://localhost:3000";
 }
 
+// Admin-authored broadcast subjects/messages get interpolated straight into
+// an HTML email body — escaping keeps a stray "<" or "&" from breaking the
+// layout (or, worse, being interpreted as markup) instead of just showing up
+// as literal text like the admin intended.
+export function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function emailButton(href: string, label: string) {
   return `
     <p>
