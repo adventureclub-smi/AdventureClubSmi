@@ -1,9 +1,9 @@
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
-// Display name only — the domain stays as-is since it's a verified sending
-// domain; switching it would break all outgoing email until a new domain is
-// set up and verified with whatever provider replaces this one.
-const FROM_EMAIL = "noreply@adventureclubsmi.com";
+// Matches the live site's domain (naviraclubsmi.com) rather than the old
+// pre-rebrand adventureclubsmi.com — moved here specifically when switching
+// to Brevo, which is authenticated for naviraclubsmi.com, not the old domain.
+const FROM_EMAIL = "noreply@naviraclubsmi.com";
 const FROM_NAME = "NAVIRA SMI";
 
 function brevoHeaders() {
