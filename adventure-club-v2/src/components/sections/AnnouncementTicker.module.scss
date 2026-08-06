@@ -1,11 +1,80 @@
 .ticker {
+  display: flex;
+  align-items: stretch;
+
+  background: linear-gradient(
+    90deg,
+    rgba(0, 160, 115, 0.16),
+    var(--color-charcoal) 55%
+  );
+  border-top: 1px solid rgba(0, 160, 115, 0.35);
+  border-bottom: 1px solid rgba(0, 160, 115, 0.35);
+
   overflow: hidden;
+}
 
-  background: var(--color-charcoal);
-  border-top: 1px solid rgba(245, 245, 245, 0.08);
-  border-bottom: 1px solid rgba(245, 245, 245, 0.08);
+.label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 
-  padding: 8px 0;
+  padding: 9px 18px;
+
+  background: var(--color-accent);
+  color: var(--color-midnight);
+
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-midnight);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+.scroll {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+
+  // Fades the scrolling text out at both edges instead of a hard cut.
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    black 28px,
+    black calc(100% - 28px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    black 28px,
+    black calc(100% - 28px),
+    transparent
+  );
 }
 
 .track {
@@ -13,15 +82,21 @@
   animation: marquee 22s linear infinite;
 }
 
+// A little bit of real interactivity — hovering lets you actually read a
+// long announcement instead of chasing it across the screen.
+.track:hover {
+  animation-play-state: paused;
+}
+
 .item {
   white-space: nowrap;
-  padding-right: 64px;
+  padding: 9px 64px 9px 24px;
 
   font-family: var(--font-body);
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: var(--color-accent);
+  color: var(--color-text);
 }
 
 @keyframes marquee {
@@ -38,5 +113,18 @@
 @media (prefers-reduced-motion: reduce) {
   .track {
     animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .label {
+    padding: 8px 12px;
+    font-size: 9.5px;
+    gap: 5px;
+  }
+
+  .item {
+    font-size: 11.5px;
+    padding: 8px 40px 8px 16px;
   }
 }
