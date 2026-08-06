@@ -90,7 +90,13 @@
 
 .item {
   white-space: nowrap;
-  padding: 9px 64px 9px 24px;
+  // A generous gap matters more than it looks like it should — a longer
+  // announcement can end up nearly as wide as the visible ticker area
+  // itself, and with only a small gap the tail of one copy and the head
+  // of the next both stay on screen at the same time, reading as the loop
+  // "restarting" mid-scroll instead of a clean scroll-off/scroll-on. This
+  // gap holds up regardless of message length.
+  padding: 9px 220px 9px 24px;
 
   font-family: var(--font-body);
   font-size: 12.5px;
@@ -125,6 +131,6 @@
 
   .item {
     font-size: 11.5px;
-    padding: 8px 40px 8px 16px;
+    padding: 8px 120px 8px 16px;
   }
 }
