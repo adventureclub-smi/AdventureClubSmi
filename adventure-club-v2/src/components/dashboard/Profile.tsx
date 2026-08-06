@@ -73,6 +73,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [sendingReset, setSendingReset] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile>(emptyProfile);
   const [portfolioTotals, setPortfolioTotals] = useState<PortfolioTotals>({
     totalTreks: 0,
@@ -149,6 +151,32 @@ export default function Profile() {
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
+  }
+
+  // Reuses the same "forgot password" email flow rather than a separate
+  // current-password form — the student is already authenticated, so we
+  // already know their email and can skip straight to sending the link.
+  async function handleChangePassword() {
+    setSendingReset(true);
+    setPasswordStatus(null);
+
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      setPasswordStatus(
+        data?.message || "Check your email for a link to reset your password."
+      );
+    } catch {
+      setPasswordStatus("Could not send the reset link — please try again.");
+    } finally {
+      setSendingReset(false);
+    }
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -525,12 +553,17 @@ export default function Profile() {
           <h2>Settings</h2>
 
           <p className={styles.passwordText}>
-            Password changes will be available from a dedicated security page.
+            {passwordStatus || "We'll email you a link to reset your password, same as \"Forgot Password\" on the login page."}
           </p>
 
           <div className={styles.settingsActions}>
-            <button className={styles.passwordButton} type="button">
-              Change Password
+            <button
+              className={styles.passwordButton}
+              type="button"
+              onClick={handleChangePassword}
+              disabled={sendingReset}
+            >
+              {sendingReset ? "Sending..." : "Change Password"}
             </button>
 
             <button className={styles.logoutButton} type="button" onClick={handleLogout}>
