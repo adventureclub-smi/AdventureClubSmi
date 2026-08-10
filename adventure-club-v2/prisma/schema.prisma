@@ -79,6 +79,13 @@ model User {
 
   dateOfBirth DateTime?
 
+  // Calendar year the "Happy Birthday" email was last sent for — guards
+  // against re-sending on every subsequent homepage visit that piggybacks
+  // the birthday check once this year's wish has already gone out. Year
+  // (not a full timestamp) is all that matters since the check only cares
+  // "have we already wished them this year", not exactly when.
+  lastBirthdayEmailYear Int?
+
   collegeRollNumber String?
 
   emergencyContactName String?

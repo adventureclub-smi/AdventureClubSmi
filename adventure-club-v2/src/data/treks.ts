@@ -3,7 +3,7 @@ import { after } from "next/server";
 import type { RegistrationLike } from "@/lib/registration-journey";
 import type { TrekSummary, TrekMapPin, UpcomingTrekRoute } from "@/types/homepage";
 import { optimizeImage, optimizeVideo } from "@/lib/media-optimize";
-import { notifyRegistrationOpenedIfDue } from "@/lib/notification-emails";
+import { notifyRegistrationOpenedIfDue, notifyBirthdaysIfDue } from "@/lib/notification-emails";
 
 export async function getUpcomingTreks(): Promise<TrekSummary[]> {
   // Piggybacks the "registrations just opened -> email Notify Me subscribers"
@@ -15,6 +15,14 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
       await notifyRegistrationOpenedIfDue();
     } catch (error) {
       console.error("Failed to process registration-open notifications:", error);
+    }
+  });
+
+  after(async () => {
+    try {
+      await notifyBirthdaysIfDue();
+    } catch (error) {
+      console.error("Failed to process birthday notifications:", error);
     }
   });
 

@@ -64,6 +64,75 @@ export async function notifyWorkshopCreated(workshop: Trek) {
   );
 }
 
+// Every member's dateOfBirth is saved from a plain "YYYY-MM-DD" <input
+// type="date">, which `new Date(...)` anchors to UTC midnight — reading it
+// back with getUTCMonth()/getUTCDate() returns exactly the calendar date
+// that was entered, regardless of what timezone the server process runs in.
+// "Today" needs the same UTC-field trick applied to a shifted instant, since
+// every member is in India (UTC+5:30) but Vercel's server clock is UTC.
+function istTodayParts() {
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+  const ist = new Date(Date.now() + IST_OFFSET_MS);
+
+  return {
+    month: ist.getUTCMonth(),
+    day: ist.getUTCDate(),
+    year: ist.getUTCFullYear(),
+  };
+}
+
+// ===== Birthday -> that member, once per calendar year =====
+// Piggybacked on homepage visits (no cron in this project), same as the
+// registration-open check below. Cheap no-op once everyone whose birthday is
+// today has already been wished this year.
+export async function notifyBirthdaysIfDue() {
+  const { month, day, year } = istTodayParts();
+
+  const members = await prisma.user.findMany({
+    where: {
+      membershipStatus: "ACTIVE",
+      dateOfBirth: { not: null },
+      lastBirthdayEmailYear: { not: year },
+    },
+    select: { id: true, email: true, fullName: true, dateOfBirth: true },
+  });
+
+  const dueToday = members.filter((member) => {
+    const dob = member.dateOfBirth!;
+    return dob.getUTCMonth() === month && dob.getUTCDate() === day;
+  });
+
+  for (const member of dueToday) {
+    await sendBirthdayEmail(member, year);
+  }
+}
+
+async function sendBirthdayEmail(
+  member: { id: string; email: string; fullName: string },
+  year: number
+) {
+  // Atomically claim the send: MongoDB evaluates this filter against the
+  // document's state at write time, so if two page views race, only the
+  // first one's update actually matches and the second gets count: 0.
+  const claimed = await prisma.user.updateMany({
+    where: { id: member.id, lastBirthdayEmailYear: { not: year } },
+    data: { lastBirthdayEmailYear: year },
+  });
+
+  if (claimed.count === 0) return;
+
+  await sendEmail({
+    to: member.email,
+    subject: `Happy Birthday, ${firstName(member.fullName)}! 🎂 — from NAVIRA`,
+    html: emailShell(`
+      <h2 style="color:#008862;">Happy Birthday, ${firstName(member.fullName)}! 🏔️</h2>
+      <p>Wishing you a year ahead filled with new trails to discover, peaks to chase, and unforgettable sunrises above the clouds.</p>
+      <p>May the mountains keep calling and the adventures keep coming — here's to another year of exploring the wild with the people who make it unforgettable.</p>
+      <p>Have a wonderful day, from your family at NAVIRA. 🌲</p>
+    `),
+  });
+}
+
 // ===== Registration opens -> everyone who clicked Notify Me =====
 // Piggybacked on page visits (no cron in this project): called opportunistically
 // whenever a trek's page or the treks list is loaded. Cheap no-op in the
