@@ -8,6 +8,7 @@ import { Compass, FileCheck, MapPin, CalendarDays, IndianRupee } from "lucide-re
 
 import BackButton from "./shared/BackButton";
 import StatusBadge from "./shared/StatusBadge";
+import ReimbursementStatus from "./shared/ReimbursementStatus";
 import {
   getJourneyAction,
   getJourneyBadge,
@@ -40,6 +41,9 @@ type Registration = {
   certificateIssued: boolean;
   initialPaymentDeadline?: string | null;
   payments: Payment[];
+  reimbursementAmount: number | null;
+  reimbursementDone: boolean;
+  reimbursementReceived: boolean;
   trek: {
     id: string;
     title: string;
@@ -51,6 +55,8 @@ type Registration = {
     initialPayment: number;
     finalPayment: number;
     installments?: number;
+    expectedReimbursementMin: number | null;
+    expectedReimbursementMax: number | null;
   };
 };
 
@@ -98,6 +104,16 @@ export default function MyRegistrations() {
             const payment = getPaymentBadge(reg);
             const action = getJourneyAction(reg.trek.id, reg);
             const paymentRows = getPaymentRows(reg);
+
+            // Same eligibility rule as My Treks / the trek journey page —
+            // reimbursement only becomes relevant once the trip itself is
+            // over and at least one payment went through. This page
+            // showed the payment/attendance/certificate badges without
+            // ever surfacing reimbursement at all, so a student checking
+            // here specifically never saw the "mark as received" button.
+            const tripOver = reg.status === "COMPLETED" || reg.status === "MISSED";
+            const eligibleForReimbursement =
+              tripOver && (reg.finalPaymentPaid || reg.initialPaymentPaid);
 
             return (
               <motion.div
@@ -176,6 +192,19 @@ export default function MyRegistrations() {
                       </div>
                     ))}
                   </div>
+
+                  {eligibleForReimbursement && (
+                    <div className={styles.reimbursement}>
+                      <ReimbursementStatus
+                        registrationId={reg.id}
+                        reimbursementAmount={reg.reimbursementAmount}
+                        reimbursementDone={reg.reimbursementDone}
+                        reimbursementReceived={reg.reimbursementReceived}
+                        expectedMin={reg.trek.expectedReimbursementMin}
+                        expectedMax={reg.trek.expectedReimbursementMax}
+                      />
+                    </div>
+                  )}
 
                   <div className={styles.actions}>
                     {action.href && action.variant === "tripCentre" && (
