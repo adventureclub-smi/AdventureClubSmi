@@ -19,7 +19,19 @@ const nextConfig: NextConfig = {
   // require/import, so file tracing misses it unless told explicitly.
   // Marking sharp external (below) fixes bundling; this fixes tracing.
   outputFileTracingIncludes: {
-    "/api/admin/certificates/generate": ["./src/lib/certificate/**"],
+    // @sparticuz/chromium's packed Chromium binary (bin/*.br) is loaded via
+    // its own runtime fs logic, not a static import/require, so — same as
+    // sharp's native binary below — tracing misses it unless told
+    // explicitly. serverExternalPackages (below) only stops the bundler
+    // from relocating the require() call; it does nothing for non-code
+    // files like this that tracing can't discover on its own, which is
+    // exactly what produced production's "input directory .../chromium/bin
+    // does not exist" error while working fine in local dev (dev doesn't
+    // go through this file-tracing/standalone-output step at all).
+    "/api/admin/certificates/generate": [
+      "./src/lib/certificate/**",
+      "./node_modules/@sparticuz/chromium/bin/**",
+    ],
     "/api/**/*": [
       "./node_modules/@img/sharp-libvips-linux-x64/**",
       "./node_modules/@img/sharp-linux-x64/**",
