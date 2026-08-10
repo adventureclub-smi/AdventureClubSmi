@@ -46,15 +46,40 @@
   }
 }
 
-.current {
+// Compound selector (rather than a standalone .current block) so this can
+// override .item's own connector-line rules below — both classes land on
+// the same element.
+.item.current {
   strong {
     color: var(--color-accent);
   }
 
-  border-radius: 12px;
-  margin: -8px -10px 16px;
-  padding: 8px 10px 24px;
-  background: rgba(0, 160, 115, 0.06);
+  // Extra breathing room below the highlighted step. Kept as a plain
+  // margin rather than folding it into padding so .item's own box (and the
+  // dot/line positions computed relative to it) stay identical to a normal
+  // step — only this decorative gap changes.
+  margin-bottom: 16px;
+
+  // The highlight pill is a separate layer sized past the row's edges
+  // rather than real padding/margin on the row itself — doing it via the
+  // box model shifted the dot's actual position, throwing off the
+  // hard-coded connector-line offsets below and leaving a visible kink at
+  // the current step.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -8px -10px;
+    border-radius: 12px;
+    background: rgba(0, 160, 115, 0.06);
+    z-index: -1;
+  }
+
+  // The line still needs to bridge this step's added margin-bottom to
+  // reach the next dot, since margin sits outside the box the line's
+  // height is computed against.
+  &:not(:last-child)::before {
+    height: calc(100% - 8px + 16px);
+  }
 }
 
 .dotDone,
