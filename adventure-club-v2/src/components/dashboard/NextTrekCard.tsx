@@ -61,12 +61,16 @@ export default function NextTrekCard({
     setNotifyLoading(false);
   }
   // Same phase hook the homepage countdown uses — it ticks its own 1s
-  // interval, so "Registrations Open In" flips live to "Next Adventure In"
+  // interval, so "Registrations Open In" flips live to "Trek Starts In"
   // (and the button unlocks) the instant registration opens, with no page
-  // refresh needed.
+  // refresh needed. Passing hasRegistration swaps the trek-day label from
+  // the homepage's "Next Adventure In" pitch to "Trek Starts In" — once
+  // you're actually registered, it's your own trip counting down, not an
+  // invitation to sign up.
   const { phase, target: phaseTarget, label: phaseLabel } = useRegistrationPhase(
     trek.date,
-    registrationOpensAt
+    registrationOpensAt,
+    !!registration
   );
 
   // Only show the initial-payment-deadline countdown while that payment is
