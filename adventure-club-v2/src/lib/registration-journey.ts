@@ -33,7 +33,11 @@ export function registrationStateFor(
 export type RegistrationLike = {
   id: string;
   status: string;
-  initialPaymentDeadline?: string | null;
+  // A JSON API response (e.g. /api/dashboard/next-trek) serializes this to a
+  // string, but a server component passing a raw Prisma record straight to
+  // a client component (e.g. TrekDetails) keeps it as a real Date — RSC's
+  // serialization preserves Date instances, unlike JSON.stringify.
+  initialPaymentDeadline?: string | Date | null;
   initialPaymentPaid: boolean;
   initialPaymentDidNotPay?: boolean;
   offlinePaymentCreated: boolean;

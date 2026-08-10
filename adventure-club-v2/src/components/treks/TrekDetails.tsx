@@ -11,6 +11,7 @@ import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./TrekDetails.module.scss";
 import PaymentCountdown from "./PaymentCountdown";
 import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
+import { getJourneyAction, type RegistrationLike, type JourneyAction } from "@/lib/registration-journey";
 
 type Trek = {
   id: string;
@@ -29,15 +30,34 @@ type Trek = {
   registrationOpensAt?: string | Date | null;
   registrationOpenedManually?: boolean;
   registrationClosedManually?: boolean;
+  tripCentrePublished?: boolean;
   type?: string;
   time?: string | null;
 };
 
-type Registration = {
-  id: string;
-  status: string;
-  initialPaymentDeadline?: string | Date | null;
-};
+type Registration = RegistrationLike;
+
+// registration.status === "APPROVED" covers everything from "just approved,
+// hasn't paid yet" through "fully paid and out on the trip" — this maps that
+// single status to the same next-step copy the dashboard already shows via
+// getJourneyAction, so this page can't drift back into showing "Pay Initial
+// Payment" for someone who's already paid (see getJourneyAction's variants).
+function journeyActionNote(variant: JourneyAction["variant"], isSingleInstallment: boolean) {
+  switch (variant) {
+    case "pay":
+      return `Your registration has been approved. Complete the ${
+        isSingleInstallment ? "payment" : "initial payment"
+      } before the countdown ends to confirm your seat.`;
+    case "finalPay":
+      return "Your final payment is now open — complete it to lock in your spot.";
+    case "tripCentre":
+      return "Head to your Trip Centre for the meeting point, WhatsApp group, and trip details.";
+    case "certificate":
+      return "Your certificate is ready to download.";
+    default:
+      return "Check your dashboard for what's next in your journey.";
+  }
+}
 
 export default function TrekDetails({
   trek,
@@ -67,6 +87,19 @@ export default function TrekDetails({
 
   const isWorkshop = trek.type === "WORKSHOP";
   const isFree = trek.price === 0;
+
+  // registration.status alone only tells you "approved" — it stays
+  // APPROVED all the way through paid/verified/attended/certified, so the
+  // actual next step (still owes initial payment vs. already paid and
+  // waiting on trip centre vs. final payment due, etc.) has to come from
+  // the same payment-aware logic the dashboard uses, not from status alone.
+  const journeyAction: JourneyAction | null =
+    registration?.status === "APPROVED" && !isFree
+      ? getJourneyAction(trek.id, {
+          ...registration,
+          trek: { installments: trek.installments, tripCentrePublished: trek.tripCentrePublished },
+        })
+      : null;
 
   async function handleNotifyMe() {
     setNotifyLoading(true);
@@ -336,25 +369,27 @@ export default function TrekDetails({
             </>
           )}
 
-          {registration?.status === "APPROVED" && !isFree && (
+          {registration?.status === "APPROVED" && !isFree && journeyAction && (
             <>
-              {registration.initialPaymentDeadline && (
+              {journeyAction.variant === "pay" && registration.initialPaymentDeadline && (
                 <PaymentCountdown deadline={registration.initialPaymentDeadline} />
               )}
 
-              <Link
-                href={`/student/payments/${registration.id}`}
-                className={styles.registerButton}
-              >
-                <Wallet size={16} />{" "}
-                {trek.installments === 1 ? "Pay Full Payment" : "Pay Initial Payment"} ₹
-                {trek.initialPayment}
-              </Link>
+              {journeyAction.href ? (
+                <Link href={journeyAction.href} className={styles.registerButton}>
+                  <Wallet size={16} />{" "}
+                  {journeyAction.text}
+                  {journeyAction.variant === "pay" && ` ₹${trek.initialPayment}`}
+                  {journeyAction.variant === "finalPay" && ` ₹${trek.finalPayment}`}
+                </Link>
+              ) : (
+                <div className={styles.badgeRow}>
+                  <StatusBadge text={journeyAction.text} tone="waiting" />
+                </div>
+              )}
 
               <p className={styles.note}>
-                Your registration has been approved. Complete the{" "}
-                {trek.installments === 1 ? "payment" : "initial payment"} before
-                the countdown ends to confirm your seat.
+                {journeyActionNote(journeyAction.variant, trek.installments === 1)}
               </p>
             </>
           )}
