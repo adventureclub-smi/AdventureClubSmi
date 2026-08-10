@@ -395,12 +395,27 @@ export function getPaymentBadge(
   return { text: "Payment Pending", tone: "neutral" };
 }
 
+// A registration can end up with more than one Payment row of the same
+// type — e.g. a first proof submission left PENDING, then a resubmission
+// that actually got verified. /api/admin/payments/verify only ever flips
+// the most recently created row for that type, so a stale older PENDING
+// row can otherwise outrank the real PAID one here and show "Verification
+// Pending" even though the registration's own finalPaymentPaid/
+// initialPaymentPaid flag (and the badge next to it) already say Paid.
+function latestRelevantPayment(
+  payments: PaymentInfo[],
+  type: "INITIAL" | "FINAL"
+): PaymentInfo | undefined {
+  const matches = payments.filter((p) => p.type === type);
+  return matches.find((p) => p.status === "PAID") ?? matches[matches.length - 1];
+}
+
 export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
   const isSingleInstallment = reg.trek?.installments === 1;
   const initialLabel = isSingleInstallment ? "Full Payment" : "Initial Payment";
 
-  const initial = reg.payments.find((p) => p.type === "INITIAL");
-  const final = reg.payments.find((p) => p.type === "FINAL");
+  const initial = latestRelevantPayment(reg.payments, "INITIAL");
+  const final = latestRelevantPayment(reg.payments, "FINAL");
 
   const rows: PaymentRow[] = [
     initial?.status === "PAID"
