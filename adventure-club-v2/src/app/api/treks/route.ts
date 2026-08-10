@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { getCurrentUser } from "@/lib/current-user";
 import { notifyTrekCreated } from "@/lib/notification-emails";
 import { parseIstDateTimeLocal } from "@/lib/ist-time";
 import { optimizeImage } from "@/lib/media-optimize";
@@ -46,6 +47,10 @@ export async function POST(req: Request) {
       // Map Location
       latitude,
       longitude,
+
+      // Test Mode
+      isTest,
+      testVisibleToUserIds,
     } = body;
 
     const installmentCount = Number(installments) === 1 ? 1 : 2;
@@ -140,19 +145,31 @@ export async function POST(req: Request) {
         latitude: latitude !== undefined && latitude !== "" ? Number(latitude) : null,
 
         longitude: longitude !== undefined && longitude !== "" ? Number(longitude) : null,
+
+        // -------------------------
+        // Test Mode
+        // -------------------------
+
+        isTest: Boolean(isTest),
+
+        testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
       },
     });
 
     // Runs after the response is sent — a large member list could take
     // longer than a serverless function's response window allows, and the
     // admin doesn't need to wait for the email blast to see "Trek created."
-    after(async () => {
-      try {
-        await notifyTrekCreated(trek);
-      } catch (emailError) {
-        console.error("Failed to send trek-created emails:", emailError);
-      }
-    });
+    // Test treks are a private dry-run, so they never trigger a club-wide
+    // announcement email.
+    if (!trek.isTest) {
+      after(async () => {
+        try {
+          await notifyTrekCreated(trek);
+        } catch (emailError) {
+          console.error("Failed to send trek-created emails:", emailError);
+        }
+      });
+    }
 
     return NextResponse.json(
       {
@@ -182,12 +199,24 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const season = searchParams.get("season");
 
+    // This same route backs both the admin trek list and the public
+    // homepage/treks listing. Only admins get test treks mixed in here
+    // (tagged TEST in the UI) — everyone else, including logged-in students
+    // whitelisted on a specific test trek, must never see it in a general
+    // listing. Whitelisted students only ever see their test trek via their
+    // own dashboard/detail page, never here.
+    const user = await getCurrentUser();
+    const isAdmin = user?.role === "admin";
+
     // Historical/archived treks are opt-in only (?season=2025-26) — every
     // existing consumer of this route (public trek browsing, admin trek
     // list, announcement/portfolio pickers) should keep seeing only current
     // treks by default, the same as before this field existed.
     const treks = await prisma.trek.findMany({
-      where: season ? { isHistorical: true, season } : { isHistorical: false },
+      where: {
+        ...(season ? { isHistorical: true, season } : { isHistorical: false }),
+        ...(isAdmin ? {} : { isTest: false }),
+      },
       orderBy: {
         createdAt: "desc",
       },

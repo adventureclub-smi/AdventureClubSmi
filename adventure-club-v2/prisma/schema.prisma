@@ -264,6 +264,16 @@ model Trek {
   // hundreds of satellite/DEM tiles per visitor, while this is one cached
   // video. Falls back to the live map when unset.
   routePreviewVideoUrl String?
+
+  // ===== Test Mode =====
+  // Admin-only dry-run treks — hidden from the homepage, the public /treks
+  // listing, and every student's dashboard/detail page except the specific
+  // students whitelisted below. Admins always see these (tagged TEST) so a
+  // trek can be dress-rehearsed before it goes live to the whole club.
+
+  isTest Boolean @default(false)
+
+  testVisibleToUserIds String[] @default([])
 }
 
 // Admin-editable waypoints (trailhead, halfway point, summit, etc.) that

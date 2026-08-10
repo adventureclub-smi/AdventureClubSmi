@@ -22,6 +22,7 @@ type Trek = {
   isHistorical?: boolean;
   season?: string | null;
   type?: string;
+  isTest?: boolean;
 };
 
 type FinanceSummary = {
@@ -217,6 +218,10 @@ export default function TreksTable() {
 
                 {trek.type === "WORKSHOP" && (
                   <span className={styles.archivedBadge}>Workshop</span>
+                )}
+
+                {trek.isTest && (
+                  <span className={styles.testBadge}>TEST</span>
                 )}
               </div>
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ImagePlus, X } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
+import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
 import styles from "./CreateTrekForm.module.scss";
 
 type FormState = {
@@ -31,6 +32,8 @@ type FormState = {
   countsAsPeak: boolean;
   latitude: string;
   longitude: string;
+  isTest: boolean;
+  testVisibleToUserIds: string[];
 };
 
 const emptyForm: FormState = {
@@ -57,6 +60,8 @@ const emptyForm: FormState = {
   countsAsPeak: true,
   latitude: "",
   longitude: "",
+  isTest: false,
+  testVisibleToUserIds: [],
 };
 
 // `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
@@ -132,6 +137,8 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           countsAsPeak: trek.countsAsPeak ?? true,
           latitude: trek.latitude != null ? String(trek.latitude) : "",
           longitude: trek.longitude != null ? String(trek.longitude) : "",
+          isTest: trek.isTest ?? false,
+          testVisibleToUserIds: trek.testVisibleToUserIds ?? [],
         });
 
         if (trek.coverImage) setPreview(trek.coverImage);
@@ -223,6 +230,8 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
       altitudeMeters: Number(form.altitudeMeters) || 0,
       campNights: Number(form.campNights) || 0,
       countsAsPeak: form.countsAsPeak,
+      isTest: form.isTest,
+      testVisibleToUserIds: form.isTest ? form.testVisibleToUserIds : [],
     };
 
     const res = await fetch(isEdit ? `/api/treks/${trekId}` : "/api/treks", {
@@ -609,6 +618,33 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
               />
             </label>
           </div>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Test Mode</div>
+          <p className={styles.sectionHint}>
+            A test trek never appears on the homepage or the public treks
+            list, and stays invisible to every student except the ones you
+            pick below — they&apos;ll see it on their own dashboard like any
+            other trek. Admins always see it, tagged TEST.
+          </p>
+
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="isTest"
+              checked={form.isTest}
+              onChange={handleChange}
+            />
+            This is a test trek
+          </label>
+
+          {form.isTest && (
+            <TestVisibilityPicker
+              selectedIds={form.testVisibleToUserIds}
+              onChange={(ids) => setForm({ ...form, testVisibleToUserIds: ids })}
+            />
+          )}
         </div>
 
         {status && <p className={styles.status}>{status}</p>}

@@ -31,6 +31,18 @@ export default async function TrekPage({
     notFound();
   }
 
+  // A test trek only exists for admins (previewing it) and the specific
+  // students whitelisted on it — everyone else gets the same "not found" as
+  // a trek that never existed, even if they have the direct link.
+  if (trek.isTest) {
+    const allowed =
+      user?.role === "admin" || (user && trek.testVisibleToUserIds.includes(user.id));
+
+    if (!allowed) {
+      notFound();
+    }
+  }
+
   trek.coverImage = optimizeImage(trek.coverImage);
 
   // Piggybacks the "registrations just opened -> email Notify Me subscribers"

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { getCurrentUser } from "@/lib/current-user";
 import { parseIstDateTimeLocal } from "@/lib/ist-time";
 
 type RouteContext = {
@@ -25,6 +26,22 @@ export async function GET(
         { message: "Trek not found." },
         { status: 404 }
       );
+    }
+
+    // Test treks are only visible to admins (editing them) or the specific
+    // students whitelisted on them — everyone else gets the same 404 as a
+    // trek that doesn't exist, even with a direct link/ID.
+    if (trek.isTest) {
+      const user = await getCurrentUser();
+      const allowed =
+        user?.role === "admin" || (user && trek.testVisibleToUserIds.includes(user.id));
+
+      if (!allowed) {
+        return NextResponse.json(
+          { message: "Trek not found." },
+          { status: 404 }
+        );
+      }
     }
 
     return NextResponse.json(trek);
@@ -120,6 +137,14 @@ export async function PUT(
           body.longitude !== undefined && body.longitude !== ""
             ? Number(body.longitude)
             : null,
+
+        // Test Mode
+        isTest: Boolean(body.isTest),
+
+        testVisibleToUserIds:
+          body.isTest && Array.isArray(body.testVisibleToUserIds)
+            ? body.testVisibleToUserIds
+            : [],
       },
     });
 

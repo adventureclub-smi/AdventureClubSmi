@@ -27,6 +27,8 @@ export async function POST(req: Request) {
       price,
       registrationOpensAt,
       registrationClosesAt,
+      isTest,
+      testVisibleToUserIds,
     } = body;
 
     if (
@@ -86,16 +88,23 @@ export async function POST(req: Request) {
         altitudeMeters: 0,
         campNights: 0,
         countsAsPeak: false,
+
+        isTest: Boolean(isTest),
+        testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
       },
     });
 
-    after(async () => {
-      try {
-        await notifyWorkshopCreated(workshop);
-      } catch (emailError) {
-        console.error("Failed to send workshop-created emails:", emailError);
-      }
-    });
+    // Test workshops are a private dry-run, so they never trigger a
+    // club-wide announcement email.
+    if (!workshop.isTest) {
+      after(async () => {
+        try {
+          await notifyWorkshopCreated(workshop);
+        } catch (emailError) {
+          console.error("Failed to send workshop-created emails:", emailError);
+        }
+      });
+    }
 
     return NextResponse.json(
       { message: "Workshop created successfully!", trek: workshop },

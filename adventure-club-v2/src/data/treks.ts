@@ -22,6 +22,7 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
     where: {
       date: { gte: new Date() },
       status: "Registration Open",
+      isTest: false,
     },
     orderBy: { date: "asc" },
     include: {
@@ -59,6 +60,7 @@ export async function getTrekMapPins(): Promise<TrekMapPin[]> {
     where: {
       latitude: { not: null },
       longitude: { not: null },
+      isTest: false,
     },
     orderBy: { date: "asc" },
   });
@@ -85,6 +87,7 @@ export async function getUpcomingTrekRoutes(): Promise<UpcomingTrekRoute[]> {
     where: {
       date: { gte: new Date() },
       status: "Registration Open",
+      isTest: false,
       waypoints: { some: {} },
     },
     orderBy: { date: "asc" },

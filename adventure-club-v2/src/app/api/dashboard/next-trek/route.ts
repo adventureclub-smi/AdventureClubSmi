@@ -35,6 +35,7 @@ export async function GET() {
       where: {
         isHistorical: false,
         status: { not: "Completed" },
+        OR: [{ isTest: false }, { testVisibleToUserIds: { has: payload.id } }],
       },
       orderBy: { date: "asc" },
     });
@@ -115,6 +116,7 @@ export async function GET() {
         date: {
           gte: now,
         },
+        OR: [{ isTest: false }, { testVisibleToUserIds: { has: payload.id } }],
       },
       orderBy: {
         date: "asc",
