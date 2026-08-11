@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { notifyAccountCreated } from "@/lib/notification-emails";
+import { createEmailVerificationCode, sendEmailVerificationCode } from "@/lib/email-verification";
 
 function isClubIdConflict(error: unknown): boolean {
   return (
@@ -79,6 +79,7 @@ export async function POST(req: Request) {
             course: course || null,
             year,
             password: hashedPassword,
+            emailVerified: false,
           },
         });
         break;
@@ -88,17 +89,16 @@ export async function POST(req: Request) {
       }
     }
 
-    const { clubId } = user;
-
     try {
-      await notifyAccountCreated({ email, fullName, clubId });
+      const code = await createEmailVerificationCode(user.id);
+      await sendEmailVerificationCode(email, fullName, code);
     } catch (emailError) {
-      console.error("Failed to send account-created email:", emailError);
+      console.error("Failed to send verification email:", emailError);
     }
 
     return NextResponse.json(
       {
-        message: "Account created successfully.",
+        message: "Account created — check your email for a verification code.",
       },
       {
         status: 201,

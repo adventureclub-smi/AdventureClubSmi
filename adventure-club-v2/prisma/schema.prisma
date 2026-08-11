@@ -79,6 +79,28 @@ model User {
 
   dateOfBirth DateTime?
 
+  // ===== Email Verification =====
+  // New signups must confirm the code emailed to them before they can log
+  // in. Defaults true (not false) specifically so this can ship without a
+  // migration locking out every member who signed up before this existed —
+  // the signup route explicitly sets false on new accounts; every
+  // pre-existing account keeps the implicit default. The login route also
+  // checks `=== false` (not just falsy) as a second line of defense, so a
+  // missing/null value on some edge-case row still can't lock someone out.
+
+  emailVerified Boolean @default(true)
+
+  emailVerificationCodeHash String?
+
+  emailVerificationExpiresAt DateTime?
+
+  emailVerificationAttempts Int @default(0)
+
+  // Guards the "Resend Code" button against being spammed into re-sending
+  // (and re-emailing) faster than a person could plausibly need a second one.
+
+  emailVerificationLastSentAt DateTime?
+
   // Calendar year the "Happy Birthday" email was last sent for — guards
   // against re-sending on every subsequent homepage visit that piggybacks
   // the birthday check once this year's wish has already gone out. Year

@@ -50,6 +50,24 @@ export async function POST(req: Request) {
       );
     }
 
+    // Strict `=== false` rather than `!user.emailVerified` — the field
+    // defaults to true precisely so every account that existed before email
+    // verification shipped keeps logging in normally; only an account this
+    // flow itself explicitly set to false (a signup that hasn't confirmed
+    // its code yet) gets blocked here.
+    if (user.emailVerified === false) {
+      return NextResponse.json(
+        {
+          message: "Please verify your email before logging in.",
+          needsVerification: true,
+          email: user.email,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
     const token = createToken({
       id: user.id,
       email: user.email,

@@ -46,6 +46,11 @@ export default function LoginForm() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.needsVerification) {
+          router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+          return;
+        }
+
         alert(data.message);
         setLoading(false);
         return;
