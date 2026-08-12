@@ -86,7 +86,8 @@ export default function VerifyEmailForm() {
     <form className={styles.form} onSubmit={handleSubmit}>
       <p className={styles.hint}>
         We sent a 6-digit code to <strong>{email}</strong>. Enter it below —
-        it expires in 10 minutes.
+        it expires in 10 minutes. Don&apos;t see it? Check your Spam or
+        Promotions folder before requesting a new one.
       </p>
 
       <div className={styles.inputGroup}>
