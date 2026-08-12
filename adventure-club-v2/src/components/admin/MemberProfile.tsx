@@ -38,7 +38,6 @@ type Member = {
   course: string | null;
   year: string;
   membershipStatus: string;
-  emailVerified: boolean;
   clubRole: string;
   adminAccessLevel: string;
   bloodGroup: string | null;
@@ -199,24 +198,6 @@ export default function MemberProfile({
     }
   }
 
-  // A student who never got (or lost) their signup verification email is
-  // otherwise stuck outright — this is the manual rescue path, kept as its
-  // own endpoint (see the route's own comment) rather than folded into the
-  // general Save Changes button.
-  async function toggleEmailVerified() {
-    if (!user) return;
-
-    const nextVerified = !user.emailVerified;
-
-    const res = await fetch(`/api/admin/members/${userId}/verify-email`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emailVerified: nextVerified }),
-    });
-
-    if (res.ok) setUser({ ...user, emailVerified: nextVerified });
-  }
-
   async function toggleGovtVerified() {
     if (!user) return;
 
@@ -373,31 +354,6 @@ export default function MemberProfile({
               <Mail size={14} />
             </a>
           </p>
-
-          <div className={styles.govtStatusRow}>
-            {user.emailVerified ? (
-              <StatusBadge text="Email Verified" tone="success" />
-            ) : (
-              <StatusBadge text="Email Not Verified" tone="waiting" />
-            )}
-          </div>
-
-          {!user.emailVerified && (
-            <>
-              <p>
-                Signup emails a code the student must confirm before they can
-                log in — if it never arrived (spam filtering, a typo they
-                since fixed, etc.), verify them manually here.
-              </p>
-
-              <div className={styles.govtActions}>
-                <button className={styles.verifyButton} onClick={toggleEmailVerified}>
-                  Verify Manually
-                </button>
-              </div>
-            </>
-          )}
-
           <p>
             <strong>Phone:</strong> {user.phoneNumber}
             <a

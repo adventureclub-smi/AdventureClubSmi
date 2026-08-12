@@ -127,7 +127,9 @@ export default function SignupForm() {
         return;
       }
 
-      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+      alert("Account created successfully!");
+
+      router.push("/login");
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
