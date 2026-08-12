@@ -30,6 +30,15 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
     where: {
       date: { gte: new Date() },
       status: "Registration Open",
+      // Every trek document must actually store this field for this filter
+      // to match it — Prisma's MongoDB connector requires the field to
+      // exist for every form of this filter (`false`, `{ not: true }`,
+      // `{ NOT: { isTest: true } }` all behave identically here), so a
+      // trek written by anything other than the app's own create/edit
+      // routes (e.g. a future bulk-import script) MUST explicitly set
+      // isTest itself or it silently disappears from every public query
+      // that uses this filter. A one-off backfill already fixed every
+      // trek that predated this field.
       isTest: false,
     },
     orderBy: { date: "asc" },
@@ -68,6 +77,15 @@ export async function getTrekMapPins(): Promise<TrekMapPin[]> {
     where: {
       latitude: { not: null },
       longitude: { not: null },
+      // Every trek document must actually store this field for this filter
+      // to match it — Prisma's MongoDB connector requires the field to
+      // exist for every form of this filter (`false`, `{ not: true }`,
+      // `{ NOT: { isTest: true } }` all behave identically here), so a
+      // trek written by anything other than the app's own create/edit
+      // routes (e.g. a future bulk-import script) MUST explicitly set
+      // isTest itself or it silently disappears from every public query
+      // that uses this filter. A one-off backfill already fixed every
+      // trek that predated this field.
       isTest: false,
     },
     orderBy: { date: "asc" },
@@ -95,6 +113,15 @@ export async function getUpcomingTrekRoutes(): Promise<UpcomingTrekRoute[]> {
     where: {
       date: { gte: new Date() },
       status: "Registration Open",
+      // Every trek document must actually store this field for this filter
+      // to match it — Prisma's MongoDB connector requires the field to
+      // exist for every form of this filter (`false`, `{ not: true }`,
+      // `{ NOT: { isTest: true } }` all behave identically here), so a
+      // trek written by anything other than the app's own create/edit
+      // routes (e.g. a future bulk-import script) MUST explicitly set
+      // isTest itself or it silently disappears from every public query
+      // that uses this filter. A one-off backfill already fixed every
+      // trek that predated this field.
       isTest: false,
       waypoints: { some: {} },
     },

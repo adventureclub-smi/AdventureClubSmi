@@ -35,6 +35,8 @@ export async function GET() {
       where: {
         isHistorical: false,
         status: { not: "Completed" },
+        // See the comment on this filter in src/data/treks.ts — every trek
+        // must actually have isTest stored for this to match it.
         OR: [{ isTest: false }, { testVisibleToUserIds: { has: payload.id } }],
       },
       orderBy: { date: "asc" },
@@ -116,6 +118,8 @@ export async function GET() {
         date: {
           gte: now,
         },
+        // See the comment on this filter in src/data/treks.ts — every trek
+        // must actually have isTest stored for this to match it.
         OR: [{ isTest: false }, { testVisibleToUserIds: { has: payload.id } }],
       },
       orderBy: {

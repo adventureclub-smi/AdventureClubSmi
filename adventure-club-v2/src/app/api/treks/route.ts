@@ -215,6 +215,10 @@ export async function GET(req: NextRequest) {
     const treks = await prisma.trek.findMany({
       where: {
         ...(season ? { isHistorical: true, season } : { isHistorical: false }),
+        // See the comment on the same filter in src/data/treks.ts — every
+        // form of this filter requires the field to actually be stored on
+        // the document, so anything writing a Trek outside the app's own
+        // create/edit routes must set isTest itself.
         ...(isAdmin ? {} : { isTest: false }),
       },
       orderBy: {
