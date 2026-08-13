@@ -21,7 +21,7 @@ import {
 import styles from "./Profile.module.scss";
 
 const KNOWN_INSTITUTIONS = [SMI, ...OTHER_DEPARTMENTS];
-const SMI_PROGRAMS = [...SMI_UNDERGRAD_PROGRAMS, ...SMI_POSTGRAD_PROGRAMS, "PhD", FACULTY];
+const SMI_PROGRAMS = [...SMI_UNDERGRAD_PROGRAMS, ...SMI_POSTGRAD_PROGRAMS, "PhD"];
 
 type UserProfile = {
   fullName: string;
@@ -191,7 +191,7 @@ export default function Profile() {
       : "Other"
     : "";
   const isSMI = user.institution === SMI;
-  const isFaculty = user.department === FACULTY;
+  const isFaculty = user.year === FACULTY;
 
   function handleInstitutionSelectChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const value = e.target.value;
@@ -435,37 +435,39 @@ export default function Profile() {
               </div>
             )}
 
-            <div>
-              <label>Department</label>
-              {isSMI ? (
-                <select value={user.department} onChange={handleDepartmentSelectChange}>
-                  <option value="" disabled>
-                    Select program
-                  </option>
-                  {SMI_PROGRAMS.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input value={user.department} disabled />
-              )}
-            </div>
-
             {!isFaculty && (
               <div>
-                <label>Year</label>
-                <select name="year" value={user.year} onChange={handleChange}>
-                  <option value="" disabled>
-                    Select year
-                  </option>
-                  {YEARS.map((y) => (
-                    <option key={y}>{y}</option>
-                  ))}
-                </select>
+                <label>Department</label>
+                {isSMI ? (
+                  <select value={user.department} onChange={handleDepartmentSelectChange}>
+                    <option value="" disabled>
+                      Select program
+                    </option>
+                    {SMI_PROGRAMS.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input value={user.department} disabled />
+                )}
               </div>
             )}
+
+            <div>
+              <label>Year</label>
+              <select name="year" value={user.year} onChange={handleChange}>
+                <option value="" disabled>
+                  Select year
+                </option>
+                {YEARS.map((y) => (
+                  <option key={y}>{y}</option>
+                ))}
+                <option disabled>──────────</option>
+                <option value={FACULTY}>{FACULTY}</option>
+              </select>
+            </div>
           </div>
         </section>
 

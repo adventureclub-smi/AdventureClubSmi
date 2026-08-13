@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     // Faculty accounts get their own "ACF-0001" sequence instead — no year
     // code, and numbered against other faculty only, not the whole student
     // roster, so it doesn't jump around or collide with student IDs.
-    const isFaculty = department === FACULTY;
+    const isFaculty = year === FACULTY;
 
     let user;
 

@@ -51,7 +51,7 @@ export default function SignupForm() {
   const [courseOther, setCourseOther] = useState("");
 
   const isSMI = institution === SMI;
-  const isFaculty = program === FACULTY;
+  const isFaculty = formData.year === FACULTY;
   const hasStructuredCourses = program === BDES || program === BFA;
 
   const handleChange = (
@@ -192,25 +192,25 @@ export default function SignupForm() {
       {/* Year / Department */}
 
       <div className={styles.row}>
-        {!isFaculty && (
-          <div className={styles.inputGroup}>
-            <GraduationCap size={20} className={styles.icon} />
+        <div className={styles.inputGroup}>
+          <GraduationCap size={20} className={styles.icon} />
 
-            <select
-              name="year"
-              value={formData.year}
-              onChange={handleChange}
-              required
-            >
-              <option value="" disabled>
-                Year
-              </option>
-              {YEARS.map((y) => (
-                <option key={y}>{y}</option>
-              ))}
-            </select>
-          </div>
-        )}
+          <select
+            name="year"
+            value={formData.year}
+            onChange={handleChange}
+            required
+          >
+            <option value="" disabled>
+              Year
+            </option>
+            {YEARS.map((y) => (
+              <option key={y}>{y}</option>
+            ))}
+            <option disabled>──────────</option>
+            <option value={FACULTY}>{FACULTY}</option>
+          </select>
+        </div>
 
         <div className={styles.inputGroup}>
           <GraduationCap size={20} className={styles.icon} />
@@ -250,7 +250,7 @@ export default function SignupForm() {
       {/* Program / Course — SMI gets the full structured picker; any other
           department just needs a plain course field, no program step. */}
 
-      {isSMI && (
+      {isSMI && !isFaculty && (
         <div className={styles.row}>
           <div className={styles.inputGroup}>
             <GraduationCap size={20} className={styles.icon} />
@@ -272,38 +272,34 @@ export default function SignupForm() {
               ))}
               <option disabled>──────────</option>
               <option value="PhD">PhD</option>
-              <option disabled>──────────</option>
-              <option value={FACULTY}>{FACULTY}</option>
             </select>
           </div>
 
-          {!isFaculty && (
-            <div className={styles.inputGroup}>
-              <BookOpen size={20} className={styles.icon} />
+          <div className={styles.inputGroup}>
+            <BookOpen size={20} className={styles.icon} />
 
-              {hasStructuredCourses ? (
-                <select value={course} onChange={handleCourseSelectChange} required>
-                  <option value="" disabled>
-                    Course
+            {hasStructuredCourses ? (
+              <select value={course} onChange={handleCourseSelectChange} required>
+                <option value="" disabled>
+                  Course
+                </option>
+                {(program === BDES ? BDES_COURSES : BFA_COURSES).map((c) => (
+                  <option key={c} value={c}>
+                    {c}
                   </option>
-                  {(program === BDES ? BDES_COURSES : BFA_COURSES).map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                  <option value="Other">Other</option>
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  placeholder="Course"
-                  value={course}
-                  onChange={(e) => setCourse(e.target.value)}
-                  required
-                />
-              )}
-            </div>
-          )}
+                ))}
+                <option value="Other">Other</option>
+              </select>
+            ) : (
+              <input
+                type="text"
+                placeholder="Course"
+                value={course}
+                onChange={(e) => setCourse(e.target.value)}
+                required
+              />
+            )}
+          </div>
         </div>
       )}
 
@@ -323,7 +319,7 @@ export default function SignupForm() {
         </div>
       )}
 
-      {!isSMI && institution !== "" && (
+      {!isSMI && institution !== "" && !isFaculty && (
         <div className={styles.rowFull}>
           <div className={styles.inputGroup}>
             <BookOpen size={20} className={styles.icon} />
