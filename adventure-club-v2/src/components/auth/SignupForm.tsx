@@ -20,6 +20,7 @@ import {
   OTHER_DEPARTMENTS,
   BDES,
   BFA,
+  FACULTY,
   SMI_UNDERGRAD_PROGRAMS,
   SMI_POSTGRAD_PROGRAMS,
   BDES_COURSES,
@@ -50,6 +51,7 @@ export default function SignupForm() {
   const [courseOther, setCourseOther] = useState("");
 
   const isSMI = institution === SMI;
+  const isFaculty = program === FACULTY;
   const hasStructuredCourses = program === BDES || program === BFA;
 
   const handleChange = (
@@ -190,23 +192,25 @@ export default function SignupForm() {
       {/* Year / Department */}
 
       <div className={styles.row}>
-        <div className={styles.inputGroup}>
-          <GraduationCap size={20} className={styles.icon} />
+        {!isFaculty && (
+          <div className={styles.inputGroup}>
+            <GraduationCap size={20} className={styles.icon} />
 
-          <select
-            name="year"
-            value={formData.year}
-            onChange={handleChange}
-            required
-          >
-            <option value="" disabled>
-              Year
-            </option>
-            {YEARS.map((y) => (
-              <option key={y}>{y}</option>
-            ))}
-          </select>
-        </div>
+            <select
+              name="year"
+              value={formData.year}
+              onChange={handleChange}
+              required
+            >
+              <option value="" disabled>
+                Year
+              </option>
+              {YEARS.map((y) => (
+                <option key={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className={styles.inputGroup}>
           <GraduationCap size={20} className={styles.icon} />
@@ -268,34 +272,38 @@ export default function SignupForm() {
               ))}
               <option disabled>──────────</option>
               <option value="PhD">PhD</option>
+              <option disabled>──────────</option>
+              <option value={FACULTY}>{FACULTY}</option>
             </select>
           </div>
 
-          <div className={styles.inputGroup}>
-            <BookOpen size={20} className={styles.icon} />
+          {!isFaculty && (
+            <div className={styles.inputGroup}>
+              <BookOpen size={20} className={styles.icon} />
 
-            {hasStructuredCourses ? (
-              <select value={course} onChange={handleCourseSelectChange} required>
-                <option value="" disabled>
-                  Course
-                </option>
-                {(program === BDES ? BDES_COURSES : BFA_COURSES).map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+              {hasStructuredCourses ? (
+                <select value={course} onChange={handleCourseSelectChange} required>
+                  <option value="" disabled>
+                    Course
                   </option>
-                ))}
-                <option value="Other">Other</option>
-              </select>
-            ) : (
-              <input
-                type="text"
-                placeholder="Course"
-                value={course}
-                onChange={(e) => setCourse(e.target.value)}
-                required
-              />
-            )}
-          </div>
+                  {(program === BDES ? BDES_COURSES : BFA_COURSES).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                  <option value="Other">Other</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Course"
+                  value={course}
+                  onChange={(e) => setCourse(e.target.value)}
+                  required
+                />
+              )}
+            </div>
+          )}
         </div>
       )}
 

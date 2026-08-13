@@ -38,3 +38,9 @@ export const BDES_COURSES = [
 export const BFA_COURSES = ["Contemporary Art Practice", "Digital Media Arts", "Film"];
 
 export const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
+
+// A faculty/staff sign-up picks this instead of a real program — they have
+// no course specialization or academic year, just an institution/department,
+// so both SignupForm and Profile skip those fields entirely once this is
+// selected.
+export const FACULTY = "Faculty";
