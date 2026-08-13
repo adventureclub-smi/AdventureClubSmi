@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { notifyAccountCreated } from "@/lib/notification-emails";
+import { FACULTY } from "@/lib/academic-options";
+
+const FACULTY_CLUB_ID_PREFIX = "ACF-";
 
 function isClubIdConflict(error: unknown): boolean {
   return (
@@ -61,11 +64,26 @@ export async function POST(req: Request) {
     // database's own uniqueness check on insert can: retry with the next
     // number whenever create() collides, so every request self-heals onto
     // a genuinely free ID no matter how many others raced it.
+    //
+    // Faculty accounts get their own "ACF-0001" sequence instead — no year
+    // code, and numbered against other faculty only, not the whole student
+    // roster, so it doesn't jump around or collide with student IDs.
+    const isFaculty = department === FACULTY;
+
     let user;
 
     for (let attempt = 0; ; attempt++) {
-      const totalUsers = await prisma.user.count();
-      const clubId = `AC${yearCode}-${String(totalUsers + 1 + attempt).padStart(4, "0")}`;
+      let clubId: string;
+
+      if (isFaculty) {
+        const totalFaculty = await prisma.user.count({
+          where: { clubId: { startsWith: FACULTY_CLUB_ID_PREFIX } },
+        });
+        clubId = `${FACULTY_CLUB_ID_PREFIX}${String(totalFaculty + 1 + attempt).padStart(4, "0")}`;
+      } else {
+        const totalUsers = await prisma.user.count();
+        clubId = `AC${yearCode}-${String(totalUsers + 1 + attempt).padStart(4, "0")}`;
+      }
 
       try {
         user = await prisma.user.create({
