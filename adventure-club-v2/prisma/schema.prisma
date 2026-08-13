@@ -55,6 +55,12 @@ model User {
   // opening every existing account up to email changes.
   emailLocked Boolean @default(true)
 
+  // Set the moment a student actually saves a different email while
+  // unlocked — drives the admin notification ("they changed it, come
+  // review") and clears back to null the moment an admin re-locks, so the
+  // notification resolves itself exactly when the workflow says it should.
+  emailChangedAt DateTime?
+
   phoneNumber String @unique
 
   institution String

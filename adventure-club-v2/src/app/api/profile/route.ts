@@ -67,13 +67,23 @@ export async function PUT(req: Request) {
     // trusted from the request body, since that's client-controlled.
     const existing = await prisma.user.findUnique({
       where: { id: payload.id },
-      select: { emailLocked: true },
+      select: { email: true, emailLocked: true },
     });
 
-    const emailUpdate =
-      existing && !existing.emailLocked && typeof body.email === "string" && body.email.trim()
-        ? { email: body.email.trim() }
-        : {};
+    const nextEmail =
+      existing && !existing.emailLocked && typeof body.email === "string"
+        ? body.email.trim()
+        : null;
+
+    // Only counts as an actual change (and only then flags it for the
+    // admin) if the value is genuinely different — saving the rest of the
+    // profile while unlocked shouldn't re-trigger the notification every
+    // time if the email field itself was left untouched.
+    const emailActuallyChanged = !!nextEmail && nextEmail !== existing?.email;
+
+    const emailUpdate = nextEmail
+      ? { email: nextEmail, ...(emailActuallyChanged ? { emailChangedAt: new Date() } : {}) }
+      : {};
 
     const user = await prisma.user.update({
       where: {

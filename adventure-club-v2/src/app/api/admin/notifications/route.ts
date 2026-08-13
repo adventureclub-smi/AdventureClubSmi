@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 
 type NotificationItem = {
   id: string;
-  type: "waiting" | "payment_verification" | "deadline";
+  type: "waiting" | "payment_verification" | "deadline" | "email_changed";
   title: string;
   message: string;
   href: string;
@@ -21,7 +21,7 @@ export async function GET() {
   try {
     const in48h = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
-    const [waiting, pendingOffline, upcomingDeadlines, closingSoon] =
+    const [waiting, pendingOffline, upcomingDeadlines, closingSoon, emailChanges] =
       await Promise.all([
         prisma.registration.findMany({
           where: { status: "WAITING" },
@@ -50,6 +50,15 @@ export async function GET() {
           where: {
             registrationClosesAt: { lte: in48h, gte: new Date() },
           },
+          take: 10,
+        }),
+
+        // Self-resolving the same way the others do: this list is empty
+        // again the moment an admin re-locks the email (see the email-lock
+        // route), so there's no separate "dismiss" action needed.
+        prisma.user.findMany({
+          where: { emailLocked: false, emailChangedAt: { not: null } },
+          orderBy: { emailChangedAt: "desc" },
           take: 10,
         }),
       ]);
@@ -89,6 +98,15 @@ export async function GET() {
         message: `Registrations for ${t.title} close within 48 hours`,
         href: `/admin/treks/${t.id}/registrations`,
         createdAt: t.createdAt.toISOString(),
+      })),
+
+      ...emailChanges.map((u) => ({
+        id: `email-changed-${u.id}`,
+        type: "email_changed" as const,
+        title: "Student changed their email",
+        message: `${u.fullName} updated their email to ${u.email} — review and re-lock once confirmed`,
+        href: `/admin/members/${u.id}`,
+        createdAt: (u.emailChangedAt as Date).toISOString(),
       })),
     ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 

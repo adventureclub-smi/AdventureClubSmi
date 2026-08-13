@@ -53,6 +53,8 @@ export async function GET() {
         (user as any).clubRole || "Member",
 
       bannerImageUrl,
+
+      emailLocked: user.emailLocked,
     });
 
   } catch (error) {

@@ -29,7 +29,13 @@ export async function PUT(
 
   const user = await prisma.user.update({
     where: { id },
-    data: { emailLocked },
+    data: {
+      emailLocked,
+      // Re-locking is how an admin marks a pending email change as
+      // reviewed — clearing this is what makes the "student changed their
+      // email" notification resolve itself.
+      ...(emailLocked ? { emailChangedAt: null } : {}),
+    },
   });
 
   return NextResponse.json({ emailLocked: user.emailLocked });

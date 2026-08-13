@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Compass,
   Wallet,
@@ -10,6 +11,7 @@ import {
   Mountain,
   Bell,
   Images,
+  MailOpen,
 } from "lucide-react";
 
 import HeroSection from "./HeroSection";
@@ -29,6 +31,7 @@ type HeroData = {
   membership: string;
   role: string;
   bannerImageUrl: string | null;
+  emailLocked: boolean;
 };
 
 type NextTrekEntry = {
@@ -150,6 +153,19 @@ export default function Dashboard() {
           bannerImageUrl={hero.bannerImageUrl}
           tripCentreHref={tripCentreHref}
         />
+      )}
+
+      {hero && !hero.emailLocked && (
+        <div className={styles.emailUnlockedBanner}>
+          <MailOpen size={18} />
+          <div>
+            <strong>Your email has been unlocked</strong>
+            <p>An admin has unlocked your email — go to your profile to make the change.</p>
+          </div>
+          <Link href="/dashboard/profile" className={styles.emailUnlockedAction}>
+            Update Email
+          </Link>
+        </div>
       )}
 
       {selectedEntry && (
