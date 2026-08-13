@@ -35,6 +35,8 @@ type Trek = {
   tripCentrePublished?: boolean;
   type?: string;
   time?: string | null;
+  expectedReimbursementMin?: number | null;
+  expectedReimbursementMax?: number | null;
 };
 
 type Registration = RegistrationLike;
@@ -221,6 +223,16 @@ export default function TrekDetails({
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {(trek.expectedReimbursementMin != null || trek.expectedReimbursementMax != null) && (
+            <div className={styles.reimbursementNote}>
+              <Wallet size={14} />
+              <span>
+                Expected college reimbursement: ₹{trek.expectedReimbursementMin ?? "?"}–₹
+                {trek.expectedReimbursementMax ?? "?"}
+              </span>
             </div>
           )}
 
