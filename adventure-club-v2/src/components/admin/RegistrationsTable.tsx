@@ -6,12 +6,28 @@ import AddParticipantModal from "./AddParticipantModal";
 import RegistrationDrawer from "./RegistrationDrawer";
 import { isSmiInstitution } from "@/lib/institution";
 
+// Admins asked to see exactly when someone signed up (down to the second),
+// not just the date — useful for sorting out disputes about who registered
+// first when seats are limited.
+function formatRegisteredAt(value: string) {
+  return new Date(value).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
+
 type Registration = {
   id: string;
   registrationNumber: string;
   status: string;
   initialPaymentDeadline: string | null;
   remarks: string | null;
+  createdAt: string;
 
   paymentPortal: boolean;
 
@@ -314,6 +330,10 @@ export default function RegistrationsTable({
                           .phoneNumber
                       }
                     </p>
+
+                    <p className={styles.registeredAt}>
+                      Registered: {formatRegisteredAt(registration.createdAt)}
+                    </p>
                   </div>
                 </div>
 
@@ -404,6 +424,10 @@ export default function RegistrationsTable({
                           registration.user
                             .phoneNumber
                         }
+                      </p>
+
+                      <p className={styles.registeredAt}>
+                        Registered: {formatRegisteredAt(registration.createdAt)}
                       </p>
                     </div>
                   </div>
