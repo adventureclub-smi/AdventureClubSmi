@@ -9,6 +9,10 @@ export type TrekRegistrationWindow = {
   registrationClosesAt?: string | Date | null;
 };
 
+export type TrekCoreAccessWindow = TrekRegistrationWindow & {
+  registrationOpenForCoreOnly?: boolean;
+};
+
 // Shared with /api/dashboard/next-trek so the two places that need "is
 // registration open right now" (the hero journey card and My Treks' handful
 // of registered/register/didn't-attend split) can't drift out of sync.
@@ -28,6 +32,23 @@ export function registrationStateFor(
   }
 
   return "OPEN";
+}
+
+// The admin's "Open for Core Members" toggle layers on top of the normal
+// state rather than replacing it — a core-team viewer sees OPEN even while
+// the trek is still NOT_OPEN/CLOSED for everyone else. Takes an
+// already-computed boolean (rather than a clubRole + isCoreTeamRole call)
+// so this file doesn't need to depend on core-team-roles.ts.
+export function registrationStateForViewer(
+  trek: TrekCoreAccessWindow,
+  isCoreTeamMember: boolean,
+  now: Date = new Date()
+): RegistrationState {
+  if (trek.registrationOpenForCoreOnly && isCoreTeamMember) {
+    return "OPEN";
+  }
+
+  return registrationStateFor(trek, now);
 }
 
 export type RegistrationLike = {

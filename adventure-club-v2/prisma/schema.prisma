@@ -260,6 +260,13 @@ model Trek {
 
   registrationClosedManually Boolean @default(false)
 
+  // Early access for the core team — layers on top of the normal open/
+  // closed state instead of replacing it. A core-team member (any clubRole
+  // other than Member/Registered Member/Participant/Pending — see
+  // isCoreTeamRole) can register while this is true even though the trek
+  // is still NOT_OPEN/CLOSED for everyone else.
+  registrationOpenForCoreOnly Boolean @default(false)
+
   // Set once the "registrations are open" email has been sent to everyone
   // who clicked Notify Me for this trek — guards against re-sending on
   // every subsequent page view that piggybacks the open-detection check.

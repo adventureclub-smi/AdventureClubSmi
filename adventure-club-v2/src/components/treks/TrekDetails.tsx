@@ -12,6 +12,7 @@ import styles from "./TrekDetails.module.scss";
 import PaymentCountdown from "./PaymentCountdown";
 import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
 import { getJourneyAction, type RegistrationLike, type JourneyAction } from "@/lib/registration-journey";
+import { isCoreTeamRole } from "@/lib/core-team-roles";
 
 type Trek = {
   id: string;
@@ -30,6 +31,7 @@ type Trek = {
   registrationOpensAt?: string | Date | null;
   registrationOpenedManually?: boolean;
   registrationClosedManually?: boolean;
+  registrationOpenForCoreOnly?: boolean;
   tripCentrePublished?: boolean;
   type?: string;
   time?: string | null;
@@ -66,7 +68,7 @@ export default function TrekDetails({
   notifyRequested,
 }: {
   trek: Trek;
-  user: { id: string } | null;
+  user: { id: string; clubRole: string } | null;
   registration: Registration | null;
   notifyRequested: boolean;
 }) {
@@ -77,13 +79,22 @@ export default function TrekDetails({
   const [notifyLoading, setNotifyLoading] = useState(false);
 
   const { phase: countdownPhase } = useRegistrationPhase(trek.date, trek.registrationOpensAt);
+
+  // Any clubRole other than Member/Registered Member/Participant/Pending —
+  // matches the admin's "Open for Core Members" toggle.
+  const isCoreTeamMember = !!user && isCoreTeamRole(user.clubRole);
+
   // An admin's manual "Open Registrations" override (see the admin trek
   // panel) is meant to unconditionally beat the scheduled opensAt date —
   // registrationStateFor() already encodes that precedence for the
   // dashboard/homepage; mirroring just the "still waiting to open" half of
   // it here keeps this page in sync with that override instead of only
-  // ever looking at the countdown date.
-  const phase = trek.registrationOpenedManually ? "trekDay" : countdownPhase;
+  // ever looking at the countdown date. Core-only early access is the same
+  // idea, just scoped to core-team viewers instead of everyone.
+  const phase =
+    trek.registrationOpenedManually || (trek.registrationOpenForCoreOnly && isCoreTeamMember)
+      ? "trekDay"
+      : countdownPhase;
 
   const isWorkshop = trek.type === "WORKSHOP";
   const isFree = trek.price === 0;

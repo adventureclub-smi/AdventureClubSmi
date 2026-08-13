@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { optimizeImage } from "@/lib/media-optimize";
-import { registrationStateFor } from "@/lib/registration-journey";
+import { registrationStateForViewer } from "@/lib/registration-journey";
+import { isCoreTeamRole } from "@/lib/core-team-roles";
 
 export async function GET() {
   try {
@@ -21,6 +22,14 @@ export async function GET() {
     }
 
     const now = new Date();
+
+    // Needed for the "Open for Core Members" early-access check below — the
+    // JWT itself only carries id/email/role (admin vs member), not clubRole.
+    const requester = await prisma.user.findUnique({
+      where: { id: payload.id },
+      select: { clubRole: true },
+    });
+    const isCoreTeamMember = !!requester && isCoreTeamRole(requester.clubRole);
 
     // 1) Every trek the admin hasn't marked "Completed" yet shows here —
     // registered or not. Two treks can be live at once (one the student
@@ -71,7 +80,7 @@ export async function GET() {
         return {
           trek,
           registration: registrationByTrekId.get(trek.id) || null,
-          registrationState: registrationStateFor(trek, now),
+          registrationState: registrationStateForViewer(trek, isCoreTeamMember, now),
           serverTime: now,
           registrationOpensAt: trek.registrationOpensAt,
           registrationClosesAt: trek.registrationClosesAt,
@@ -102,7 +111,7 @@ export async function GET() {
           {
             trek,
             registration: latestRegistration,
-            registrationState: registrationStateFor(trek, now),
+            registrationState: registrationStateForViewer(trek, isCoreTeamMember, now),
             serverTime: now,
             registrationOpensAt: trek.registrationOpensAt,
             registrationClosesAt: trek.registrationClosesAt,
@@ -144,7 +153,7 @@ export async function GET() {
         {
           trek,
           registration: null,
-          registrationState: registrationStateFor(trek, now),
+          registrationState: registrationStateForViewer(trek, isCoreTeamMember, now),
           serverTime: now,
           registrationOpensAt: trek.registrationOpensAt,
           registrationClosesAt: trek.registrationClosesAt,

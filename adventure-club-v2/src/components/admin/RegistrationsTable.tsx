@@ -67,7 +67,7 @@ export default function RegistrationsTable({
   const [drawerOpen, setDrawerOpen] =
     useState(false);
 
-  type RegistrationMode = "auto" | "open" | "closed";
+  type RegistrationMode = "auto" | "open" | "closed" | "core";
 
   const [registrationMode, setRegistrationModeState] =
     useState<RegistrationMode>("auto");
@@ -89,6 +89,8 @@ export default function RegistrationsTable({
           ? "closed"
           : data.registrationOpenedManually
           ? "open"
+          : data.registrationOpenForCoreOnly
+          ? "core"
           : "auto"
       );
     } catch (error) {
@@ -102,7 +104,8 @@ export default function RegistrationsTable({
     setTogglingStatus(true);
 
     try {
-      const action = mode === "open" ? "open" : mode === "closed" ? "close" : "auto";
+      const action =
+        mode === "open" ? "open" : mode === "closed" ? "close" : mode === "core" ? "core" : "auto";
 
       const res = await fetch("/api/admin/treks/registration-status", {
         method: "POST",
@@ -226,6 +229,19 @@ export default function RegistrationsTable({
                 disabled={togglingStatus || registrationMode === "closed"}
               >
                 Close Registrations
+              </button>
+
+              <button
+                className={
+                  registrationMode === "core"
+                    ? styles.modeButtonActiveCore
+                    : styles.modeButton
+                }
+                onClick={() => setRegistrationMode("core")}
+                disabled={togglingStatus || registrationMode === "core"}
+                title="Only club roles other than Member, Registered Member, Participant, and Pending can register while this is active"
+              >
+                Open for Core Members
               </button>
             </div>
 
