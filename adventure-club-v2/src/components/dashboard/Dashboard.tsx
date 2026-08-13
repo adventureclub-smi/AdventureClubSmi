@@ -48,9 +48,6 @@ type NextTrekEntry = {
   registrationState?: "NOT_OPEN" | "OPEN" | "CLOSED";
 
   registrationOpensAt?: string | null;
-
-  notifyRequested?: boolean;
-
 };
 
 type MyRegistration = RegistrationLike & { trek: { id: string } };
@@ -182,7 +179,6 @@ export default function Dashboard() {
             registration={selectedEntry.registration}
             registrationState={selectedEntry.registrationState}
             registrationOpensAt={selectedEntry.registrationOpensAt}
-            notifyRequested={selectedEntry.notifyRequested}
           />
         </div>
       )}
