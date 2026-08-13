@@ -38,6 +38,7 @@ type Member = {
   course: string | null;
   year: string;
   membershipStatus: string;
+  emailLocked: boolean;
   clubRole: string;
   adminAccessLevel: string;
   bloodGroup: string | null;
@@ -198,6 +199,20 @@ export default function MemberProfile({
     }
   }
 
+  async function toggleEmailLocked() {
+    if (!user) return;
+
+    const nextLocked = !user.emailLocked;
+
+    const res = await fetch(`/api/admin/members/${userId}/email-lock`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emailLocked: nextLocked }),
+    });
+
+    if (res.ok) setUser({ ...user, emailLocked: nextLocked });
+  }
+
   async function toggleGovtVerified() {
     if (!user) return;
 
@@ -354,6 +369,36 @@ export default function MemberProfile({
               <Mail size={14} />
             </a>
           </p>
+
+          <div className={styles.govtStatusRow}>
+            {user.emailLocked ? (
+              <StatusBadge text="Email Locked" tone="neutral" />
+            ) : (
+              <StatusBadge text="Email Unlocked" tone="waiting" />
+            )}
+          </div>
+
+          <div className={styles.govtActions}>
+            <button className={styles.lockButton} onClick={toggleEmailLocked}>
+              {user.emailLocked ? (
+                <>
+                  <Unlock size={14} /> Unlock
+                </>
+              ) : (
+                <>
+                  <Lock size={14} /> Lock
+                </>
+              )}
+            </button>
+          </div>
+
+          {!user.emailLocked && (
+            <p>
+              This student can now change their own email from their profile
+              page — lock it again once they&apos;re done.
+            </p>
+          )}
+
           <p>
             <strong>Phone:</strong> {user.phoneNumber}
             <a

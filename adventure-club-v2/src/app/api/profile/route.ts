@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { verifyToken } from "@/lib/auth";
 
 export async function GET() {
@@ -61,6 +62,19 @@ export async function PUT(req: Request) {
     const body = await req.json();
     console.log("PROFILE BODY:", body);
 
+    // Email is locked by default and only editable once an admin explicitly
+    // unlocks it — checked against the student's own current DB row, never
+    // trusted from the request body, since that's client-controlled.
+    const existing = await prisma.user.findUnique({
+      where: { id: payload.id },
+      select: { emailLocked: true },
+    });
+
+    const emailUpdate =
+      existing && !existing.emailLocked && typeof body.email === "string" && body.email.trim()
+        ? { email: body.email.trim() }
+        : {};
+
     const user = await prisma.user.update({
       where: {
         id: payload.id,
@@ -68,6 +82,8 @@ export async function PUT(req: Request) {
 
       data: {
   fullName: body.fullName,
+
+  ...emailUpdate,
 
   phoneNumber: body.phoneNumber,
 
@@ -108,6 +124,17 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(user);
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002" &&
+      String((error.meta as { target?: unknown } | undefined)?.target ?? "").includes("email")
+    ) {
+      return NextResponse.json(
+        { message: "That email is already in use." },
+        { status: 400 }
+      );
+    }
+
     console.error(error);
 
     return NextResponse.json(
@@ -115,5 +142,5 @@ export async function PUT(req: Request) {
       { status: 500 }
     );
   }
-  
+
 }

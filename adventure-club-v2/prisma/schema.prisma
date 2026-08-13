@@ -48,6 +48,13 @@ model User {
 
   email String @unique
 
+  // A student can't edit their own email by default (guards against typos
+  // that would otherwise silently lock them out of their own inbox/notices)
+  // — an admin has to unlock it first, the student makes the correction,
+  // then the admin locks it again. Defaults true so this ships without
+  // opening every existing account up to email changes.
+  emailLocked Boolean @default(true)
+
   phoneNumber String @unique
 
   institution String

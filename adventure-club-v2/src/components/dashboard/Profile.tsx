@@ -26,6 +26,7 @@ const SMI_PROGRAMS = [...SMI_UNDERGRAD_PROGRAMS, ...SMI_POSTGRAD_PROGRAMS, "PhD"
 type UserProfile = {
   fullName: string;
   email: string;
+  emailLocked: boolean;
   phoneNumber: string;
   upiId: string;
   upiPhone: string;
@@ -46,6 +47,7 @@ type UserProfile = {
 const emptyProfile: UserProfile = {
   fullName: "",
   email: "",
+  emailLocked: true,
   phoneNumber: "",
   upiId: "",
   upiPhone: "",
@@ -361,7 +363,15 @@ export default function Profile() {
           <div className={styles.fields}>
             <div>
               <label>Email</label>
-              <input value={user.email} disabled />
+              <input
+                name="email"
+                value={user.email}
+                onChange={handleChange}
+                disabled={user.emailLocked}
+              />
+              {user.emailLocked && (
+                <small>Locked — ask an admin to unlock it if this needs changing.</small>
+              )}
             </div>
 
             <div>
