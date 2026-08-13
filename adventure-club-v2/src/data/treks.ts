@@ -42,11 +42,6 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
       isTest: false,
     },
     orderBy: { date: "asc" },
-    include: {
-      _count: {
-        select: { registrations: { where: { status: "APPROVED" } } },
-      },
-    },
   });
 
   return treks.map((trek) => ({
@@ -57,7 +52,10 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
     date: trek.date.toISOString(),
     price: trek.price,
     coverImage: optimizeImage(trek.coverImage) || "/images/default-trek.jpg",
-    seatsLeft: Math.max(trek.seats - trek._count.registrations, 0),
+    // Shown as-is on the public homepage rather than a live "spots left"
+    // count — registration is never actually blocked once seats fill, so a
+    // shrinking/"Full" number would just be a discouraging red herring.
+    seats: trek.seats,
     registrationOpensAt: trek.registrationOpensAt
       ? trek.registrationOpensAt.toISOString()
       : null,

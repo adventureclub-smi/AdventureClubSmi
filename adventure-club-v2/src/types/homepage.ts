@@ -141,7 +141,7 @@ export interface TrekSummary {
   date: string;
   price: number;
   coverImage: string;
-  seatsLeft: number;
+  seats: number;
   registrationOpensAt: string | null;
   type?: string;
 }

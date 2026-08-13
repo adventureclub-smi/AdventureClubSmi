@@ -44,13 +44,7 @@ export default function TrekTile({
           <span className={styles.difficulty}>
             {trek.type === "WORKSHOP" ? "Workshop" : trek.difficulty}
           </span>
-          <span
-            className={
-              trek.seatsLeft > 0 ? styles.availability : styles.full
-            }
-          >
-            {trek.seatsLeft > 0 ? `${trek.seatsLeft} left` : "Full"}
-          </span>
+          <span className={styles.availability}>{trek.seats} seats</span>
 
           <div className={styles.content}>
             <p className={styles.destination}>{trek.destination}</p>

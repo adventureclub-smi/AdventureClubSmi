@@ -105,13 +105,7 @@ export default function FeaturedTrekCard({
           <span className={styles.badge}>
             {trek.type === "WORKSHOP" ? "Workshop" : trek.difficulty}
           </span>
-          <span
-            className={
-              trek.seatsLeft > 0 ? styles.badge : styles.badgeFull
-            }
-          >
-            {trek.seatsLeft > 0 ? `${trek.seatsLeft} spots left` : "Full"}
-          </span>
+          <span className={styles.badge}>{trek.seats} seats</span>
 
           {journeyBadge && journeyBadge.text && (
             <StatusBadge text={journeyBadge.text} tone={journeyBadge.tone} />
