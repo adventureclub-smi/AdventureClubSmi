@@ -144,6 +144,10 @@ export default function NextTrekCard({
                 year: "numeric",
               })}
             </p>
+
+            <small className={styles.transportNote}>
+              Transportation from MAHE Gate 3 and forest permit included.
+            </small>
           </div>
 
           {badge.text && <StatusBadge text={badge.text} tone={badge.tone} />}

@@ -177,6 +177,10 @@ export default function TrekDetails({
             <p>{trek.destination}</p>
             <h1>{trek.title}</h1>
             <span>{new Date(trek.date).toLocaleDateString("en-IN")}</span>
+
+            <small className={styles.transportNote}>
+              Transportation from MAHE Gate 3 and forest permit included.
+            </small>
           </motion.div>
         </div>
       </section>

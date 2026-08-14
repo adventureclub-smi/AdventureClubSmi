@@ -60,6 +60,15 @@
   }
 }
 
+.transportNote {
+  display: block;
+  color: var(--color-text-muted) !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  font-size: 12px !important;
+  margin-top: 8px;
+}
+
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
