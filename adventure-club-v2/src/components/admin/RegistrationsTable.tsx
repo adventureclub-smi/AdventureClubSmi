@@ -7,6 +7,7 @@ import RegistrationDrawer from "./RegistrationDrawer";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import { getPaymentBadge } from "@/lib/registration-journey";
 import { isSmiInstitution } from "@/lib/institution";
+import { useCountdown } from "@/hooks/useCountdown";
 
 // Admins asked to see exactly when someone signed up (down to the second),
 // not just the date — useful for sorting out disputes about who registered
@@ -21,6 +22,24 @@ function formatRegisteredAt(value: string) {
     second: "2-digit",
     hour12: true,
   });
+}
+
+// Each approved-but-unpaid registration has its own initialPaymentDeadline
+// (set when it was approved), so this ticks down that specific person's own
+// remaining time rather than one shared countdown for the whole list.
+function PaymentDeadlineCountdown({ deadline }: { deadline: string }) {
+  const { days, hours, minutes, passed } = useCountdown(deadline);
+
+  if (passed) {
+    return <span className={styles.deadlinePassed}>Payment deadline passed</span>;
+  }
+
+  return (
+    <span className={styles.deadlineCountdown}>
+      {days > 0 && `${days}d `}
+      {hours}h {minutes}m left to pay
+    </span>
+  );
 }
 
 type Registration = {
@@ -418,7 +437,18 @@ export default function RegistrationsTable({
                   {registration.status === "APPROVED" &&
                     (() => {
                       const paymentBadge = getPaymentBadge({ ...registration, payments: [] });
-                      return <StatusBadge text={paymentBadge.text} tone={paymentBadge.tone} />;
+                      return (
+                        <>
+                          <StatusBadge text={paymentBadge.text} tone={paymentBadge.tone} />
+
+                          {paymentBadge.text === "Payment Pending" &&
+                            registration.initialPaymentDeadline && (
+                              <PaymentDeadlineCountdown
+                                deadline={registration.initialPaymentDeadline}
+                              />
+                            )}
+                        </>
+                      );
                     })()}
                 </div>
               </div>
@@ -523,7 +553,18 @@ export default function RegistrationsTable({
                     {registration.status === "APPROVED" &&
                       (() => {
                         const paymentBadge = getPaymentBadge({ ...registration, payments: [] });
-                        return <StatusBadge text={paymentBadge.text} tone={paymentBadge.tone} />;
+                        return (
+                          <>
+                            <StatusBadge text={paymentBadge.text} tone={paymentBadge.tone} />
+
+                            {paymentBadge.text === "Payment Pending" &&
+                              registration.initialPaymentDeadline && (
+                                <PaymentDeadlineCountdown
+                                  deadline={registration.initialPaymentDeadline}
+                                />
+                              )}
+                          </>
+                        );
                       })()}
                   </div>
                 </div>
