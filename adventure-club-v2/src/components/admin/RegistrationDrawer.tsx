@@ -12,6 +12,9 @@ type Registration = {
 
   paymentPortal: boolean;
 
+  initialPaymentPaid: boolean;
+  offlinePaymentVerified: boolean;
+
   user: {
     id: string;
     clubId: string;
@@ -44,6 +47,7 @@ export default function RegistrationDrawer({
   const [deadline, setDeadline] = useState("3");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState(false);
 
   useEffect(() => {
     if (!registration) return;
@@ -127,6 +131,28 @@ export default function RegistrationDrawer({
     alert("Something went wrong.");
   }
 }
+
+  async function resendWhatsappInvite() {
+    if (!registration) return;
+
+    setSendingInvite(true);
+
+    try {
+      const res = await fetch(
+        `/api/admin/registrations/${registration.id}/resend-whatsapp-invite`,
+        { method: "POST" }
+      );
+
+      const data = await res.json();
+
+      alert(data.message || "Something went wrong.");
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+    }
+
+    setSendingInvite(false);
+  }
 
   async function deleteRegistration() {
     if (!registration) return;
@@ -478,6 +504,28 @@ export default function RegistrationDrawer({
     </>
   )}
 </div>
+
+        {(registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
+          <div className={styles.card}>
+            <h3>WhatsApp Group Invite</h3>
+
+            <p>
+              Sends this student the trek&apos;s WhatsApp group link by email
+              (there&apos;s no way to add them to the group directly — they
+              have to join via the link themselves). Safe to click again if
+              they missed the first one, e.g. because the link wasn&apos;t
+              set on the trek yet when they were verified.
+            </p>
+
+            <button
+              className={styles.primaryButton}
+              onClick={resendWhatsappInvite}
+              disabled={sendingInvite}
+            >
+              {sendingInvite ? "Sending..." : "Resend WhatsApp Invite"}
+            </button>
+          </div>
+        )}
 
         {/* DANGER ZONE */}
 
