@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./RegistrationsTable.module.scss";
 import AddParticipantModal from "./AddParticipantModal";
 import RegistrationDrawer from "./RegistrationDrawer";
+import StatusBadge from "@/components/dashboard/shared/StatusBadge";
+import { getPaymentBadge } from "@/lib/registration-journey";
 import { isSmiInstitution } from "@/lib/institution";
 
 // Admins asked to see exactly when someone signed up (down to the second),
@@ -30,6 +32,20 @@ type Registration = {
   createdAt: string;
 
   paymentPortal: boolean;
+
+  // Payment/journey fields — only needed so getPaymentBadge() can compute
+  // the payment badge below; not otherwise rendered directly.
+  initialPaymentPaid: boolean;
+  initialPaymentDidNotPay?: boolean;
+  offlinePaymentCreated: boolean;
+  offlinePaymentVerified: boolean;
+  bondFormSubmitted: boolean;
+  attendanceMarked: boolean;
+  finalPaymentUnlocked: boolean;
+  finalPaymentPaid: boolean;
+  finalPaymentDidNotPay?: boolean;
+  finalPaymentPaidAtOnce?: boolean;
+  certificateIssued: boolean;
 
   user: {
     id: string;
@@ -398,6 +414,12 @@ export default function RegistrationsTable({
                   >
                     {registration.status}
                   </span>
+
+                  {registration.status === "APPROVED" &&
+                    (() => {
+                      const paymentBadge = getPaymentBadge({ ...registration, payments: [] });
+                      return <StatusBadge text={paymentBadge.text} tone={paymentBadge.tone} />;
+                    })()}
                 </div>
               </div>
             ))
@@ -497,6 +519,12 @@ export default function RegistrationsTable({
                         registration.status
                       }
                     </span>
+
+                    {registration.status === "APPROVED" &&
+                      (() => {
+                        const paymentBadge = getPaymentBadge({ ...registration, payments: [] });
+                        return <StatusBadge text={paymentBadge.text} tone={paymentBadge.tone} />;
+                      })()}
                   </div>
                 </div>
               )
