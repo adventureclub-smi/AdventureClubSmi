@@ -220,6 +220,12 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
             </button>
           </div>
 
+          <div className={styles.warning}>
+            <ShieldAlert size={16} /> If Google Pay, PhonePe, or Paytm
+            doesn&apos;t open properly or shows an error, please pay by
+            scanning the QR code above instead.
+          </div>
+
           <button className={styles.copy} onClick={() => copy(settings.upiId, "upi")}>
             {copied === "upi" ? <Check size={16} /> : <Copy size={16} />}
             {copied === "upi" ? "Copied!" : "Copy UPI ID"}
