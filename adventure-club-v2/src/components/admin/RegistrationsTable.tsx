@@ -74,6 +74,8 @@ export default function RegistrationsTable({
 
   const [togglingStatus, setTogglingStatus] = useState(false);
 
+  const [sendingReminder, setSendingReminder] = useState(false);
+
   useEffect(() => {
     fetchRegistrations();
     fetchTrekStatus();
@@ -95,6 +97,28 @@ export default function RegistrationsTable({
       );
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  // Emails everyone approved for this trek who still hasn't paid their
+  // initial payment (and hasn't already submitted offline proof that's
+  // just awaiting verification) — see the route for the exact definition.
+  async function sendPaymentReminder() {
+    setSendingReminder(true);
+
+    try {
+      const res = await fetch(`/api/admin/treks/${trekId}/remind-payment`, {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      alert(data.message || "Something went wrong.");
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+    } finally {
+      setSendingReminder(false);
     }
   }
 
@@ -244,6 +268,15 @@ export default function RegistrationsTable({
                 Open for Core Members
               </button>
             </div>
+
+            <button
+              className={styles.reminderButton}
+              onClick={sendPaymentReminder}
+              disabled={sendingReminder}
+              title="Emails everyone approved for this trek who hasn't paid their initial payment yet"
+            >
+              {sendingReminder ? "Sending..." : "Send Payment Reminder"}
+            </button>
 
             <button
               className={styles.addButton}

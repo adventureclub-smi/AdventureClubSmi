@@ -39,6 +39,27 @@
   background: #008862;
 }
 
+.reminderButton {
+  background: transparent;
+  color: #d5d5d5;
+  border: 1px solid #2d2d2d;
+  padding: 12px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.reminderButton:hover {
+  border-color: #00a073;
+  color: white;
+}
+
+.reminderButton:disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+
 .registrationModeGroup {
   display: flex;
   gap: 8px;
@@ -270,6 +291,7 @@
     flex: 1;
   }
 
+  .reminderButton,
   .addButton {
     width: 100%;
   }

@@ -133,6 +133,41 @@ async function sendBirthdayEmail(
   });
 }
 
+// ===== Admin-triggered "Send Payment Reminder" -> everyone approved but
+// still owing their initial payment for one trek =====
+// Deliberately takes the already-filtered registration list rather than
+// re-querying here — the admin route is the one place that knows the exact
+// "approved, not yet paid, no offline proof submitted" definition (matching
+// getJourneyAction's own "Pay Initial Payment" state), so this only handles
+// the sending.
+export async function notifyInitialPaymentReminders(
+  trek: Trek,
+  registrations: (Registration & { user: User | null })[]
+) {
+  const recipients = registrations.filter(
+    (registration): registration is Registration & { user: User } => !!registration.user
+  );
+
+  if (recipients.length === 0) return 0;
+
+  const url = `${getSiteUrl()}/student/payments`;
+
+  await sendBulkEmails(
+    recipients.map((registration) => ({
+      to: registration.user.email,
+      subject: `Reminder: Complete your initial payment for ${trek.title}`,
+      html: emailShell(`
+        <h2 style="color:#008862;">Don't miss your spot!</h2>
+        <p>Hi ${firstName(registration.user.fullName)}, your registration for <strong>${trek.title}</strong> has been approved, but we haven't received your initial payment yet.</p>
+        <p>Complete it soon to confirm your seat before it's given away.</p>
+        ${emailButton(`${url}/${registration.id}`, "Pay Initial Payment")}
+      `),
+    }))
+  );
+
+  return recipients.length;
+}
+
 // ===== Registration opens -> everyone who clicked Notify Me =====
 // Piggybacked on page visits (no cron in this project): called opportunistically
 // whenever a trek's page or the treks list is loaded. Cheap no-op in the
