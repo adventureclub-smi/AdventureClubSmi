@@ -27,6 +27,8 @@ export type PaymentRegistration = {
   offlinePaymentCreated: boolean;
   offlinePaymentVerified: boolean;
 
+  whatsappInviteSentAt: string | null;
+
   user: {
     fullName: string;
     clubId: string;
@@ -42,5 +44,6 @@ export type PaymentRegistration = {
   trek?: {
     installments?: number;
     isHistorical?: boolean;
+    whatsappGroupLink?: string | null;
   };
 };

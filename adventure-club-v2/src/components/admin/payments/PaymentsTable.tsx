@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, CheckCircle2, XCircle, Lock, Clock, Unlock, FlagTriangleRight } from "lucide-react";
+import { Search, CheckCircle2, XCircle, Lock, Clock, Unlock, FlagTriangleRight, MessageCircle } from "lucide-react";
 import styles from "./PaymentsTable.module.scss";
 import PaymentDrawer from "./PaymentDrawer";
 import type { PaymentRegistration } from "./types";
@@ -52,6 +52,7 @@ export default function PaymentsTable({ trekId }: Props) {
   const [unlockStatus, setUnlockStatus] = useState("");
   const [completingTrek, setCompletingTrek] = useState(false);
   const [completeStatus, setCompleteStatus] = useState("");
+  const [sendingInviteId, setSendingInviteId] = useState<string | null>(null);
 
   async function fetchPayments() {
     try {
@@ -102,6 +103,30 @@ export default function PaymentsTable({ trekId }: Props) {
       fetchPayments();
     } catch (err) {
       console.error(err);
+    }
+  }
+
+  async function sendWhatsappInvite(registrationId: string) {
+    setSendingInviteId(registrationId);
+
+    try {
+      const res = await fetch(`/api/admin/registrations/${registrationId}/resend-whatsapp-invite`, {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Failed to send WhatsApp invite.");
+        return;
+      }
+
+      fetchPayments();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    } finally {
+      setSendingInviteId(null);
     }
   }
 
@@ -436,6 +461,34 @@ export default function PaymentsTable({ trekId }: Props) {
                       {registration.bondFormSubmitted ? "Undo" : "Mark Submitted"}
                     </button>
                   </div>
+
+                  {(registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
+                    <div className={styles.infoCard}>
+                      <span>WhatsApp Invite</span>
+
+                      {registration.whatsappInviteSentAt ? (
+                        <strong className={styles.success}>
+                          <CheckCircle2 size={15} /> Sent
+                        </strong>
+                      ) : (
+                        <strong className={styles.warning}>
+                          <MessageCircle size={15} /> Not Sent
+                        </strong>
+                      )}
+
+                      <button
+                        className={styles.whatsappButton}
+                        disabled={sendingInviteId === registration.id}
+                        onClick={() => sendWhatsappInvite(registration.id)}
+                      >
+                        {sendingInviteId === registration.id
+                          ? "Sending..."
+                          : registration.whatsappInviteSentAt
+                          ? "Resend Invite"
+                          : "Send Invite"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
