@@ -38,6 +38,7 @@ export default function PaymentsTab({
 
         body: JSON.stringify({
           registrationId,
+          verified: true,
         }),
       }
     );
