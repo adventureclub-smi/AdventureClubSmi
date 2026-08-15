@@ -166,6 +166,16 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
             Scan the QR or pay using your favourite UPI app.
           </p>
 
+          <div className={styles.reminderNote}>
+            <AlertTriangle size={18} />
+            <span>
+              <strong>Don&apos;t forget:</strong> after paying, come back and
+              tap &ldquo;I&apos;ve Completed Payment&rdquo; below to upload
+              your screenshot. We can&apos;t confirm your payment until you
+              do.
+            </span>
+          </div>
+
           <div className={styles.amount}>₹{amount}</div>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -235,15 +245,6 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
             {copied === "note" ? <Check size={16} /> : <Copy size={16} />}
             {copied === "note" ? "Copied!" : "Copy Payment Note"}
           </button>
-
-          <div className={styles.reminderNote}>
-            <AlertTriangle size={18} />
-            <span>
-              <strong>Don&apos;t forget:</strong> after paying, tap the button
-              below and upload your payment screenshot. We can&apos;t confirm
-              your payment until you do.
-            </span>
-          </div>
 
           <a
             className={styles.done}
