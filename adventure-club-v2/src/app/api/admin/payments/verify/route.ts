@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PaymentStatus } from "@prisma/client";
 import { requireAdmin } from "@/lib/require-admin";
+import { notifyWhatsappGroupInvite } from "@/lib/notification-emails";
 
 export async function POST(req: NextRequest) {
   const admin = await requireAdmin();
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
     // decide when a registration is fully paid.
     const registration = await prisma.registration.findUnique({
       where: { id: registrationId },
-      select: { trek: { select: { installments: true } } },
+      include: { trek: true, user: true },
     });
 
     const isSingleInstallment = registration?.trek.installments === 1;
@@ -82,6 +83,26 @@ export async function POST(req: NextRequest) {
                 : {}),
             },
     });
+
+    // WhatsApp group invite — only for the initial payment, only when this
+    // verification actually just turned it on, only once per registration,
+    // and only if the trek even has a group link set. The atomic claim
+    // (updateMany matching whatsappInviteSentAt: null) guards against a
+    // double-send if this ever races.
+    if (paymentType !== "FINAL" && verified && registration?.trek.whatsappGroupLink && registration.user) {
+      const claimed = await prisma.registration.updateMany({
+        where: { id: registrationId, whatsappInviteSentAt: null },
+        data: { whatsappInviteSentAt: new Date() },
+      });
+
+      if (claimed.count > 0) {
+        try {
+          await notifyWhatsappGroupInvite(registration.user, registration.trek);
+        } catch (emailError) {
+          console.error("Failed to send WhatsApp group invite email:", emailError);
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,

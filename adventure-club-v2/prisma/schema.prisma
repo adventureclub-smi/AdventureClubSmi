@@ -373,6 +373,11 @@ model Registration {
   // mainly for historical trek records where there's no one left to chase.
   initialPaymentDidNotPay Boolean @default(false)
 
+  // Set the moment the trek's WhatsApp group invite email goes out — fires
+  // once, right when an admin verifies (or records) this student's initial
+  // payment. Guards against re-sending on a later undo/re-verify.
+  whatsappInviteSentAt DateTime?
+
   // ===== Bond Form =====
 
   bondFormSubmitted Boolean @default(false)

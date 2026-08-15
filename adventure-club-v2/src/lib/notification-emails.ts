@@ -133,6 +133,31 @@ async function sendBirthdayEmail(
   });
 }
 
+// ===== Initial payment verified -> that student, if the trek has a
+// WhatsApp group link set =====
+// There's no legitimate API to add a phone number to a WhatsApp group —
+// the Business Platform doesn't expose group-membership actions at all —
+// so the real mechanism is always "person joins via invite link". This is
+// that nudge, fired once right when an admin verifies (or records) the
+// student's initial payment.
+export async function notifyWhatsappGroupInvite(
+  user: { email: string; fullName: string },
+  trek: { title: string; whatsappGroupLink: string | null }
+) {
+  if (!trek.whatsappGroupLink) return;
+
+  await sendEmail({
+    to: user.email,
+    subject: `Join the WhatsApp group for ${trek.title}`,
+    html: emailShell(`
+      <h2 style="color:#008862;">You're in! 🎉</h2>
+      <p>Hi ${firstName(user.fullName)}, your initial payment for <strong>${trek.title}</strong> has been verified.</p>
+      <p>Join the trek's WhatsApp group for updates, logistics, and everything else leading up to the trip.</p>
+      ${emailButton(trek.whatsappGroupLink, "Join WhatsApp Group")}
+    `),
+  });
+}
+
 // ===== Admin-triggered "Send Payment Reminder" -> everyone approved but
 // still owing their initial payment for one trek =====
 // Deliberately takes the already-filtered registration list rather than

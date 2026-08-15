@@ -6,6 +6,7 @@ import {
   PaymentType,
 } from "@prisma/client";
 import { requireAdmin } from "@/lib/require-admin";
+import { notifyWhatsappGroupInvite } from "@/lib/notification-emails";
 
 export async function POST(req: NextRequest) {
   const admin = await requireAdmin();
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
         },
         include: {
           trek: true,
+          user: true,
         },
       });
 
@@ -121,6 +123,25 @@ export async function POST(req: NextRequest) {
         }),
   },
 });
+
+    // Same WhatsApp group invite as the online-verify route — this route
+    // marks the payment paid+verified immediately (an admin recording cash/
+    // bank transfer in person), so the trigger conditions are simpler: just
+    // "initial payment, trek has a link, not already sent".
+    if (type !== "FINAL" && registration.trek.whatsappGroupLink && registration.user) {
+      const claimed = await prisma.registration.updateMany({
+        where: { id: registrationId, whatsappInviteSentAt: null },
+        data: { whatsappInviteSentAt: new Date() },
+      });
+
+      if (claimed.count > 0) {
+        try {
+          await notifyWhatsappGroupInvite(registration.user, registration.trek);
+        } catch (emailError) {
+          console.error("Failed to send WhatsApp group invite email:", emailError);
+        }
+      }
+    }
 
     return NextResponse.json(
       payment

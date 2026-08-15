@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { MapPin, CalendarDays } from "lucide-react";
+import { MapPin, CalendarDays, MessageCircle } from "lucide-react";
 
 import JourneyTimeline from "./shared/JourneyTimeline";
 import StatusBadge from "./shared/StatusBadge";
@@ -27,6 +27,7 @@ type Trek = {
   difficulty: string;
   price: number;
   initialPayment: number;
+  whatsappGroupLink?: string | null;
 };
 
 type Props = {
@@ -103,6 +104,16 @@ export default function NextTrekCard({
         ? "NOT_OPEN"
         : "OPEN"
       : registrationState;
+
+  // The only legitimate way to get someone into a WhatsApp group is an
+  // invite link they tap themselves — there's no API to add a phone number
+  // directly. Shown once the initial payment is actually verified, matching
+  // exactly when the same link goes out by email (see the payments/verify
+  // and payments/offline routes).
+  const showWhatsappJoin =
+    !!registration &&
+    (registration.initialPaymentPaid || registration.offlinePaymentVerified) &&
+    !!trek.whatsappGroupLink;
 
   const badge = getJourneyBadge(registration, effectiveRegistrationState);
   const steps = getJourneySteps(registration, effectiveRegistrationState);
@@ -208,6 +219,17 @@ export default function NextTrekCard({
           <button className={`${styles.action} ${styles.disabled}`} disabled>
             {action.text}
           </button>
+        )}
+
+        {showWhatsappJoin && (
+          <a
+            href={trek.whatsappGroupLink!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.whatsappJoin}
+          >
+            <MessageCircle size={16} /> Join WhatsApp Group
+          </a>
         )}
       </div>
 

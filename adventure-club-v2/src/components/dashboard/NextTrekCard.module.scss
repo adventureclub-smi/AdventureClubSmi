@@ -201,6 +201,32 @@
   transition: 0.25s ease;
 }
 
+.whatsappJoin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 48px;
+  margin-top: 10px;
+  padding: 10px 16px;
+  border: 1px solid rgba(37, 211, 102, 0.35);
+  border-radius: 14px;
+
+  background: rgba(37, 211, 102, 0.12);
+  color: #25d366;
+
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+
+  transition: 0.25s ease;
+}
+
+.whatsappJoin:hover {
+  background: rgba(37, 211, 102, 0.2);
+}
+
 .register,
 .certificate {
   background: var(--color-accent);
