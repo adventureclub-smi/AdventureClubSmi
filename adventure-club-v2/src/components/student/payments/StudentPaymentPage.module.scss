@@ -196,6 +196,34 @@
   line-height: 1.5;
 }
 
+// Deliberately louder than .warning above — this is the single most common
+// support problem (students pay but never click through to upload proof,
+// so admins have no record of it), so it needs to be impossible to miss
+// right above the button that actually solves it.
+.reminderNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin-top: 20px;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1.5px solid rgba(249, 115, 22, 0.4);
+  color: #fb923c;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+
+  strong {
+    color: #ffedd5;
+  }
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 20px;

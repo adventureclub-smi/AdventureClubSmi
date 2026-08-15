@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { motion } from "framer-motion";
-import { Check, Copy, ShieldAlert, Smartphone } from "lucide-react";
+import { AlertTriangle, Check, Copy, ShieldAlert, Smartphone } from "lucide-react";
 
 import BackButton from "@/components/dashboard/shared/BackButton";
 import PaymentTimeline from "./PaymentTimeline";
@@ -235,6 +235,15 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
             {copied === "note" ? <Check size={16} /> : <Copy size={16} />}
             {copied === "note" ? "Copied!" : "Copy Payment Note"}
           </button>
+
+          <div className={styles.reminderNote}>
+            <AlertTriangle size={18} />
+            <span>
+              <strong>Don&apos;t forget:</strong> after paying, tap the button
+              below and upload your payment screenshot. We can&apos;t confirm
+              your payment until you do.
+            </span>
+          </div>
 
           <a
             className={styles.done}
