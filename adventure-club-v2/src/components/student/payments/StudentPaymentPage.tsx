@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { motion } from "framer-motion";
-import { AlertTriangle, Check, Copy, ShieldAlert, Smartphone } from "lucide-react";
+import { AlertTriangle, Check, Copy, ShieldAlert } from "lucide-react";
 
 import BackButton from "@/components/dashboard/shared/BackButton";
 import PaymentTimeline from "./PaymentTimeline";
@@ -125,27 +125,10 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
     registration.user?.fullName ?? registration.guestName
   }`;
 
-  const upiLink =
-    `upi://pay?pa=${settings.upiId}` +
-    `&pn=${encodeURIComponent(settings.receiverName)}` +
-    `&mc=8299` +
-    `&am=${amount}` +
-    `&cu=INR` +
-    `&tn=${encodeURIComponent(paymentNote)}`;
-
   function copy(value: string, which: "upi" | "note") {
     navigator.clipboard.writeText(value);
     setCopied(which);
     setTimeout(() => setCopied(null), 2000);
-  }
-
-  function fallbackUPI() {
-    window.location.href = upiLink;
-  }
-
-  function openApp(scheme: string) {
-    window.location.href = `${scheme}?${upiLink.replace("upi://pay?", "")}`;
-    setTimeout(fallbackUPI, 1200);
   }
 
   return (
@@ -163,7 +146,7 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
           </h1>
 
           <p className={styles.subtitle}>
-            Scan the QR or pay using your favourite UPI app.
+            Scan the QR code below with any UPI app to pay.
           </p>
 
           <div className={styles.reminderNote}>
@@ -214,26 +197,6 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
           <div className={styles.receiver}>
             <h3>Payment Note</h3>
             <p>{paymentNote}</p>
-          </div>
-
-          <div className={styles.buttons}>
-            <button className={styles.gpay} onClick={() => openApp("gpay://upi/pay")}>
-              <Smartphone size={18} /> Google Pay
-            </button>
-
-            <button className={styles.phonepe} onClick={() => openApp("phonepe://pay")}>
-              <Smartphone size={18} /> PhonePe
-            </button>
-
-            <button className={styles.paytm} onClick={() => openApp("paytmmp://pay")}>
-              <Smartphone size={18} /> Paytm
-            </button>
-          </div>
-
-          <div className={styles.warning}>
-            <ShieldAlert size={16} /> If Google Pay, PhonePe, or Paytm
-            doesn&apos;t open properly or shows an error, please pay by
-            scanning the QR code above instead.
           </div>
 
           <button className={styles.copy} onClick={() => copy(settings.upiId, "upi")}>

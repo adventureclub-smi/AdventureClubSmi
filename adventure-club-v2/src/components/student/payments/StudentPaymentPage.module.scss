@@ -82,16 +82,6 @@
   font-size: 15px;
 }
 
-.buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 25px;
-}
-
-.gpay,
-.phonepe,
-.paytm,
 .copy,
 .done {
   display: flex;
@@ -107,33 +97,6 @@
   font-weight: 700;
   color: white;
   transition: 0.25s;
-}
-
-.gpay {
-  background: #0f9d58;
-}
-
-.gpay:hover {
-  transform: translateY(-2px);
-  background: #0b8043;
-}
-
-.phonepe {
-  background: #5f259f;
-}
-
-.phonepe:hover {
-  transform: translateY(-2px);
-  background: #4d1e80;
-}
-
-.paytm {
-  background: #00baf2;
-}
-
-.paytm:hover {
-  transform: translateY(-2px);
-  background: #009fd1;
 }
 
 .copy {
