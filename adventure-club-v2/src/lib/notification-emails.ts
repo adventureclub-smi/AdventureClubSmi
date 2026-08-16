@@ -311,6 +311,16 @@ export async function notifyRegistrationStatus(registration: RegistrationWithUse
         <p>Please contact NAVIRA SMI for more details.</p>
       `),
     });
+  } else if (registration.status === "TIMED_OUT") {
+    await sendEmail({
+      to: user.email,
+      subject: `Registration update: ${trek.title}`,
+      html: emailShell(`
+        <h2 style="color:#dc2626;">Registration timed out</h2>
+        <p>Hi ${firstName(user.fullName)}, your registration for <strong>${trek.title}</strong> was denied as you didn't pay the initial payment in time.</p>
+        <p>Please contact NAVIRA SMI for more details.</p>
+      `),
+    });
   }
 }
 

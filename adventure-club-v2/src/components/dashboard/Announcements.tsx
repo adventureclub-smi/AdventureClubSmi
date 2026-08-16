@@ -33,7 +33,9 @@ export default function Announcements() {
         if (!res.ok || !active) return;
 
         const registrations: Registration[] = await res.json();
-        const relevant = registrations.filter((r) => r.status !== "REJECTED");
+        const relevant = registrations.filter(
+          (r) => r.status !== "REJECTED" && r.status !== "TIMED_OUT"
+        );
 
         const uniqueTreks = Array.from(
           new Map(relevant.map((r) => [r.trek.id, r.trek])).values()

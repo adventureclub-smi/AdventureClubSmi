@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export async function computeTrekFinance(trekId: string) {
   const [registrations, expenses, incomes, refundRegistrations] = await Promise.all([
     prisma.registration.findMany({
-      where: { trekId, status: { notIn: ["WAITING", "REJECTED", "WAITLIST"] } },
+      where: { trekId, status: { notIn: ["WAITING", "REJECTED", "WAITLIST", "TIMED_OUT"] } },
       include: {
         user: { select: { fullName: true, year: true, department: true } },
         payments: { orderBy: { createdAt: "desc" } },

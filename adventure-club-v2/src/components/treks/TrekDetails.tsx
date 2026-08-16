@@ -432,6 +432,19 @@ export default function TrekDetails({
             </>
           )}
 
+          {registration?.status === "TIMED_OUT" && (
+            <>
+              <div className={styles.badgeRow}>
+                <StatusBadge text="Registration Timed Out" tone="danger" />
+              </div>
+              <p className={styles.note}>
+                Your registration was denied as you didn&apos;t pay the
+                initial payment in time. Please contact NAVIRA for more
+                details.
+              </p>
+            </>
+          )}
+
           {registration?.status === "WAITLIST" && (
             <>
               <div className={styles.badgeRow}>

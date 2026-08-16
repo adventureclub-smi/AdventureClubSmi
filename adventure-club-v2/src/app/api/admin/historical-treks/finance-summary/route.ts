@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       treks.map(async (trek) => {
         const [registrations, expenses, incomes, refundRegistrations] = await Promise.all([
           prisma.registration.findMany({
-            where: { trekId: trek.id, status: { notIn: ["WAITING", "REJECTED", "WAITLIST"] } },
+            where: { trekId: trek.id, status: { notIn: ["WAITING", "REJECTED", "WAITLIST", "TIMED_OUT"] } },
             include: { payments: true },
           }),
 

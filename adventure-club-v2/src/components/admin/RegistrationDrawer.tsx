@@ -289,6 +289,21 @@ export default function RegistrationDrawer({
               </small>
             </div>
           </button>
+
+          <button
+            className={styles.timedOut}
+            onClick={() =>
+              setStatus("TIMED_OUT")
+            }
+          >
+            ⏱️
+            <div>
+              <strong>Timed Out</strong>
+              <small>
+                Didn&apos;t pay initial payment in time
+              </small>
+            </div>
+          </button>
         </div>
 
                 {/* STUDENT INFORMATION */}

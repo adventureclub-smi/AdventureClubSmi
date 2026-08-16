@@ -127,6 +127,11 @@
   color: #ef4444;
 }
 
+.timed_out {
+  background: rgba(225,29,72,.18);
+  color: #fb7185;
+}
+
 .registrationcomplete {
   background: rgba(99,102,241,.18);
   color: #818cf8;
@@ -181,6 +186,10 @@
 
 .reject {
   background: linear-gradient(135deg,#dc2626,#ef4444);
+}
+
+.timedOut {
+  background: linear-gradient(135deg,#9f1239,#e11d48);
 }
 
 /* CARD */

@@ -67,6 +67,7 @@ export default function Stats() {
           registrations.filter(
             (r) =>
               r.status !== "REJECTED" &&
+              r.status !== "TIMED_OUT" &&
               r.status !== "COMPLETED" &&
               new Date(r.trek.date).getTime() >= now
           ).length

@@ -24,6 +24,7 @@ const toneByStatus: Record<string, StatusTone> = {
   APPROVED: "approved",
   WAITLIST: "waitlist",
   REJECTED: "rejected",
+  TIMED_OUT: "rejected",
   COMPLETED: "completed",
   MISSED: "danger",
 };

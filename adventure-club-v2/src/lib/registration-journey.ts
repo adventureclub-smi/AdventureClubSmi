@@ -241,6 +241,8 @@ export function getJourneyBadge(
       return { text: "Waitlisted", tone: "waitlist" };
     case "REJECTED":
       return { text: "Rejected", tone: "rejected" };
+    case "TIMED_OUT":
+      return { text: "Registration Timed Out", tone: "rejected" };
     case "COMPLETED":
       // Tone "completed" renders as a muted gray (StatusBadge.module.scss),
       // which all but disappears over a trek cover photo — "success" is the

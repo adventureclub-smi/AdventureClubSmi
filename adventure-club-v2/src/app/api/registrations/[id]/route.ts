@@ -39,6 +39,7 @@ export async function PUT(
       Approved: RegistrationStatus.APPROVED,
       Waitlist: RegistrationStatus.WAITLIST,
       Rejected: RegistrationStatus.REJECTED,
+      "Timed Out": RegistrationStatus.TIMED_OUT,
       Completed: RegistrationStatus.COMPLETED,
       Missed: RegistrationStatus.MISSED,
 
@@ -46,6 +47,7 @@ export async function PUT(
       APPROVED: RegistrationStatus.APPROVED,
       WAITLIST: RegistrationStatus.WAITLIST,
       REJECTED: RegistrationStatus.REJECTED,
+      TIMED_OUT: RegistrationStatus.TIMED_OUT,
       COMPLETED: RegistrationStatus.COMPLETED,
       MISSED: RegistrationStatus.MISSED,
     };
