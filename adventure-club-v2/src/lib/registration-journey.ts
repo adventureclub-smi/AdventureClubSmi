@@ -285,6 +285,14 @@ export function getJourneyAction(
     return { text: "Waiting for Approval", href: null, variant: "disabled" };
   }
 
+  if (registration.status === "REJECTED") {
+    return { text: "Registration Rejected", href: null, variant: "disabled" };
+  }
+
+  if (registration.status === "TIMED_OUT") {
+    return { text: "Registration Timed Out", href: null, variant: "disabled" };
+  }
+
   const isSingleInstallment = registration.trek?.installments === 1;
 
   if (
