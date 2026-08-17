@@ -143,6 +143,10 @@ export interface TrekSummary {
   coverImage: string;
   seats: number;
   registrationOpensAt: string | null;
+  registrationClosesAt: string | null;
+  registrationOpenedManually: boolean;
+  registrationClosedManually: boolean;
+  registrationOpenForCoreOnly: boolean;
   type?: string;
 }
 

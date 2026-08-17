@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { requireAdmin } from "@/lib/require-admin";
+import { registrationStateForViewer } from "@/lib/registration-journey";
+import { isCoreTeamRole } from "@/lib/core-team-roles";
 
 export async function GET(req: Request) {
   const admin = await requireAdmin();
@@ -109,6 +111,24 @@ export async function POST(req: Request) {
         {
           status: 404,
         }
+      );
+    }
+
+    // The UI already hides the Register button once this isn't OPEN, but
+    // that's cosmetic only — without this check, a direct POST here could
+    // still create a registration while an admin has closed it (or before
+    // it's opened, or during a core-only window for a non-core visitor).
+    const registrationState = registrationStateForViewer(trek, isCoreTeamRole(user.clubRole));
+
+    if (registrationState !== "OPEN") {
+      return NextResponse.json(
+        {
+          message:
+            registrationState === "NOT_OPEN"
+              ? "Registrations haven't opened yet."
+              : "Registrations for this trek are closed.",
+        },
+        { status: 400 }
       );
     }
 

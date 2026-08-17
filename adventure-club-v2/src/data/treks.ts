@@ -59,6 +59,12 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
     registrationOpensAt: trek.registrationOpensAt
       ? trek.registrationOpensAt.toISOString()
       : null,
+    registrationClosesAt: trek.registrationClosesAt
+      ? trek.registrationClosesAt.toISOString()
+      : null,
+    registrationOpenedManually: trek.registrationOpenedManually,
+    registrationClosedManually: trek.registrationClosedManually,
+    registrationOpenForCoreOnly: trek.registrationOpenForCoreOnly,
     type: trek.type,
   }));
 }

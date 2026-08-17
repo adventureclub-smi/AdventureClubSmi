@@ -10,8 +10,12 @@ import { CalendarDays, Mountain, MapPin, Clock, Wallet } from "lucide-react";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./TrekDetails.module.scss";
 import PaymentCountdown from "./PaymentCountdown";
-import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
-import { getJourneyAction, type RegistrationLike, type JourneyAction } from "@/lib/registration-journey";
+import {
+  getJourneyAction,
+  registrationStateForViewer,
+  type RegistrationLike,
+  type JourneyAction,
+} from "@/lib/registration-journey";
 import { isCoreTeamRole } from "@/lib/core-team-roles";
 
 type Trek = {
@@ -80,23 +84,23 @@ export default function TrekDetails({
   const [notified, setNotified] = useState(notifyRequested);
   const [notifyLoading, setNotifyLoading] = useState(false);
 
-  const { phase: countdownPhase } = useRegistrationPhase(trek.date, trek.registrationOpensAt);
-
   // Any clubRole other than Member/Registered Member/Participant/Pending —
   // matches the admin's "Open for Core Members" toggle.
   const isCoreTeamMember = !!user && isCoreTeamRole(user.clubRole);
 
-  // An admin's manual "Open Registrations" override (see the admin trek
-  // panel) is meant to unconditionally beat the scheduled opensAt date —
-  // registrationStateFor() already encodes that precedence for the
-  // dashboard/homepage; mirroring just the "still waiting to open" half of
-  // it here keeps this page in sync with that override instead of only
-  // ever looking at the countdown date. Core-only early access is the same
-  // idea, just scoped to core-team viewers instead of everyone.
-  const phase =
-    trek.registrationOpenedManually || (trek.registrationOpenForCoreOnly && isCoreTeamMember)
-      ? "trekDay"
-      : countdownPhase;
+  // Same NOT_OPEN/OPEN/CLOSED precedence the dashboard/homepage use — a
+  // manual "Close Registrations" override must beat the countdown dates
+  // here too, otherwise this page keeps offering Register Now (and even
+  // lets the registration POST succeed) after an admin has closed it.
+  const registrationState = registrationStateForViewer(
+    {
+      ...trek,
+      registrationOpenedManually: !!trek.registrationOpenedManually,
+      registrationClosedManually: !!trek.registrationClosedManually,
+      registrationOpenForCoreOnly: !!trek.registrationOpenForCoreOnly,
+    },
+    isCoreTeamMember
+  );
 
   const isWorkshop = trek.type === "WORKSHOP";
   const isFree = trek.price === 0;
@@ -285,7 +289,7 @@ export default function TrekDetails({
 
           {status && <p className={styles.status}>{status}</p>}
 
-          {!registration && phase === "opensIn" && (
+          {!registration && registrationState === "NOT_OPEN" && (
             <>
               {trek.registrationOpensAt && (
                 <PaymentCountdown
@@ -327,7 +331,18 @@ export default function TrekDetails({
             </>
           )}
 
-          {!user && phase !== "opensIn" && (
+          {!registration && registrationState === "CLOSED" && (
+            <>
+              <div className={styles.badgeRow}>
+                <StatusBadge text="Registrations Closed" tone="danger" />
+              </div>
+              <p className={styles.note}>
+                Registrations for this trek are currently closed.
+              </p>
+            </>
+          )}
+
+          {!user && registrationState === "OPEN" && (
             <>
               {trek.registrationClosesAt && (
                 <PaymentCountdown
@@ -346,7 +361,7 @@ export default function TrekDetails({
             </>
           )}
 
-          {user && !registration && phase !== "opensIn" && (
+          {user && !registration && registrationState === "OPEN" && (
             <>
               {trek.registrationClosesAt && (
                 <PaymentCountdown

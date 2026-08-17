@@ -8,7 +8,7 @@ import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
 import { useTilt } from "@/hooks/useTilt";
-import { getJourneyAction, getJourneyBadge } from "@/lib/registration-journey";
+import { getJourneyAction, getJourneyBadge, registrationStateFor } from "@/lib/registration-journey";
 import type { MyRegistrationSummary } from "@/data/treks";
 import type { TrekSummary } from "@/types/homepage";
 import styles from "./FeaturedTrekCard.module.scss";
@@ -58,6 +58,13 @@ export default function FeaturedTrekCard({
     trek.date,
     trek.registrationOpensAt
   );
+
+  // This card is shared, ISR-cached markup — it can't know a specific
+  // visitor's core-team role, so it uses the plain (non-viewer) state here.
+  // That's a safe default: it only differs from the viewer-aware version
+  // while "Open for Core Members" is active, and always correctly reflects
+  // an admin's manual open/close override either way.
+  const registrationState = registrationStateFor(trek);
 
   // Once the visitor is actually registered for this trek, the button (and
   // status) should reflect their real progress — Waiting Approval, Pay
@@ -122,6 +129,8 @@ export default function FeaturedTrekCard({
           ) : (
             <span className={styles.buttonDisabled}>{journeyAction.text}</span>
           )
+        ) : registrationState === "CLOSED" ? (
+          <span className={styles.buttonDisabled}>Registrations Closed</span>
         ) : phase === "opensIn" ? (
           // Sends students to their dashboard while they wait — logging in
           // now means they're already signed in the moment registration
