@@ -78,11 +78,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const { trekId } = await req.json();
+    const { trekId, userId: targetUserId } = await req.json();
+
+    // AddParticipantModal (admin panel) sends a userId for the student being
+    // added on their behalf — a different flow from a student registering
+    // themselves, verified separately so a tampered request body can't just
+    // claim admin and register as/for someone else.
+    const admin = targetUserId ? await requireAdmin() : null;
+    const isAdminAdd = !!admin;
 
     const user = await prisma.user.findUnique({
       where: {
-        id: payload.id,
+        id: isAdminAdd ? targetUserId : payload.id,
       },
     });
 
@@ -118,18 +125,22 @@ export async function POST(req: Request) {
     // that's cosmetic only — without this check, a direct POST here could
     // still create a registration while an admin has closed it (or before
     // it's opened, or during a core-only window for a non-core visitor).
-    const registrationState = registrationStateForViewer(trek, isCoreTeamRole(user.clubRole));
+    // An admin manually adding someone via AddParticipantModal is meant to
+    // bypass this — that's the whole point of a manual add.
+    if (!isAdminAdd) {
+      const registrationState = registrationStateForViewer(trek, isCoreTeamRole(user.clubRole));
 
-    if (registrationState !== "OPEN") {
-      return NextResponse.json(
-        {
-          message:
-            registrationState === "NOT_OPEN"
-              ? "Registrations haven't opened yet."
-              : "Registrations for this trek are closed.",
-        },
-        { status: 400 }
-      );
+      if (registrationState !== "OPEN") {
+        return NextResponse.json(
+          {
+            message:
+              registrationState === "NOT_OPEN"
+                ? "Registrations haven't opened yet."
+                : "Registrations for this trek are closed.",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // This is the real "already registered" check — the only unique
