@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { timeOutOverdueRegistrationsIfDue } from "@/lib/notification-emails";
 
 export async function GET(
   req: NextRequest,
@@ -18,6 +19,12 @@ export async function GET(
 
   try {
     const { trekId } = await params;
+
+    try {
+      await timeOutOverdueRegistrationsIfDue();
+    } catch (error) {
+      console.error("Failed to process overdue-registration timeouts:", error);
+    }
 
     const trek = await prisma.trek.findUnique({
       where: { id: trekId },

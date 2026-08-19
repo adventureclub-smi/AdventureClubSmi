@@ -3,7 +3,11 @@ import { after } from "next/server";
 import type { RegistrationLike } from "@/lib/registration-journey";
 import type { TrekSummary, TrekMapPin, UpcomingTrekRoute } from "@/types/homepage";
 import { optimizeImage, optimizeVideo } from "@/lib/media-optimize";
-import { notifyRegistrationOpenedIfDue, notifyBirthdaysIfDue } from "@/lib/notification-emails";
+import {
+  notifyRegistrationOpenedIfDue,
+  notifyBirthdaysIfDue,
+  timeOutOverdueRegistrationsIfDue,
+} from "@/lib/notification-emails";
 
 export async function getUpcomingTreks(): Promise<TrekSummary[]> {
   // Piggybacks the "registrations just opened -> email Notify Me subscribers"
@@ -23,6 +27,14 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
       await notifyBirthdaysIfDue();
     } catch (error) {
       console.error("Failed to process birthday notifications:", error);
+    }
+  });
+
+  after(async () => {
+    try {
+      await timeOutOverdueRegistrationsIfDue();
+    } catch (error) {
+      console.error("Failed to process overdue-registration timeouts:", error);
     }
   });
 

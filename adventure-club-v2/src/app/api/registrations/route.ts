@@ -5,6 +5,7 @@ import { verifyToken } from "@/lib/auth";
 import { requireAdmin } from "@/lib/require-admin";
 import { registrationStateForViewer } from "@/lib/registration-journey";
 import { isCoreTeamRole } from "@/lib/core-team-roles";
+import { timeOutOverdueRegistrationsIfDue } from "@/lib/notification-emails";
 
 export async function GET(req: Request) {
   const admin = await requireAdmin();
@@ -20,6 +21,16 @@ export async function GET(req: Request) {
 
     if (!trekId) {
       return NextResponse.json([]);
+    }
+
+    // Awaited (not backgrounded) here, unlike the homepage's after()-based
+    // check — this route's whole job is returning the current list, so an
+    // admin needs to see any just-expired deadlines flip to TIMED_OUT on
+    // this exact load rather than one refresh later.
+    try {
+      await timeOutOverdueRegistrationsIfDue();
+    } catch (error) {
+      console.error("Failed to process overdue-registration timeouts:", error);
     }
 
     const registrations = await prisma.registration.findMany({

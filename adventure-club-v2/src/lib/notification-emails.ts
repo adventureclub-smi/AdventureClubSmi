@@ -324,6 +324,55 @@ export async function notifyRegistrationStatus(registration: RegistrationWithUse
   }
 }
 
+// ===== Approved-but-unpaid registrations whose payment deadline passed =====
+// Piggybacked on page visits (no cron in this project), the same way as
+// notifyRegistrationOpenedIfDue — flips APPROVED -> TIMED_OUT the moment
+// initialPaymentDeadline is in the past for someone who never paid (or is
+// mid-verification on an offline proof, which isn't "didn't pay" so that's
+// left alone), then sends the same email an admin manually setting this
+// status would trigger.
+export async function timeOutOverdueRegistrationsIfDue() {
+  const overdue = await prisma.registration.findMany({
+    where: {
+      status: "APPROVED",
+      initialPaymentPaid: false,
+      offlinePaymentCreated: false,
+      // Same not-null guard as registrationOpensAt above — MongoDB's `lte`
+      // would otherwise also match documents where the deadline was never set.
+      initialPaymentDeadline: { lte: new Date(), not: null },
+    },
+    select: { id: true },
+  });
+
+  for (const { id } of overdue) {
+    await timeOutRegistration(id);
+  }
+}
+
+async function timeOutRegistration(registrationId: string) {
+  // Atomic claim — same race-safety as notifyRegistrationOpenForTrek: if two
+  // page views race, only the first update actually matches.
+  const claimed = await prisma.registration.updateMany({
+    where: { id: registrationId, status: "APPROVED" },
+    data: { status: "TIMED_OUT" },
+  });
+
+  if (claimed.count === 0) return;
+
+  const registration = await prisma.registration.findUnique({
+    where: { id: registrationId },
+    include: { user: true, trek: true },
+  });
+
+  if (!registration) return;
+
+  try {
+    await notifyRegistrationStatus(registration);
+  } catch (error) {
+    console.error("Failed to send registration timed-out email:", error);
+  }
+}
+
 // ===== Final payment opens -> that student =====
 export async function notifyFinalPaymentOpen(registration: RegistrationWithUserAndTrek) {
   if (!registration.user) return;
