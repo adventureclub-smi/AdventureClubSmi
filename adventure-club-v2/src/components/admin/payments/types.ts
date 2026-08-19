@@ -34,6 +34,7 @@ export type PaymentRegistration = {
     fullName: string;
     clubId: string;
     email?: string;
+    phoneNumber?: string;
     upiId?: string | null;
     upiPhone?: string | null;
   } | null;

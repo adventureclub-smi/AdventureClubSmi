@@ -589,6 +589,10 @@ export default function RegistrationDrawer({
               {groupJoined ? "✅ In Group" : "⏳ Not in Group Yet"}
             </p>
 
+            <p className={styles.phoneHint}>
+              Phone: {registration.user.phoneNumber}
+            </p>
+
             <button
               className={groupJoined ? styles.secondaryButton : styles.primaryButton}
               onClick={toggleWhatsappGroup}

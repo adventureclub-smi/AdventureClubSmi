@@ -524,6 +524,10 @@ export default function PaymentsTable({ trekId }: Props) {
                         </strong>
                       )}
 
+                      {registration.user?.phoneNumber && (
+                        <p className={styles.phoneHint}>{registration.user.phoneNumber}</p>
+                      )}
+
                       <button
                         className={registration.whatsappGroupJoined ? styles.undoBond : styles.whatsappButton}
                         disabled={togglingGroupId === registration.id}
