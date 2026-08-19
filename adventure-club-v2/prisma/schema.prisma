@@ -379,6 +379,12 @@ model Registration {
   // payment. Guards against re-sending on a later undo/re-verify.
   whatsappInviteSentAt DateTime?
 
+  // There's no API to check WhatsApp group membership — an admin has to
+  // open the group on their phone and cross-check the member list by eye,
+  // then flip this manually. Purely a bookkeeping flag, independent of
+  // whether the invite email itself was ever sent.
+  whatsappGroupJoined Boolean @default(false)
+
   // ===== Bond Form =====
 
   bondFormSubmitted Boolean @default(false)

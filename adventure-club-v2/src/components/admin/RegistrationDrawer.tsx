@@ -14,6 +14,7 @@ type Registration = {
 
   initialPaymentPaid: boolean;
   offlinePaymentVerified: boolean;
+  whatsappGroupJoined: boolean;
 
   user: {
     id: string;
@@ -48,12 +49,15 @@ export default function RegistrationDrawer({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [togglingGroup, setTogglingGroup] = useState(false);
+  const [groupJoined, setGroupJoined] = useState(false);
 
   useEffect(() => {
     if (!registration) return;
 
     setStatus(registration.status);
     setRemarks(registration.remarks || "");
+    setGroupJoined(registration.whatsappGroupJoined);
   }, [registration]);
 
  async function saveChanges() {
@@ -152,6 +156,35 @@ export default function RegistrationDrawer({
     }
 
     setSendingInvite(false);
+  }
+
+  async function toggleWhatsappGroup() {
+    if (!registration) return;
+
+    const next = !groupJoined;
+
+    setTogglingGroup(true);
+    setGroupJoined(next); // optimistic — this drawer holds its own snapshot,
+    // so it won't otherwise pick up onRefresh()'s updated list data
+
+    try {
+      await fetch(
+        `/api/admin/registrations/${registration.id}/whatsapp-group-joined`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ joined: next }),
+        }
+      );
+
+      onRefresh();
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+      setGroupJoined(!next);
+    }
+
+    setTogglingGroup(false);
   }
 
   async function deleteRegistration() {
@@ -538,6 +571,34 @@ export default function RegistrationDrawer({
               disabled={sendingInvite}
             >
               {sendingInvite ? "Sending..." : "Resend WhatsApp Invite"}
+            </button>
+          </div>
+        )}
+
+        {(registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
+          <div className={styles.card}>
+            <h3>WhatsApp Group Status</h3>
+
+            <p>
+              There&apos;s no way to check group membership automatically —
+              open the group on your phone, cross-check the member list, and
+              mark it here.
+            </p>
+
+            <p className={groupJoined ? styles.groupJoined : styles.groupNotJoined}>
+              {groupJoined ? "✅ In Group" : "⏳ Not in Group Yet"}
+            </p>
+
+            <button
+              className={groupJoined ? styles.secondaryButton : styles.primaryButton}
+              onClick={toggleWhatsappGroup}
+              disabled={togglingGroup}
+            >
+              {togglingGroup
+                ? "Updating..."
+                : groupJoined
+                ? "Mark Not in Group"
+                : "Mark In Group"}
             </button>
           </div>
         )}

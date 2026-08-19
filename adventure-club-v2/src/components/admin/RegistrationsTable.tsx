@@ -51,6 +51,7 @@ type Registration = {
   createdAt: string;
 
   paymentPortal: boolean;
+  whatsappGroupJoined: boolean;
 
   // Payment/journey fields — only needed so getPaymentBadge() can compute
   // the payment badge below; not otherwise rendered directly.

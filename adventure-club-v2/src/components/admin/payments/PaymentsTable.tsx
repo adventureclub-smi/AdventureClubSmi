@@ -53,6 +53,7 @@ export default function PaymentsTable({ trekId }: Props) {
   const [completingTrek, setCompletingTrek] = useState(false);
   const [completeStatus, setCompleteStatus] = useState("");
   const [sendingInviteId, setSendingInviteId] = useState<string | null>(null);
+  const [togglingGroupId, setTogglingGroupId] = useState<string | null>(null);
 
   async function fetchPayments() {
     try {
@@ -127,6 +128,25 @@ export default function PaymentsTable({ trekId }: Props) {
       alert("Something went wrong.");
     } finally {
       setSendingInviteId(null);
+    }
+  }
+
+  async function toggleWhatsappGroup(registrationId: string, current: boolean) {
+    setTogglingGroupId(registrationId);
+
+    try {
+      await fetch(`/api/admin/registrations/${registrationId}/whatsapp-group-joined`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ joined: !current }),
+      });
+
+      fetchPayments();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    } finally {
+      setTogglingGroupId(null);
     }
   }
 
@@ -486,6 +506,36 @@ export default function PaymentsTable({ trekId }: Props) {
                           : registration.whatsappInviteSentAt
                           ? "Resend Invite"
                           : "Send Invite"}
+                      </button>
+                    </div>
+                  )}
+
+                  {(registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
+                    <div className={styles.infoCard}>
+                      <span>WhatsApp Group</span>
+
+                      {registration.whatsappGroupJoined ? (
+                        <strong className={styles.success}>
+                          <CheckCircle2 size={15} /> In Group
+                        </strong>
+                      ) : (
+                        <strong className={styles.warning}>
+                          <XCircle size={15} /> Not in Group Yet
+                        </strong>
+                      )}
+
+                      <button
+                        className={registration.whatsappGroupJoined ? styles.undoBond : styles.whatsappButton}
+                        disabled={togglingGroupId === registration.id}
+                        onClick={() =>
+                          toggleWhatsappGroup(registration.id, registration.whatsappGroupJoined)
+                        }
+                      >
+                        {togglingGroupId === registration.id
+                          ? "Updating..."
+                          : registration.whatsappGroupJoined
+                          ? "Undo"
+                          : "Mark In Group"}
                       </button>
                     </div>
                   )}

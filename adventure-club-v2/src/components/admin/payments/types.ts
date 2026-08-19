@@ -28,6 +28,7 @@ export type PaymentRegistration = {
   offlinePaymentVerified: boolean;
 
   whatsappInviteSentAt: string | null;
+  whatsappGroupJoined: boolean;
 
   user: {
     fullName: string;
