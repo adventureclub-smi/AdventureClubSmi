@@ -227,10 +227,12 @@ export default function PaymentsTable({ trekId }: Props) {
     const bySearchAndFilter = registrations.filter((registration) => {
       const name = registration.user?.fullName ?? registration.guestName ?? "";
       const clubId = registration.user?.clubId ?? "";
+      const phone = registration.user?.phoneNumber ?? "";
 
       const matchesSearch =
         name.toLowerCase().includes(search.toLowerCase()) ||
-        clubId.toLowerCase().includes(search.toLowerCase());
+        clubId.toLowerCase().includes(search.toLowerCase()) ||
+        phone.includes(search);
 
       if (!matchesSearch) return false;
 
@@ -295,7 +297,7 @@ export default function PaymentsTable({ trekId }: Props) {
           <Search size={15} />
           <input
             type="text"
-            placeholder="Search participant..."
+            placeholder="Search by name / club ID / phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className={styles.search}
