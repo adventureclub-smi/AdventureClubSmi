@@ -1,0 +1,104 @@
+.section {
+  position: relative;
+  padding: 100px 24px 120px;
+  background: radial-gradient(circle at 50% 20%, rgba(0, 217, 163, 0.08), transparent 60%),
+    var(--color-midnight);
+  overflow: hidden;
+}
+
+.header {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.kicker {
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.08;
+  color: var(--color-text);
+
+  span {
+    color: var(--color-accent);
+  }
+}
+
+.header p {
+  margin-top: 16px;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.stage {
+  position: relative;
+  max-width: 1040px;
+  height: min(80vh, 680px);
+  margin: 0 auto;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  background: radial-gradient(circle at 50% 45%, rgba(0, 217, 163, 0.06), #0a0a0a 70%);
+  cursor: grab;
+}
+
+.stage:active {
+  cursor: grabbing;
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(17, 21, 18, 0.65);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(245, 245, 245, 0.1);
+
+  color: var(--color-text-muted);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .section {
+    padding: 70px 16px 90px;
+  }
+
+  .stage {
+    height: 70vh;
+    border-radius: 20px;
+  }
+}
+
+// Rendered by @react-three/drei's <Html> inside the canvas, so it's a plain
+// DOM node outside this module's scoping — needs an explicit :global escape.
+:global(.gallery-orbit-tooltip) {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(17, 21, 18, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 217, 163, 0.3);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
