@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GalleryPageHero from "@/components/gallery/GalleryPageHero";
+import GalleryScrollStory from "@/components/gallery/GalleryScrollStory";
 import GalleryMasonryGrid from "@/components/gallery/GalleryMasonryGrid";
 import TripPoll from "@/components/gallery/TripPoll";
 import { getGalleryPhotos } from "@/data/gallery-photos";
@@ -24,6 +25,7 @@ export default async function GalleryPage() {
     <>
       <Navbar />
       <GalleryPageHero content={heroContent} />
+      <GalleryScrollStory photos={photos} />
       <TripPoll />
       <GalleryMasonryGrid photos={photos} />
       <Footer socials={homepageContent.socials} />
