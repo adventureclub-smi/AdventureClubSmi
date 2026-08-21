@@ -27,9 +27,10 @@ export async function GET() {
     // JWT itself only carries id/email/role (admin vs member), not clubRole.
     const requester = await prisma.user.findUnique({
       where: { id: payload.id },
-      select: { clubRole: true },
+      select: { clubRole: true, year: true },
     });
     const isCoreTeamMember = !!requester && isCoreTeamRole(requester.clubRole);
+    const userYear = requester?.year ?? null;
 
     // 1) Every trek the admin hasn't marked "Completed" yet shows here —
     // registered or not. Two treks can be live at once (one the student
@@ -85,6 +86,7 @@ export async function GET() {
           registrationOpensAt: trek.registrationOpensAt,
           registrationClosesAt: trek.registrationClosesAt,
           notifyRequested: notifiedTrekIds.has(trek.id),
+          userYear,
         };
       });
 
@@ -115,6 +117,7 @@ export async function GET() {
             serverTime: now,
             registrationOpensAt: trek.registrationOpensAt,
             registrationClosesAt: trek.registrationClosesAt,
+            userYear,
           },
         ],
       });
@@ -158,6 +161,7 @@ export async function GET() {
           registrationOpensAt: trek.registrationOpensAt,
           registrationClosesAt: trek.registrationClosesAt,
           notifyRequested,
+          userYear,
         },
       ],
     });

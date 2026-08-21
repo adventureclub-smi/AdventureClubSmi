@@ -16,6 +16,7 @@ import {
   type RegistrationLike,
   type RegistrationState,
 } from "@/lib/registration-journey";
+import { isYearEligible } from "@/lib/year-eligibility";
 import styles from "./NextTrekCard.module.scss";
 
 type Trek = {
@@ -28,6 +29,7 @@ type Trek = {
   price: number;
   initialPayment: number;
   whatsappGroupLink?: string | null;
+  restrictedYears?: string[];
 };
 
 type Props = {
@@ -35,6 +37,7 @@ type Props = {
   registration: RegistrationLike | null;
   registrationState?: RegistrationState;
   registrationOpensAt?: string | null;
+  userYear?: string | null;
 };
 
 export default function NextTrekCard({
@@ -42,6 +45,7 @@ export default function NextTrekCard({
   registration,
   registrationState,
   registrationOpensAt,
+  userYear,
 }: Props) {
   // Same phase hook the homepage countdown uses — it ticks its own 1s
   // interval, so "Registrations Open In" flips live to "Trek Starts In"
@@ -115,7 +119,15 @@ export default function NextTrekCard({
     (registration.initialPaymentPaid || registration.offlinePaymentVerified) &&
     !!trek.whatsappGroupLink;
 
-  const badge = getJourneyBadge(registration, effectiveRegistrationState);
+  // Cosmetic-only, same as the rest of this card's state — the real gate is
+  // the registrations POST route. Only relevant pre-registration: once a
+  // registration exists the student already cleared this check.
+  const isYearRestricted =
+    !registration && !isYearEligible(userYear, trek.restrictedYears);
+
+  const badge = isYearRestricted
+    ? { text: "Not Open For Your Year", tone: "danger" as const }
+    : getJourneyBadge(registration, effectiveRegistrationState);
   const steps = getJourneySteps(registration, effectiveRegistrationState);
   const action = getJourneyAction(trek.id, registration, effectiveRegistrationState);
 
@@ -207,7 +219,7 @@ export default function NextTrekCard({
           </div>
         </div>
 
-        {!registration && effectiveRegistrationState === "NOT_OPEN" ? (
+        {!registration && (effectiveRegistrationState === "NOT_OPEN" || isYearRestricted) ? (
           <Link href={`/treks/${trek.id}`} className={`${styles.action} ${styles.register}`}>
             Open Trek
           </Link>

@@ -44,6 +44,7 @@ type NextTrekEntry = {
     price: number;
     initialPayment: number;
     coverImage?: string;
+    restrictedYears?: string[];
   };
 
   registration: RegistrationLike | null;
@@ -51,6 +52,8 @@ type NextTrekEntry = {
   registrationState?: "NOT_OPEN" | "OPEN" | "CLOSED";
 
   registrationOpensAt?: string | null;
+
+  userYear?: string | null;
 };
 
 type MyRegistration = RegistrationLike & { trek: { id: string } };
@@ -195,6 +198,7 @@ export default function Dashboard() {
             registration={selectedEntry.registration}
             registrationState={selectedEntry.registrationState}
             registrationOpensAt={selectedEntry.registrationOpensAt}
+            userYear={selectedEntry.userYear}
           />
         </div>
       )}
