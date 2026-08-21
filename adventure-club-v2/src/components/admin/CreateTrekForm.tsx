@@ -6,6 +6,7 @@ import { ImagePlus, X } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
+import { YEARS } from "@/lib/academic-options";
 import styles from "./CreateTrekForm.module.scss";
 
 type FormState = {
@@ -34,6 +35,7 @@ type FormState = {
   longitude: string;
   isTest: boolean;
   testVisibleToUserIds: string[];
+  restrictedYears: string[];
 };
 
 const emptyForm: FormState = {
@@ -62,6 +64,7 @@ const emptyForm: FormState = {
   longitude: "",
   isTest: false,
   testVisibleToUserIds: [],
+  restrictedYears: [],
 };
 
 // `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
@@ -139,6 +142,7 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           longitude: trek.longitude != null ? String(trek.longitude) : "",
           isTest: trek.isTest ?? false,
           testVisibleToUserIds: trek.testVisibleToUserIds ?? [],
+          restrictedYears: trek.restrictedYears ?? [],
         });
 
         if (trek.coverImage) setPreview(trek.coverImage);
@@ -165,6 +169,15 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
     }
 
     setForm({ ...form, [target.name]: target.value });
+  }
+
+  function toggleRestrictedYear(year: string) {
+    setForm((prev) => ({
+      ...prev,
+      restrictedYears: prev.restrictedYears.includes(year)
+        ? prev.restrictedYears.filter((y) => y !== year)
+        : [...prev.restrictedYears, year],
+    }));
   }
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -448,6 +461,30 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
                 onChange={handleChange}
               />
             </label>
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Registration Eligibility</div>
+          <p className={styles.sectionHint}>
+            Leave every year unchecked to keep this trek open to everyone.
+            Check one or more years to restrict registration to just those
+            students — the trek stays visible to everyone either way, and
+            everyone&apos;s own year is still shown as normal; this only
+            gates who&apos;s actually allowed to register.
+          </p>
+
+          <div className={styles.portfolioGrid}>
+            {YEARS.map((year) => (
+              <label key={year} className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={form.restrictedYears.includes(year)}
+                  onChange={() => toggleRestrictedYear(year)}
+                />
+                {year}
+              </label>
+            ))}
           </div>
         </div>
 

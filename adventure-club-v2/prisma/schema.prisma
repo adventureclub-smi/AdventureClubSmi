@@ -302,6 +302,14 @@ model Trek {
   isTest Boolean @default(false)
 
   testVisibleToUserIds String[] @default([])
+
+  // ===== Registration Eligibility =====
+  // Empty = open to every year, same "empty means unrestricted" convention
+  // as testVisibleToUserIds above. Values are the canonical strings from
+  // src/lib/academic-options.ts's YEARS array ("1st Year", "2nd Year", ...) —
+  // the trek itself and everyone's own year stay visible as normal either
+  // way; this only gates who's allowed to register.
+  restrictedYears String[] @default([])
 }
 
 // Admin-editable waypoints (trailhead, halfway point, summit, etc.) that

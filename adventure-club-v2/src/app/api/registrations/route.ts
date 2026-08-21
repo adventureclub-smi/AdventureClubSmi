@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { registrationStateForViewer } from "@/lib/registration-journey";
 import { isCoreTeamRole } from "@/lib/core-team-roles";
 import { timeOutOverdueRegistrationsIfDue } from "@/lib/notification-emails";
+import { isYearEligible } from "@/lib/year-eligibility";
 
 export async function GET(req: Request) {
   const admin = await requireAdmin();
@@ -148,6 +149,17 @@ export async function POST(req: Request) {
               registrationState === "NOT_OPEN"
                 ? "Registrations haven't opened yet."
                 : "Registrations for this trek are closed.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Same admin-bypass reasoning as the open/closed check above — a
+      // manual add via AddParticipantModal is meant to override this too.
+      if (!isYearEligible(user.year, trek.restrictedYears)) {
+        return NextResponse.json(
+          {
+            message: `This trek is only open to ${trek.restrictedYears.join(", ")} students.`,
           },
           { status: 400 }
         );

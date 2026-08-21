@@ -51,6 +51,9 @@ export async function POST(req: Request) {
       // Test Mode
       isTest,
       testVisibleToUserIds,
+
+      // Registration Eligibility
+      restrictedYears,
     } = body;
 
     const installmentCount = Number(installments) === 1 ? 1 : 2;
@@ -153,6 +156,12 @@ export async function POST(req: Request) {
         isTest: Boolean(isTest),
 
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
+
+        // -------------------------
+        // Registration Eligibility
+        // -------------------------
+
+        restrictedYears: Array.isArray(restrictedYears) ? restrictedYears : [],
       },
     });
 

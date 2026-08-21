@@ -17,6 +17,7 @@ import {
   type JourneyAction,
 } from "@/lib/registration-journey";
 import { isCoreTeamRole } from "@/lib/core-team-roles";
+import { isYearEligible } from "@/lib/year-eligibility";
 
 type Trek = {
   id: string;
@@ -41,6 +42,7 @@ type Trek = {
   time?: string | null;
   expectedReimbursementMin?: number | null;
   expectedReimbursementMax?: number | null;
+  restrictedYears?: string[];
 };
 
 type Registration = RegistrationLike;
@@ -74,7 +76,7 @@ export default function TrekDetails({
   notifyRequested,
 }: {
   trek: Trek;
-  user: { id: string; clubRole: string } | null;
+  user: { id: string; clubRole: string; year: string } | null;
   registration: Registration | null;
   notifyRequested: boolean;
 }) {
@@ -101,6 +103,11 @@ export default function TrekDetails({
     },
     isCoreTeamMember
   );
+
+  // Cosmetic-only, same as registrationState above — the real gate is the
+  // registrations POST route, this just avoids showing a Register button
+  // that would just come back with a rejection message.
+  const isYearRestricted = !!user && !isYearEligible(user.year, trek.restrictedYears);
 
   const isWorkshop = trek.type === "WORKSHOP";
   const isFree = trek.price === 0;
@@ -361,7 +368,19 @@ export default function TrekDetails({
             </>
           )}
 
-          {user && !registration && registrationState === "OPEN" && (
+          {user && !registration && registrationState === "OPEN" && isYearRestricted && (
+            <>
+              <div className={styles.badgeRow}>
+                <StatusBadge text="Not Open For Your Year" tone="danger" />
+              </div>
+              <p className={styles.note}>
+                This trek is only open to {trek.restrictedYears?.join(", ")}{" "}
+                students.
+              </p>
+            </>
+          )}
+
+          {user && !registration && registrationState === "OPEN" && !isYearRestricted && (
             <>
               {trek.registrationClosesAt && (
                 <PaymentCountdown

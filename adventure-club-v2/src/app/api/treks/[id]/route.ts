@@ -145,6 +145,9 @@ export async function PUT(
           body.isTest && Array.isArray(body.testVisibleToUserIds)
             ? body.testVisibleToUserIds
             : [],
+
+        // Registration Eligibility
+        restrictedYears: Array.isArray(body.restrictedYears) ? body.restrictedYears : [],
       },
     });
 
