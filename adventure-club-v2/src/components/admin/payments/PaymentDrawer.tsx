@@ -368,6 +368,8 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
                     : "🟢 Paid"
                   : registration.finalPaymentDidNotPay
                   ? "⚫ Didn't Pay"
+                  : finalPayment?.status === "PENDING"
+                  ? "🟡 Waiting Verification"
                   : registration.finalPaymentUnlocked
                   ? "🟡 Unlocked"
                   : "🔒 Locked"}

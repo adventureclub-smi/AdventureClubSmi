@@ -389,6 +389,7 @@ export default function PaymentsTable({ trekId }: Props) {
             const participant =
               registration.user?.fullName ?? registration.guestName ?? "Unknown Participant";
             const clubId = registration.user?.clubId ?? "-";
+            const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
 
             return (
               <div key={registration.id} className={styles.card}>
@@ -438,6 +439,10 @@ export default function PaymentsTable({ trekId }: Props) {
                       ) : registration.finalPaymentDidNotPay ? (
                         <strong className={styles.danger}>
                           <XCircle size={15} /> Didn&apos;t Pay
+                        </strong>
+                      ) : finalPayment?.status === "PENDING" ? (
+                        <strong className={styles.warning}>
+                          <Clock size={15} /> Waiting Verification
                         </strong>
                       ) : registration.finalPaymentUnlocked ? (
                         <strong className={styles.warning}>
