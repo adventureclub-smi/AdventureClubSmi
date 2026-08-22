@@ -109,6 +109,19 @@ export default function NextTrekCard({
         : "OPEN"
       : registrationState;
 
+  // getJourneyAction only ever returns one CTA, and once final payment
+  // unlocks it switches the primary button over to "Pay Final Payment" —
+  // dropping Trip Centre entirely even though it's still just as available.
+  // Shown as a second, standing link instead of folding it into that single
+  // action slot, the same way the WhatsApp join link below is additive
+  // rather than competing for the primary button.
+  const showTripCentre =
+    !!registration &&
+    (registration.initialPaymentPaid || registration.offlinePaymentVerified) &&
+    !!registration.trek?.tripCentrePublished &&
+    registration.status !== "COMPLETED" &&
+    registration.status !== "MISSED";
+
   // The only legitimate way to get someone into a WhatsApp group is an
   // invite link they tap themselves — there's no API to add a phone number
   // directly. Shown once the initial payment is actually verified, matching
@@ -231,6 +244,15 @@ export default function NextTrekCard({
           <button className={`${styles.action} ${styles.disabled}`} disabled>
             {action.text}
           </button>
+        )}
+
+        {showTripCentre && action.variant !== "tripCentre" && (
+          <Link
+            href={`/student/trip-centre/${registration!.id}`}
+            className={`${styles.action} ${styles.tripCentre}`}
+          >
+            Open Trip Centre
+          </Link>
         )}
 
         {showWhatsappJoin && (

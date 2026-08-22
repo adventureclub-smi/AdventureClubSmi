@@ -208,6 +208,23 @@ export default function TrekJourney({ registrationId }: { registrationId: string
                 </Link>
               )}
 
+              {/* getJourneyAction only ever returns one CTA, and once final
+                  payment unlocks it switches the primary action over to
+                  "Pay Final Payment" — dropping Trip Centre entirely even
+                  though it's still just as available. Shown as its own
+                  standing link instead, same as View Certificate below. */}
+              {registration.trek.tripCentrePublished &&
+                action.variant !== "tripCentre" &&
+                (registration.initialPaymentPaid || registration.offlinePaymentVerified) &&
+                !tripOver && (
+                  <Link
+                    href={`/student/trip-centre/${registration.id}`}
+                    className={styles.secondaryAction}
+                  >
+                    <Compass size={15} /> Open Trip Centre
+                  </Link>
+                )}
+
               {registration.certificateIssued && action.variant !== "certificate" && (
                 <Link href="/dashboard/certificates" className={styles.secondaryAction}>
                   <FileCheck size={15} /> View Certificate
