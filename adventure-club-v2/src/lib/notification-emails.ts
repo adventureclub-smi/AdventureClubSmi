@@ -385,7 +385,7 @@ export async function notifyFinalPaymentOpen(registration: RegistrationWithUserA
     html: emailShell(`
       <h2 style="color:#008862;">Final payment is now open</h2>
       <p>Hi ${firstName(user.fullName)}, the final payment for <strong>${trek.title}</strong> is now open.</p>
-      ${emailButton(`${getSiteUrl()}/student/payments/${registration.id}`, "Pay Final Payment")}
+      ${emailButton(`${getSiteUrl()}/student/payments/${registration.id}?type=FINAL`, "Pay Final Payment")}
     `),
   });
 }
