@@ -92,6 +92,11 @@
   color: #c5c5c5;
 
   line-height: 2;
+
+  // The admin's textarea lets them type blank lines between paragraphs, but
+  // HTML collapses runs of whitespace by default — without this, every line
+  // break they typed renders as one unbroken wall of text here.
+  white-space: pre-line;
 }
 
 .right {
