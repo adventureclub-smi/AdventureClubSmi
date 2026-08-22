@@ -201,6 +201,13 @@
   transition: 0.25s ease;
 }
 
+// Only matters once Trip Centre shows as a standing second action alongside
+// the primary one (e.g. final payment open) — a lone primary button is
+// unaffected since there's no preceding .action for this to match against.
+.action + .action {
+  margin-top: 10px;
+}
+
 .whatsappJoin {
   display: flex;
   align-items: center;
