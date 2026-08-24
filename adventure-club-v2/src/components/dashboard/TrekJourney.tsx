@@ -10,6 +10,7 @@ import BackButton from "./shared/BackButton";
 import StatusBadge from "./shared/StatusBadge";
 import JourneyTimeline from "./shared/JourneyTimeline";
 import ReimbursementStatus from "./shared/ReimbursementStatus";
+import TrekPhotosSection from "./TrekPhotosSection";
 import {
   getJourneyAction,
   getJourneyBadge,
@@ -231,6 +232,14 @@ export default function TrekJourney({ registrationId }: { registrationId: string
                 </Link>
               )}
             </div>
+          </section>
+
+          <section className={styles.card}>
+            <TrekPhotosSection
+              trekId={registration.trek.id}
+              registrationId={registration.id}
+              canUpload={!!registration.attendanceMarked}
+            />
           </section>
 
           {eligibleForReimbursement && (
