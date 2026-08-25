@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/hero/Hero";
 import AnnouncementTicker from "@/components/sections/AnnouncementTicker";
+import RecruitmentBanner from "@/components/shared/RecruitmentBanner";
 import AdventureStats from "@/components/sections/AdventureStats";
 import ThingsWeDo from "@/components/sections/ThingsWeDo";
 import ClubVibeCheck from "@/components/sections/ClubVibeCheck";
@@ -59,6 +60,7 @@ export default async function Home() {
         nextTrekRegistrationOpensAt={treks[0]?.registrationOpensAt ?? null}
       />
       <AnnouncementTicker message={content.hero.announcement} />
+      <RecruitmentBanner />
       <AdventureStats stats={content.stats} />
       <ThingsWeDo activities={content.activities} />
       <ClubVibeCheck songs={songs} />

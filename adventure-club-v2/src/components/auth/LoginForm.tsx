@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import styles from "./LoginForm.module.scss";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,7 +54,13 @@ export default function LoginForm() {
 
       alert("Login successful!");
 
-      router.push(data.user?.clubRole === "Admin" ? "/admin" : "/dashboard");
+      // Only ever honor an internal /dashboard path — anything else (a bare
+      // "/", a scheme-relative "//evil.com", an external URL) falls back to
+      // the normal role-based destination instead of trusting a query param.
+      const redirect = searchParams.get("redirect");
+      const safeRedirect = redirect?.startsWith("/dashboard") ? redirect : null;
+
+      router.push(safeRedirect || (data.user?.clubRole === "Admin" ? "/admin" : "/dashboard"));
       router.refresh();
     } catch (error) {
       console.error(error);

@@ -80,6 +80,8 @@ model User {
 
   registrations Registration[]
 
+  recruitmentApplication RecruitmentApplication?
+
   contactSubmissions ContactSubmission[]
 
   membershipStatus String @default("PENDING")
@@ -610,6 +612,61 @@ model Gallery {
   uploadedBy String?
 
   createdAt DateTime @default(now())
+}
+
+// ===== Recruitment =====
+
+// A single admin-managed row (there is always exactly one, same
+// singleton-row convention as GalleryHeroSettings below — this stack has no
+// dedicated one-row-table mechanism, so "the row" is found by just taking
+// the first one, same as elsewhere).
+model RecruitmentSettings {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  opensAt DateTime?
+
+  closesAt DateTime?
+
+  // Free-text options an admin types in each cycle (e.g. "Monday, 31st
+  // October") rather than a fixed enum — interview dates change every
+  // recruitment round.
+  interviewDayOptions String[] @default([])
+
+  // Same dry-run convention as Trek.isTest/testVisibleToUserIds — while true,
+  // the banner/form is hidden from everyone except admins and this whitelist,
+  // so a cycle can be rehearsed before it goes live to the whole club.
+  isTest Boolean @default(false)
+
+  testVisibleToUserIds String[] @default([])
+
+  updatedAt DateTime @updatedAt
+}
+
+model RecruitmentApplication {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @unique @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Portfolio/work experience — any combination of these three is fine,
+  // except applicants ranking Visual Media or Marketing need at least one
+  // (enforced in the API route, not here — Mongo has no CHECK constraints).
+  portfolioText String?
+
+  portfolioLink String?
+
+  portfolioFileUrl String?
+
+  whyJoin String
+
+  interviewDay String
+
+  // Ordered, index 0 = 1st preference. Max 3, enforced in the API route.
+  teamPreferences String[]
+
+  submittedAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 }
 
 model Song {

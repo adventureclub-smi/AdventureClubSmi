@@ -25,6 +25,7 @@ import {
   X,
   MessageCircle,
   Mail,
+  UserPlus,
 } from "lucide-react";
 
 import type { AdminAccessLevel } from "@/lib/admin-access";
@@ -37,6 +38,7 @@ const links = [
   { href: "/admin/treks", label: "Treks", icon: Mountain },
   { href: "/admin/members", label: "Students", icon: Users },
   { href: "/admin/registrations", label: "Registrations", icon: ClipboardList },
+  { href: "/admin/recruitment", label: "Recruitment", icon: UserPlus },
   { href: "/admin/payments", label: "Payments", icon: Wallet },
   { href: "/admin/attendance", label: "Attendance", icon: CheckSquare },
   { href: "/admin/certificates", label: "Certificates", icon: Award },

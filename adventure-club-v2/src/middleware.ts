@@ -4,9 +4,10 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("token");
 
   if (!token) {
-    return NextResponse.redirect(
-      new URL("/login", request.url)
-    );
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();

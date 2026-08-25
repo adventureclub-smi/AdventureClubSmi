@@ -18,6 +18,7 @@ import HeroSection from "./HeroSection";
 import NextTrekCard from "./NextTrekCard";
 import Stats from "./Stats";
 import QuickActionCard from "./shared/QuickActionCard";
+import RecruitmentBanner from "@/components/shared/RecruitmentBanner";
 import {
   getJourneyAction,
   type RegistrationLike,
@@ -170,6 +171,8 @@ export default function Dashboard() {
           </Link>
         </div>
       )}
+
+      <RecruitmentBanner variant="card" />
 
       {selectedEntry && (
         <div>
