@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
+import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
 import { HISTORICAL_SEASONS } from "@/lib/historical-seasons";
 import styles from "./TreksTable.module.scss";
 
@@ -258,6 +259,13 @@ export default function TreksTable() {
                   <Link href={`/admin/edit-trek/${trek.id}`} className={styles.edit}>
                     <Pencil size={14} />
                   </Link>
+
+                  <CopyLinkButton
+                    path={`/treks/${trek.id}`}
+                    label={`Copy link to ${trek.title}`}
+                    iconOnly
+                    className={styles.copy}
+                  />
 
                   <button className={styles.delete} onClick={() => deleteTrek(trek.id)}>
                     <Trash2 size={14} />

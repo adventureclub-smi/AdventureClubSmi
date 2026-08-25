@@ -241,7 +241,8 @@
 }
 
 .edit,
-.delete {
+.delete,
+.copy {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,6 +251,15 @@
   border-radius: 10px;
   cursor: pointer;
   transition: 0.2s;
+}
+
+.copy {
+  background: rgba(245, 245, 245, 0.08);
+  color: var(--color-text);
+}
+
+.copy:hover {
+  background: rgba(245, 245, 245, 0.14);
 }
 
 .edit {

@@ -1,11 +1,15 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
-import { Plus, Save, Trash2, X } from "lucide-react";
+import QRCode from "qrcode";
+import { Download, Plus, QrCode, Save, Trash2, X } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
+import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
 import { PREFERENCE_LABELS } from "@/lib/recruitment-options";
 import styles from "./RecruitmentAdmin.module.scss";
+
+const RECRUITMENT_PATH = "/dashboard/recruitment";
 
 type Settings = {
   opensAt: string | null;
@@ -60,6 +64,9 @@ export default function RecruitmentAdmin() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [generatingQr, setGeneratingQr] = useState(false);
+
   useEffect(() => {
     let active = true;
 
@@ -103,6 +110,31 @@ export default function RecruitmentAdmin() {
     }
   }
 
+  async function generateQr() {
+    setGeneratingQr(true);
+
+    try {
+      const url = `${window.location.origin}${RECRUITMENT_PATH}`;
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 600,
+        margin: 2,
+        color: { dark: "#0d0d0d", light: "#ffffff" },
+      });
+      setQrDataUrl(dataUrl);
+    } finally {
+      setGeneratingQr(false);
+    }
+  }
+
+  function downloadQr() {
+    if (!qrDataUrl) return;
+
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = "navira-recruitment-qr.png";
+    link.click();
+  }
+
   function addDayOption() {
     const trimmed = newDay.trim();
     if (!trimmed || settings.interviewDayOptions.includes(trimmed)) return;
@@ -144,6 +176,29 @@ export default function RecruitmentAdmin() {
   return (
     <div className={styles.container}>
       <PageHeader title="Recruitment" breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Recruitment" }]} />
+
+      <div className={styles.settingsCard}>
+        <h3>Share</h3>
+
+        <div className={styles.shareRow}>
+          <CopyLinkButton path={RECRUITMENT_PATH} label="Copy Recruitment Link" />
+
+          <button type="button" className={styles.saveButton} onClick={generateQr} disabled={generatingQr}>
+            <QrCode size={15} /> {generatingQr ? "Generating..." : "Generate QR Code"}
+          </button>
+        </div>
+
+        {qrDataUrl && (
+          <div className={styles.qrPreview}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={qrDataUrl} alt="QR code linking to the recruitment page" />
+
+            <button type="button" className={styles.saveButton} onClick={downloadQr}>
+              <Download size={15} /> Download QR Code
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className={styles.settingsCard}>
         <h3>Application Window</h3>
