@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Certificate of Completion</title>
+<title>Certificate of Participation</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
 
@@ -39,10 +39,23 @@
     width: 1122px;
     height: 793px;
     margin: 24px auto;
-    background: var(--paper);
+    background:
+      radial-gradient(ellipse 900px 500px at 50% 0%, rgba(47,111,94,0.07), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 100%, rgba(176,141,87,0.10), transparent 55%),
+      var(--paper);
     position: relative;
     overflow: hidden;
     color: var(--ink);
+  }
+
+  /* Faint topographic contour lines — a subtle nod to trail maps, tiled
+     across the whole sheet well under the text's contrast so it reads as
+     texture rather than clutter. */
+  .contours{
+    position:absolute;
+    inset:0;
+    opacity:0.5;
+    pointer-events:none;
   }
 
   @media print{
@@ -67,10 +80,22 @@
     position:absolute;
     left:0; right:0; bottom:30px;
     width:100%;
-    height:220px;
-    opacity:0.08;
+    height:260px;
     pointer-events:none;
   }
+
+  /* ---------- corner flourishes ---------- */
+  .corner{
+    position:absolute;
+    width:64px;
+    height:64px;
+    opacity:0.75;
+    pointer-events:none;
+  }
+  .corner-tl{ top:44px; left:44px; }
+  .corner-tr{ top:44px; right:44px; transform: scaleX(-1); }
+  .corner-bl{ bottom:44px; left:44px; transform: scaleY(-1); }
+  .corner-br{ bottom:44px; right:44px; transform: scale(-1,-1); }
 
   /* ---------- content ---------- */
   .content{
@@ -231,9 +256,39 @@
   <div class="border-outer"></div>
   <div class="border-inner"></div>
 
-  <!-- decorative mountain range watermark, purely visual -->
-  <svg class="watermark" viewBox="0 0 1122 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-    <path d="M0 220 L120 90 L200 160 L300 60 L420 180 L520 100 L640 200 L760 70 L880 170 L1000 90 L1122 220 Z" fill="#2F6F5E"/>
+  <!-- faint topographic contour lines, purely texture -->
+  <svg class="contours" viewBox="0 0 1122 793" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <g fill="none" stroke="#2F6F5E" stroke-width="1">
+      <path d="M -40 120 Q 220 40, 480 130 T 1160 90" opacity="0.10"/>
+      <path d="M -40 180 Q 240 90, 500 190 T 1160 150" opacity="0.08"/>
+      <path d="M -40 640 Q 260 720, 540 630 T 1160 690" opacity="0.10"/>
+      <path d="M -40 700 Q 280 760, 560 690 T 1160 740" opacity="0.08"/>
+    </g>
+  </svg>
+
+  <!-- decorative layered mountain range + sun, purely visual -->
+  <svg class="watermark" viewBox="0 0 1122 260" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <circle cx="900" cy="60" r="34" fill="#B08D57" opacity="0.14"/>
+    <path d="M0 260 L140 140 L230 200 L340 110 L470 210 L590 130 L720 220 L840 120 L960 210 L1122 150 L1122 260 Z" fill="#2F6F5E" opacity="0.06"/>
+    <path d="M0 260 L100 170 L190 220 L300 130 L430 230 L540 160 L660 240 L790 150 L900 230 L1010 170 L1122 220 L1122 260 Z" fill="#2F6F5E" opacity="0.12"/>
+  </svg>
+
+  <!-- corner flourishes echoing the inner/outer border pair -->
+  <svg class="corner corner-tl" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2 40 L2 2 L40 2" fill="none" stroke="#B08D57" stroke-width="1.5"/>
+    <path d="M2 24 L2 14 L14 2 L24 2" fill="none" stroke="#2F6F5E" stroke-width="1.5"/>
+  </svg>
+  <svg class="corner corner-tr" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2 40 L2 2 L40 2" fill="none" stroke="#B08D57" stroke-width="1.5"/>
+    <path d="M2 24 L2 14 L14 2 L24 2" fill="none" stroke="#2F6F5E" stroke-width="1.5"/>
+  </svg>
+  <svg class="corner corner-bl" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2 40 L2 2 L40 2" fill="none" stroke="#B08D57" stroke-width="1.5"/>
+    <path d="M2 24 L2 14 L14 2 L24 2" fill="none" stroke="#2F6F5E" stroke-width="1.5"/>
+  </svg>
+  <svg class="corner corner-br" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2 40 L2 2 L40 2" fill="none" stroke="#B08D57" stroke-width="1.5"/>
+    <path d="M2 24 L2 14 L14 2 L24 2" fill="none" stroke="#2F6F5E" stroke-width="1.5"/>
   </svg>
 
   <div class="content">
@@ -243,7 +298,7 @@
 
 
     <p class="eyebrow">NAVIRA &middot; SMI</p>
-    <h1 class="title">Certificate of Achievement</h1>
+    <h1 class="title">Certificate of Participation</h1>
 
     <p class="lead">This certificate is proudly presented to</p>
 
@@ -251,7 +306,7 @@
     <div class="student-name">{{STUDENT_NAME}}</div>
 
     <p class="body-text">
-      for successfully completing the
+      for participating in the
       <span class="trek-name">{{TREK_NAME}}</span> trek,
       demonstrating dedication, endurance, and team spirit
       throughout the journey.
