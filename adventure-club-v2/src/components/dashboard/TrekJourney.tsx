@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Compass, FileCheck, MapPin, CalendarDays, IndianRupee } from "lucide-react";
+import { Compass, FileCheck, MapPin, CalendarDays, IndianRupee, Images } from "lucide-react";
 
 import BackButton from "./shared/BackButton";
 import StatusBadge from "./shared/StatusBadge";
 import JourneyTimeline from "./shared/JourneyTimeline";
 import ReimbursementStatus from "./shared/ReimbursementStatus";
-import TrekPhotosSection from "./TrekPhotosSection";
 import {
   getJourneyAction,
   getJourneyBadge,
@@ -42,6 +41,7 @@ type Registration = RegistrationLike & {
     coverImage?: string | null;
     difficulty: string;
     tripCentrePublished?: boolean;
+    photosLink?: string | null;
     initialPayment: number;
     finalPayment: number;
     installments?: number;
@@ -234,13 +234,25 @@ export default function TrekJourney({ registrationId }: { registrationId: string
             </div>
           </section>
 
-          <section className={styles.card}>
-            <TrekPhotosSection
-              trekId={registration.trek.id}
-              registrationId={registration.id}
-              canUpload={!!registration.attendanceMarked}
-            />
-          </section>
+          {registration.trek.photosLink && registration.attendanceMarked && (
+            <section className={styles.card}>
+              <h3>Trek Photos</h3>
+              <p className={styles.cardHint}>
+                View photos from this trip, or add your own to the shared album.
+              </p>
+
+              <div className={styles.actions}>
+                <a
+                  href={registration.trek.photosLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.primaryAction}
+                >
+                  <Images size={15} /> Open Trek Photos
+                </a>
+              </div>
+            </section>
+          )}
 
           {eligibleForReimbursement && (
             <section className={styles.card}>

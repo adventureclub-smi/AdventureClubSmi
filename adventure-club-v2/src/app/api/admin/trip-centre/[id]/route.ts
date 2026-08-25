@@ -73,6 +73,8 @@ export async function PUT(
 
       whatsappGroupLink: body.whatsappGroupLink,
 
+      photosLink: body.photosLink,
+
       emergencyNumber: body.emergencyNumber,
 
       itinerary: body.itinerary,

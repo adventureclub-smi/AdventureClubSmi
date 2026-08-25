@@ -9,6 +9,7 @@ import {
   Clock,
   CloudSun,
   EyeOff,
+  Images,
   Map,
   MapPin,
   MessageCircle,
@@ -27,6 +28,7 @@ type TripCentreForm = {
   transportDetails: string;
   weatherNote: string;
   whatsappGroupLink: string;
+  photosLink: string;
   emergencyNumber: string;
   itinerary: string;
   leaderMessage: string;
@@ -50,6 +52,7 @@ const initialForm: TripCentreForm = {
   transportDetails: "",
   weatherNote: "",
   whatsappGroupLink: "",
+  photosLink: "",
   emergencyNumber: "",
   itinerary: "",
   leaderMessage: "",
@@ -109,6 +112,8 @@ export default function TripCentreEditor({ trekId }: { trekId: string }) {
           weatherNote: data.weatherNote || "",
 
           whatsappGroupLink: data.whatsappGroupLink || "",
+
+          photosLink: data.photosLink || "",
 
           emergencyNumber: data.emergencyNumber || "",
 
@@ -439,6 +444,22 @@ export default function TripCentreEditor({ trekId }: { trekId: string }) {
               name="whatsappGroupLink"
               placeholder="WhatsApp Group Link"
               value={form.whatsappGroupLink}
+              onChange={handleChange}
+            />
+          </label>
+        </TripSection>
+
+        <TripSection
+          icon={Images}
+          title="Trek Photos"
+          description="Google Drive folder link students see after attendance is marked."
+        >
+          <label className={styles.full}>
+            Photos Drive Link
+            <input
+              name="photosLink"
+              placeholder="https://drive.google.com/drive/folders/..."
+              value={form.photosLink}
               onChange={handleChange}
             />
           </label>

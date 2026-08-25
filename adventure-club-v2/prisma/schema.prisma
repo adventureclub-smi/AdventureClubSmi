@@ -80,8 +80,6 @@ model User {
 
   registrations Registration[]
 
-  trekPhotos TrekPhoto[]
-
   contactSubmissions ContactSubmission[]
 
   membershipStatus String @default("PENDING")
@@ -313,14 +311,12 @@ model Trek {
   // way; this only gates who's allowed to register.
   restrictedYears String[] @default([])
 
-  // ===== Trek Photos (student uploads, stored in Google Drive) =====
-  // Cached the first time a photo is uploaded for this trek, rather than
-  // looked up by name on every upload — Drive folder names aren't unique or
-  // indexed, so re-finding "the folder for this trek" every time would mean
-  // an extra list-and-search API call per upload.
-  driveFolderId String?
-
-  trekPhotos TrekPhoto[]
+  // ===== Trek Photos =====
+  // Admin pastes a Google Drive folder share link here (created and shared
+  // manually in Drive itself, e.g. "Anyone with the link" as Editor/
+  // Contributor so students can drop their own photos in) — the site just
+  // links out to it rather than handling uploads/storage itself.
+  photosLink String?
 }
 
 // Admin-editable waypoints (trailhead, halfway point, summit, etc.) that
@@ -612,33 +608,6 @@ model Gallery {
   imageUrl String
 
   uploadedBy String?
-
-  createdAt DateTime @default(now())
-}
-
-// Student-submitted trek photos (distinct from Gallery above, which is
-// admin-curated). The original lives in Google Drive — driveFileId is the
-// source of truth an admin could go browse/download in bulk from Drive
-// itself — but the site never serves that Drive file directly: Drive's
-// public embed links are unofficial and prone to breaking/rate-limiting at
-// scale, so displayUrl is a second, optimized copy in this app's normal R2
-// storage that the site actually renders.
-model TrekPhoto {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  trekId String @db.ObjectId
-  trek   Trek   @relation(fields: [trekId], references: [id])
-
-  uploadedByUserId String @db.ObjectId
-  uploadedBy       User   @relation(fields: [uploadedByUserId], references: [id])
-
-  driveFileId String
-
-  displayUrl String
-  width      Int?
-  height     Int?
-
-  caption String?
 
   createdAt DateTime @default(now())
 }
