@@ -12,6 +12,7 @@ import {
   Paperclip,
   Pencil,
   Sparkles,
+  Trash2,
   Upload,
   Users,
   X,
@@ -78,6 +79,7 @@ export default function Recruitment() {
 
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -197,6 +199,37 @@ export default function Recruitment() {
     }
   }
 
+  async function handleWithdraw() {
+    if (!confirm("Withdraw your application? You can submit a new one later, as long as recruitment is still open.")) {
+      return;
+    }
+
+    setWithdrawing(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/recruitment", { method: "DELETE" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Failed to withdraw application.");
+        return;
+      }
+
+      setApplication(null);
+      setPortfolioText("");
+      setPortfolioLink("");
+      setPortfolioFileUrl(null);
+      setPortfolioFileName(null);
+      setWhyJoin("");
+      setInterviewDay("");
+      setTeamPreferences([]);
+      setEditing(false);
+    } finally {
+      setWithdrawing(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -304,11 +337,22 @@ export default function Recruitment() {
             <p>{application.whyJoin}</p>
           </div>
 
-          {settings?.isOpen && (
-            <button type="button" className={styles.secondaryAction} onClick={() => setEditing(true)}>
-              <Pencil size={15} /> Edit Application
+          <div className={styles.actions}>
+            {settings?.isOpen && (
+              <button type="button" className={styles.secondaryAction} onClick={() => setEditing(true)}>
+                <Pencil size={15} /> Edit Application
+              </button>
+            )}
+
+            <button
+              type="button"
+              className={styles.dangerAction}
+              onClick={handleWithdraw}
+              disabled={withdrawing}
+            >
+              <Trash2 size={15} /> {withdrawing ? "Withdrawing..." : "Withdraw Application"}
             </button>
-          )}
+          </div>
         </div>
       </div>
     );

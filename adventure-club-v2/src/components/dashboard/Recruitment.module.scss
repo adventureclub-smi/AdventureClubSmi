@@ -263,7 +263,8 @@
 }
 
 .primaryAction,
-.secondaryAction {
+.secondaryAction,
+.dangerAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -294,6 +295,21 @@
   background: rgba(245, 245, 245, 0.06);
   color: var(--color-text);
   border: 1px solid rgba(245, 245, 245, 0.1);
+}
+
+.dangerAction {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.dangerAction:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.dangerAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .notice {

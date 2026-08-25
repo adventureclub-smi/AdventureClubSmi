@@ -14,6 +14,7 @@ export default function RecruitmentBanner({
   variant?: "strip" | "card";
 }) {
   const [visible, setVisible] = useState(false);
+  const [alreadyApplied, setAlreadyApplied] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -26,14 +27,16 @@ export default function RecruitmentBanner({
         const settings = await settingsRes.json();
         if (!settings.isOpen) return;
 
-        // Logged-in students who've already applied don't need the nudge —
-        // an anonymous visitor (401 here) or one who hasn't applied yet
-        // still sees the banner.
+        // An applicant still needs a way back to view/edit/withdraw their
+        // submission for as long as the window stays open — hiding the
+        // banner the moment they applied cut off the only entry point,
+        // since there's no sidebar link. It only ever changes the copy
+        // below, never hides on account of an existing application.
         if (settings.loggedIn) {
           const applicationRes = await fetch("/api/recruitment");
           if (applicationRes.ok && active) {
             const application = await applicationRes.json();
-            if (application) return;
+            if (application) setAlreadyApplied(true);
           }
         }
 
@@ -62,12 +65,18 @@ export default function RecruitmentBanner({
       </span>
 
       <span className={styles.text}>
-        <strong>NAVIRA Recruitment is open!</strong>
-        <span>Apply now to join a team — Web &amp; Tech, Visual Media, Marketing, and more.</span>
+        <strong>
+          {alreadyApplied ? "Your NAVIRA Recruitment application is in!" : "NAVIRA Recruitment is open!"}
+        </strong>
+        <span>
+          {alreadyApplied
+            ? "View or edit your application any time before the window closes."
+            : "Apply now to join a team — Web & Tech, Visual Media, Marketing, and more."}
+        </span>
       </span>
 
       <span className={styles.cta}>
-        Apply Now <ArrowRight size={18} />
+        {alreadyApplied ? "View Application" : "Apply Now"} <ArrowRight size={18} />
       </span>
     </Link>
   );

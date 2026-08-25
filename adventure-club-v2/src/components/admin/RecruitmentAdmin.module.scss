@@ -171,6 +171,26 @@
   font-size: 12px;
 }
 
+.deleteButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .detailRow td {
   background: rgba(245, 245, 245, 0.02);
 }

@@ -143,3 +143,23 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(application);
 }
+
+export async function DELETE() {
+  const user = await getAuthedUser();
+
+  if (!user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const existing = await prisma.recruitmentApplication.findUnique({
+    where: { userId: user.id },
+  });
+
+  if (!existing) {
+    return NextResponse.json({ message: "No application to withdraw." }, { status: 404 });
+  }
+
+  await prisma.recruitmentApplication.delete({ where: { userId: user.id } });
+
+  return NextResponse.json({ message: "Application withdrawn." });
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
-import { Plus, Save, X } from "lucide-react";
+import { Plus, Save, Trash2, X } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
 import { PREFERENCE_LABELS } from "@/lib/recruitment-options";
@@ -58,6 +58,7 @@ export default function RecruitmentAdmin() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -84,6 +85,23 @@ export default function RecruitmentAdmin() {
       active = false;
     };
   }, []);
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this application? This can't be undone.")) return;
+
+    setDeletingId(id);
+
+    try {
+      const res = await fetch(`/api/admin/recruitment/${id}`, { method: "DELETE" });
+
+      if (res.ok) {
+        setApplications((prev) => prev.filter((app) => app.id !== id));
+        if (expandedId === id) setExpandedId(null);
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   function addDayOption() {
     const trimmed = newDay.trim();
@@ -232,6 +250,7 @@ export default function RecruitmentAdmin() {
                   <th>Preferences</th>
                   <th>Interview Day</th>
                   <th>Submitted</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -260,11 +279,24 @@ export default function RecruitmentAdmin() {
                       </td>
                       <td>{app.interviewDay}</td>
                       <td>{new Date(app.submittedAt).toLocaleDateString("en-IN")}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className={styles.deleteButton}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(app.id);
+                          }}
+                          disabled={deletingId === app.id}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
                     </tr>
 
                     {expandedId === app.id && (
                       <tr className={styles.detailRow}>
-                        <td colSpan={7}>
+                        <td colSpan={8}>
                           <div className={styles.detail}>
                             <div>
                               <strong>Why they want to join</strong>
