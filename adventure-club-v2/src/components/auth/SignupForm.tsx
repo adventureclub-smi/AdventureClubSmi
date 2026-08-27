@@ -36,7 +36,8 @@ export default function SignupForm() {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phoneNumber: "",
     year: "",
@@ -110,7 +111,7 @@ export default function SignupForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fullName: formData.fullName,
+          fullName: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim(),
           institution: finalInstitution,
           email: formData.email,
           phoneNumber: formData.phoneNumber,
@@ -144,15 +145,28 @@ export default function SignupForm() {
     <form className={styles.form} onSubmit={handleSubmit}>
       {/* Row 1 */}
 
-      <div className={styles.rowFull}>
+      <div className={styles.row}>
         <div className={styles.inputGroup}>
           <User size={20} className={styles.icon} />
 
           <input
             type="text"
-            name="fullName"
-            placeholder="Full Name"
-            value={formData.fullName}
+            name="firstName"
+            placeholder="First Name"
+            value={formData.firstName}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className={styles.inputGroup}>
+          <User size={20} className={styles.icon} />
+
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Last Name"
+            value={formData.lastName}
             onChange={handleChange}
             required
           />
