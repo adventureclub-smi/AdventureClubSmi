@@ -39,12 +39,15 @@
 
 // Sits above the video but below HeroOverlay's darkening gradient (z-index
 // 2), so the same tuning that keeps the text legible also keeps this
-// ambient wireframe subtle rather than needing separate opacity tuning.
+// ambient background subtle rather than needing separate opacity tuning.
+// pointer-events stays enabled (unlike a purely decorative layer) so the
+// field's own pointer-pull interaction actually receives events — safe to
+// leave on, since .content's real buttons sit above it at z-index 3 and
+// always win the hit-test wherever the two overlap.
 .scene {
   position: absolute;
   inset: 0;
   z-index: 1;
-  pointer-events: none;
 }
 
 .content {

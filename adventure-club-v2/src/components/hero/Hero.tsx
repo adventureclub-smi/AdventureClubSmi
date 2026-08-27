@@ -7,7 +7,6 @@ import Link from "next/link";
 import {
   motion,
   useInView,
-  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useTransform,
@@ -20,10 +19,8 @@ import { useLazyVideo } from "@/hooks/useLazyVideo";
 import type { HeroContent } from "@/types/homepage";
 import styles from "./Hero.module.scss";
 
-// Three.js touches the GPU/canvas — never render it on the server, and
-// only pull the (fairly heavy) three.js bundle in once the browser
-// actually needs it, so it can't block first paint.
-const HeroScene = dynamic(() => import("@/components/three/HeroScene"), {
+// Raw WebGL, touches the GPU/canvas — never render it on the server.
+const ConstellationField = dynamic(() => import("./ConstellationField"), {
   ssr: false,
 });
 
@@ -101,19 +98,12 @@ export default function Hero({
   useLazyVideo(videoRef);
   const reducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
-  const [pointerFine, setPointerFine] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const scrollProgressRef = useRef(0);
 
   useEffect(() => {
     const updateMobile = () => setIsMobile(window.innerWidth < 700);
     updateMobile();
     window.addEventListener("resize", updateMobile);
-
-    function checkPointer() {
-      setPointerFine(window.matchMedia("(pointer: fine)").matches);
-    }
-    checkPointer();
 
     return () => window.removeEventListener("resize", updateMobile);
   }, []);
@@ -137,9 +127,7 @@ export default function Hero({
   }, []);
 
   // Hero content gently recedes as the user starts scrolling into the next
-  // section, rather than cutting abruptly — the 3D scene reads the same
-  // progress (via a ref, not React state, since it updates every frame) to
-  // sink slightly further away at the same time.
+  // section, rather than cutting abruptly.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -150,11 +138,7 @@ export default function Hero({
   // the sense that the whole scene is sinking back rather than just fading.
   const videoScale = useTransform(scrollYProgress, [0, 1], [1, 1.18]);
 
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    scrollProgressRef.current = v;
-  });
-
-  // Pauses the wireframe's render loop once you've scrolled well past the
+  // Pauses the background field's render loop once you've scrolled well past the
   // hero, instead of letting it run for the rest of the page's lifetime.
   const sceneInView = useInView(sectionRef, { margin: "300px" });
 
@@ -180,11 +164,17 @@ export default function Hero({
       </motion.video>
 
       <div className={styles.scene}>
-        <HeroScene
-          interactive={pointerFine && !reducedMotion}
+        <ConstellationField
+          style={{ minWidth: 0, minHeight: 0 }}
+          background="transparent"
+          baseColor="#9ca3af"
+          accentColor="#00a073"
+          density={isMobile ? 55 : 100}
+          dotSize={90}
+          linkDistance={150}
+          speed={reducedMotion ? 0 : 40}
+          hover={reducedMotion ? 0 : 100}
           animate={!reducedMotion && sceneInView}
-          scrollProgress={scrollProgressRef}
-          isMobile={isMobile}
         />
       </div>
 
