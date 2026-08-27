@@ -51,8 +51,14 @@ import { useEffect, useRef } from "react"
 
 const MAX_DPR = 2
 const MAX_EDGES = 6000 // past this the field is a sheet, not a denser graph
-const PULL_REACH = 220 // px, the source's pointer gravity radius
-const PULL_RATE = 0.3 // per second at Hover 100%, from the source's 0.005/frame
+const PULL_REACH = 260 // px, the pointer's gravity radius
+const PULL_RATE = 1.1 // per second at Hover 100% — a clearly felt tug, not a nudge
+// The pointer also acts as an extra, undrawn node purely for the purpose of
+// linking: real nodes within this radius get a bright line drawn straight to
+// the cursor, so moving it visibly reaches into the graph rather than only
+// silently nudging positions — the original preset had no such feedback, and
+// a pull with nothing to see is easy to miss entirely.
+const CURSOR_LINK_REACH = 200
 
 const LINE_VERT = `
 precision highp float;
@@ -357,6 +363,13 @@ function __OriginkitBase_ConstellationField(props: ConstellationFieldProps) {
         const bNodeRad = gl.createBuffer()
         const bNodePulse = gl.createBuffer()
 
+        // nPos/nRad/nPulse are sized n+1 — index n (past every real node) is
+        // reserved for a bright glow drawn at the cursor itself, filled in
+        // per-frame below only while the pointer is actually over the canvas.
+        // A visible glowing dot that tracks the cursor 1:1 reads as
+        // "interactive" from across the room; the cursor-links alone (thin,
+        // same colour as the ambient graph) turned out too easy to lose
+        // against a busy or bright video frame.
         const build = (n: number, w: number, h: number) => {
             const R = rng(20260824)
             nodeCount = n
@@ -365,9 +378,9 @@ function __OriginkitBase_ConstellationField(props: ConstellationFieldProps) {
             nvx = new Float32Array(n)
             nvy = new Float32Array(n)
             nr = new Float32Array(n)
-            nPos = new Float32Array(n * 2)
-            nRad = new Float32Array(n)
-            nPulse = new Float32Array(n)
+            nPos = new Float32Array((n + 1) * 2)
+            nRad = new Float32Array(n + 1)
+            nPulse = new Float32Array(n + 1)
             for (let i = 0; i < n; i++) {
                 nx[i] = R() * w
                 ny[i] = R() * h
@@ -462,6 +475,16 @@ function __OriginkitBase_ConstellationField(props: ConstellationFieldProps) {
                 nPulse[i] = 0.78 + Math.sin(clock + nx[i]) * 0.22 * (v.pulse as number)
             }
 
+            const cursorActive = ptr.x > -9000
+            if (cursorActive) {
+                nPos[nodeCount * 2] = ptr.x
+                nPos[nodeCount * 2 + 1] = ptr.y
+                // Bigger and steadier than any real node's gentle pulse — it
+                // needs to read as "the cursor," not as one more graph node.
+                nRad[nodeCount] = 6 * (v.dotSize as number)
+                nPulse[nodeCount] = 1.3
+            }
+
             // --- links: O(n^2) sweep, capped ---
             const LINKD = v.linkDistance as number
             const l2 = LINKD * LINKD
@@ -479,6 +502,30 @@ function __OriginkitBase_ConstellationField(props: ConstellationFieldProps) {
                         eP0[k + 1] = ny[i]
                         eP1[k] = nx[j]
                         eP1[k + 1] = ny[j]
+                        eAlpha[edges * 6 + c] = a
+                    }
+                    edges++
+                }
+            }
+
+            // --- cursor links: drawn in the accent colour, in their own pass
+            // below, so they read as distinctly "yours" against the ambient
+            // base-coloured graph rather than blending into it ---
+            const nodeEdgeCount = edges
+            if (cursorActive) {
+                const cr2 = CURSOR_LINK_REACH * CURSOR_LINK_REACH
+                for (let i = 0; i < nodeCount && edges < MAX_EDGES; i++) {
+                    const dx = nx[i] - ptr.x
+                    const dy = ny[i] - ptr.y
+                    const dd = dx * dx + dy * dy
+                    if (dd >= cr2) continue
+                    const a = 0.55 + (1 - Math.sqrt(dd) / CURSOR_LINK_REACH) * 0.45
+                    for (let c = 0; c < 6; c++) {
+                        const k = (edges * 6 + c) * 2
+                        eP0[k] = ptr.x
+                        eP0[k + 1] = ptr.y
+                        eP1[k] = nx[i]
+                        eP1[k + 1] = ny[i]
                         eAlpha[edges * 6 + c] = a
                     }
                     edges++
@@ -519,8 +566,21 @@ function __OriginkitBase_ConstellationField(props: ConstellationFieldProps) {
 
                 gl.uniform2f(u(lineProg, "uSize"), cw, ch)
                 gl.uniform1f(u(lineProg, "uWidth"), v.lineWidth as number)
-                gl.uniform3f(u(lineProg, "uColor"), cb[0], cb[1], cb[2])
-                gl.drawArrays(gl.TRIANGLES, 0, verts)
+
+                // Two passes, same buffers: the ambient graph in the base
+                // colour, then the cursor's own links (if any) in the accent
+                // colour drawn over them — so they read as distinctly "yours."
+                const nodeVerts = nodeEdgeCount * 6
+                if (nodeVerts > 0) {
+                    gl.uniform3f(u(lineProg, "uColor"), cb[0], cb[1], cb[2])
+                    gl.drawArrays(gl.TRIANGLES, 0, nodeVerts)
+                }
+                if (verts > nodeVerts) {
+                    gl.uniform1f(u(lineProg, "uWidth"), (v.lineWidth as number) * 1.4)
+                    gl.uniform3f(u(lineProg, "uColor"), ca[0], ca[1], ca[2])
+                    gl.drawArrays(gl.TRIANGLES, nodeVerts, verts - nodeVerts)
+                }
+
                 gl.disableVertexAttribArray(aP0)
                 gl.disableVertexAttribArray(aP1)
                 gl.disableVertexAttribArray(aCorner)
@@ -549,7 +609,7 @@ function __OriginkitBase_ConstellationField(props: ConstellationFieldProps) {
                 gl.uniform1f(u(nodeProg, "uDpr"), dpr)
                 gl.uniform1f(u(nodeProg, "uHalo"), v.halo as number)
                 gl.uniform3f(u(nodeProg, "uColor"), ca[0], ca[1], ca[2])
-                gl.drawArrays(gl.POINTS, 0, nodeCount)
+                gl.drawArrays(gl.POINTS, 0, cursorActive ? nodeCount + 1 : nodeCount)
                 gl.disableVertexAttribArray(aPos)
                 gl.disableVertexAttribArray(aRad)
                 gl.disableVertexAttribArray(aPulse)
