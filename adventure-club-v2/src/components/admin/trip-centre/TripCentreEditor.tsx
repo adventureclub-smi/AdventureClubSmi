@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
+import { formatIstDateTimeLocal } from "@/lib/ist-time";
 import styles from "./TripCentreEditor.module.scss";
 
 type TripCentreForm = {
@@ -103,9 +104,12 @@ export default function TripCentreEditor({ trekId }: { trekId: string }) {
         setForm({
           meetingPoint: data.meetingPoint || "",
 
-          meetingTime: data.meetingTime
-            ? data.meetingTime.slice(0, 16)
-            : "",
+          // data.meetingTime is a UTC instant — render it as India time for
+          // the input rather than slicing off its raw UTC digits, or the
+          // displayed time drifts by 5.5 hours on every reload (and further
+          // on every re-save, since the wrong displayed value round-trips
+          // back through parseIstDateTimeLocal as if it were already IST).
+          meetingTime: formatIstDateTimeLocal(data.meetingTime),
 
           transportDetails: data.transportDetails || "",
 

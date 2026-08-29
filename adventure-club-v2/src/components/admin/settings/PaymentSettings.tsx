@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import styles from "./PaymentSettings.module.scss";
 
@@ -9,6 +9,11 @@ export default function PaymentSettings() {
   const [receiverName, setReceiverName] = useState("");
   const [upiId, setUpiId] = useState("");
   const [supportPhone, setSupportPhone] = useState("");
+
+  const [qrImageUrl, setQrImageUrl] = useState("");
+  const [qrImageFile, setQrImageFile] = useState<File | null>(null);
+  const [removeQrImage, setRemoveQrImage] = useState(false);
+  const qrInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,6 +33,7 @@ export default function PaymentSettings() {
         setReceiverName(data.receiverName || "");
         setUpiId(data.upiId || "");
         setSupportPhone(data.supportPhone || "");
+        setQrImageUrl(data.customQrImageUrl || "");
       } catch (err) {
         console.error(err);
       } finally {
@@ -42,18 +48,51 @@ export default function PaymentSettings() {
     };
   }, []);
 
+  function handleQrFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setQrImageFile(file);
+    setRemoveQrImage(false);
+  }
+
+  function handleRemoveQr() {
+    setQrImageFile(null);
+    setQrImageUrl("");
+    setRemoveQrImage(true);
+    if (qrInputRef.current) qrInputRef.current.value = "";
+  }
+
   async function save() {
     setSaving(true);
     setStatus("");
 
     try {
+      const form = new FormData();
+      form.append("clubName", clubName);
+      form.append("receiverName", receiverName);
+      form.append("upiId", upiId);
+      form.append("supportPhone", supportPhone);
+      if (removeQrImage) form.append("removeQrImage", "true");
+      if (qrImageFile) form.append("qrImageFile", qrImageFile);
+
       const res = await fetch("/api/admin/settings/payment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clubName, receiverName, upiId, supportPhone }),
+        body: form,
       });
 
-      setStatus(res.ok ? "Payment settings saved." : "Failed to save.");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus(data.message || "Failed to save.");
+        return;
+      }
+
+      setQrImageUrl(data.customQrImageUrl || "");
+      setQrImageFile(null);
+      setRemoveQrImage(false);
+      if (qrInputRef.current) qrInputRef.current.value = "";
+      setStatus("Payment settings saved.");
     } catch (err) {
       console.error(err);
       setStatus("Something went wrong.");
@@ -99,6 +138,26 @@ export default function PaymentSettings() {
 
         <label>Support Phone</label>
         <input value={supportPhone} onChange={(e) => setSupportPhone(e.target.value)} />
+
+        <label>Custom Payment QR (optional)</label>
+        <p className={styles.hint}>
+          By default students see a QR generated from your UPI ID above. If some UPI
+          apps show it as invalid, upload a QR you already know scans correctly
+          (e.g. a screenshot from your own UPI app) — students will see this exact
+          image instead. Leave empty to keep using the generated one.
+        </p>
+
+        {qrImageUrl && !qrImageFile && (
+          <div className={styles.qrPreview}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={qrImageUrl} alt="Current custom payment QR" />
+            <button type="button" onClick={handleRemoveQr}>
+              Remove custom QR
+            </button>
+          </div>
+        )}
+
+        <input ref={qrInputRef} type="file" accept="image/*" onChange={handleQrFileChange} />
 
         <button onClick={save} disabled={saving}>
           {saving ? "Saving..." : "Save Settings"}

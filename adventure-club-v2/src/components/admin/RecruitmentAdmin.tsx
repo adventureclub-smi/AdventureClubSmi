@@ -7,6 +7,7 @@ import PageHeader from "@/components/admin/shared/PageHeader";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
 import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
 import { PREFERENCE_LABELS } from "@/lib/recruitment-options";
+import { formatIstDateTimeLocal } from "@/lib/ist-time";
 import styles from "./RecruitmentAdmin.module.scss";
 
 const RECRUITMENT_PATH = "/dashboard/recruitment";
@@ -41,12 +42,10 @@ type Application = {
   submittedAt: string;
 };
 
-// Matches TripCentreEditor's convention exactly: slice the fetched ISO
-// string directly rather than round-tripping through `new Date()` again.
-function toDateTimeLocal(value: string | null) {
-  if (!value) return "";
-  return value.slice(0, 16);
-}
+// The fetched value is a UTC instant (as an ISO string); render it as India
+// time for the input rather than slicing off its raw UTC digits — see
+// formatIstDateTimeLocal for why the naive slice this used to do was wrong.
+const toDateTimeLocal = formatIstDateTimeLocal;
 
 export default function RecruitmentAdmin() {
   const [settings, setSettings] = useState<Settings>({

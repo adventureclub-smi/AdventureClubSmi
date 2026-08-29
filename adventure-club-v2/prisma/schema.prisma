@@ -748,6 +748,14 @@ model PaymentSettings {
 
   supportPhone String?
 
+  // Admin-uploaded override (e.g. a personal GPay-generated QR screenshot) —
+  // shown instead of the QR the student payment page generates from the
+  // fields above. Exists because some UPI apps reject an auto-built deep
+  // link (a merchant category code on a personal VPA, in one real case) even
+  // when the fields themselves are correct; uploading a QR already known to
+  // scan cleanly sidesteps that without needing a code change.
+  customQrImageUrl String?
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt

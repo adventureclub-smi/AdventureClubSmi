@@ -35,6 +35,7 @@ export async function GET() {
       receiverName: settings.receiverName,
       upiId: settings.upiId,
       supportPhone: settings.supportPhone,
+      customQrImageUrl: settings.customQrImageUrl,
     });
   } catch (error) {
     console.error(error);

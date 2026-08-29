@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { motion } from "framer-motion";
-import { AlertTriangle, Check, Copy, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Check, Copy, Download, ShieldAlert } from "lucide-react";
 
 import BackButton from "@/components/dashboard/shared/BackButton";
 import PaymentTimeline from "./PaymentTimeline";
@@ -12,6 +12,7 @@ import styles from "./StudentPaymentPage.module.scss";
 type PaymentSettings = {
   upiId: string;
   receiverName: string;
+  customQrImageUrl?: string | null;
 };
 
 type PaymentRegistration = {
@@ -62,30 +63,42 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
         setRegistration(registrationData);
         setSettings(settingsData);
 
-        const amount =
-          paymentType === "FINAL"
-            ? registrationData.trek.finalPayment
-            : registrationData.trek.initialPayment;
+        // An admin-uploaded QR always wins — it exists specifically because
+        // the generated one didn't scan for someone, so there's no reason to
+        // still build a upi:// link in that case.
+        if (settingsData.customQrImageUrl) {
+          if (active) setQrCode(settingsData.customQrImageUrl);
+        } else {
+          const amount =
+            paymentType === "FINAL"
+              ? registrationData.trek.finalPayment
+              : registrationData.trek.initialPayment;
 
-        const paymentNote = `${registrationData.registrationNumber} - ${
-          registrationData.user?.fullName ?? registrationData.guestName
-        }`;
+          const paymentNote = `${registrationData.registrationNumber} - ${
+            registrationData.user?.fullName ?? registrationData.guestName
+          }`;
 
-        const upiLink =
-          `upi://pay?pa=${settingsData.upiId}` +
-          `&pn=${encodeURIComponent(settingsData.receiverName)}` +
-          `&mc=8299` +
-          `&am=${amount}` +
-          `&cu=INR` +
-          `&tn=${encodeURIComponent(paymentNote)}`;
+          // No `mc` (merchant category code) — the receiver is a personal
+          // bank-linked VPA, not a registered merchant, and including it made
+          // GPay and other apps reject the QR outright as an invalid/mismatched
+          // payment type. `am` needs two decimal places — some UPI apps treat a
+          // bare integer amount as malformed. This is exactly the shape of a
+          // normal person-to-person GPay QR (pa + pn + am + cu + tn, no mc).
+          const upiLink =
+            `upi://pay?pa=${encodeURIComponent(settingsData.upiId)}` +
+            `&pn=${encodeURIComponent(settingsData.receiverName)}` +
+            `&am=${amount.toFixed(2)}` +
+            `&cu=INR` +
+            `&tn=${encodeURIComponent(paymentNote)}`;
 
-        const qr = await QRCode.toDataURL(upiLink, {
-          width: 380,
-          margin: 2,
-          errorCorrectionLevel: "H",
-        });
+          const qr = await QRCode.toDataURL(upiLink, {
+            width: 380,
+            margin: 2,
+            errorCorrectionLevel: "H",
+          });
 
-        if (active) setQrCode(qr);
+          if (active) setQrCode(qr);
+        }
       } catch (err) {
         console.error(err);
         if (active) setError("Unable to load payment details.");
@@ -131,6 +144,23 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
     setTimeout(() => setCopied(null), 2000);
   }
 
+  function downloadQr() {
+    if (!qrCode) return;
+
+    const filename = `navira-payment-qr-${registrationId}.png`;
+    const link = document.createElement("a");
+
+    // A generated QR is already a data: URI (same-origin by definition), but
+    // an admin-uploaded one is a real R2 URL — a plain <a download> is
+    // silently ignored cross-origin, so that case routes through our own
+    // download-proxy instead, which sets Content-Disposition itself.
+    link.href = qrCode.startsWith("data:")
+      ? qrCode
+      : `/api/download-proxy?url=${encodeURIComponent(qrCode)}&filename=${encodeURIComponent(filename)}`;
+    link.download = filename;
+    link.click();
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.card}>
@@ -163,6 +193,10 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qrCode} alt="UPI QR" className={styles.qr} />
+
+          <button className={styles.copy} onClick={downloadQr}>
+            <Download size={16} /> Download QR Code
+          </button>
 
           <div className={styles.instructions}>
             <p>
