@@ -406,8 +406,17 @@ export default function Recruitment() {
         <section className={styles.section}>
           <h3>
             <FileText size={16} /> Portfolio / Work Experience
-            {needsPortfolio && <span className={styles.required}>Required for Visual Media / Marketing</span>}
+            {needsPortfolio ? (
+              <span className={styles.required}>Required for Visual Media / Marketing</span>
+            ) : (
+              <span className={styles.optional}>Optional for your selected team(s)</span>
+            )}
           </h3>
+
+          <p className={styles.hint}>
+            A portfolio is mandatory only for Visual Media and Marketing applicants — for every other
+            team it's optional, but still worth including if you have relevant work to show.
+          </p>
 
           <label>
             Describe your work or experience
