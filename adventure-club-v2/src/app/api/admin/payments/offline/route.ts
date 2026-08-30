@@ -56,6 +56,8 @@ export async function POST(req: NextRequest) {
           type:
             type === "FINAL"
               ? PaymentType.FINAL
+              : type === "SECOND"
+              ? PaymentType.SECOND
               : PaymentType.INITIAL,
 
           amount,
@@ -108,6 +110,12 @@ export async function POST(req: NextRequest) {
           finalPaymentDidNotPay: false,
           finalPaymentPaidAtOnce: false,
         }
+      : type === "SECOND"
+      ? {
+          secondPaymentPaid: true,
+          secondPaymentPaidAt: new Date(),
+          secondPaymentDidNotPay: false,
+        }
       : {
           initialPaymentPaid: true,
           initialPaymentPaidAt: new Date(),
@@ -128,7 +136,7 @@ export async function POST(req: NextRequest) {
     // marks the payment paid+verified immediately (an admin recording cash/
     // bank transfer in person), so the trigger conditions are simpler: just
     // "initial payment, trek has a link, not already sent".
-    if (type !== "FINAL" && registration.trek.whatsappGroupLink && registration.user) {
+    if (type !== "FINAL" && type !== "SECOND" && registration.trek.whatsappGroupLink && registration.user) {
       const claimed = await prisma.registration.updateMany({
         where: { id: registrationId, whatsappInviteSentAt: null },
         data: { whatsappInviteSentAt: new Date() },

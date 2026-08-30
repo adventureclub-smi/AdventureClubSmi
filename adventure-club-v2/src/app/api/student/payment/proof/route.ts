@@ -26,6 +26,8 @@ export async function POST(req: NextRequest) {
     const paymentType =
       typeField === "FINAL"
         ? PaymentType.FINAL
+        : typeField === "SECOND"
+        ? PaymentType.SECOND
         : PaymentType.INITIAL;
 
     const screenshot =
@@ -80,6 +82,8 @@ if (screenshot instanceof File) {
     const amount =
       paymentType === PaymentType.FINAL
         ? registration.trek.finalPayment
+        : paymentType === PaymentType.SECOND
+        ? registration.trek.secondPayment
         : registration.trek.initialPayment;
 
     await prisma.payment.create({

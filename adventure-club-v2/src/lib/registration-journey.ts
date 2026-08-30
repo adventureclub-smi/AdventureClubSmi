@@ -63,6 +63,9 @@ export type RegistrationLike = {
   initialPaymentDidNotPay?: boolean;
   offlinePaymentCreated: boolean;
   offlinePaymentVerified: boolean;
+  secondPaymentUnlocked?: boolean;
+  secondPaymentPaid?: boolean;
+  secondPaymentDidNotPay?: boolean;
   bondFormSubmitted: boolean;
   attendanceMarked: boolean;
   finalPaymentUnlocked: boolean;
@@ -78,6 +81,7 @@ export type JourneyStep = {
     | "registration"
     | "approval"
     | "initialPayment"
+    | "secondPayment"
     | "bondForm"
     | "tripCentre"
     | "finalPayment"
@@ -101,6 +105,7 @@ export type JourneyAction = {
   variant:
     | "register"
     | "pay"
+    | "secondPay"
     | "tripCentre"
     | "finalPay"
     | "certificate"
@@ -112,6 +117,7 @@ export function getJourneySteps(
   registrationState?: RegistrationState
 ): JourneyStep[] {
   const isSingleInstallment = registration?.trek?.installments === 1;
+  const hasSecondInstallment = registration?.trek?.installments === 3;
 
   const steps: Omit<JourneyStep, "current">[] = [
     {
@@ -155,6 +161,22 @@ export function getJourneySteps(
           ? "Verification Pending"
           : "Pending",
     },
+    // Only for a 3-installment trek — sits between Initial and the rest of
+    // the journey, mirroring how Final Payment is spliced in/out below.
+    ...(hasSecondInstallment
+      ? [
+          {
+            key: "secondPayment" as const,
+            title: "Second Payment",
+            done: !!registration?.secondPaymentPaid,
+            subtitle: registration?.secondPaymentUnlocked
+              ? registration?.secondPaymentPaid
+                ? "Verified"
+                : "Ready to Pay"
+              : "Locked",
+          },
+        ]
+      : []),
     {
       key: "bondForm",
       title: "Bond Form",
@@ -294,16 +316,27 @@ export function getJourneyAction(
   }
 
   const isSingleInstallment = registration.trek?.installments === 1;
+  const hasSecondInstallment = registration.trek?.installments === 3;
 
   if (
     registration.status === "APPROVED" &&
     registration.offlinePaymentCreated &&
     !registration.offlinePaymentVerified
   ) {
+    // Whichever leg is currently "in flight" — offlinePaymentCreated/
+    // Verified are shared flags reused across every installment (see
+    // payments/verify's comment), so the pending one is whichever hasn't
+    // been marked paid yet, in journey order.
+    const pendingLabel = isSingleInstallment
+      ? "Payment"
+      : !registration.initialPaymentPaid
+      ? "Initial Payment"
+      : hasSecondInstallment && !registration.secondPaymentPaid
+      ? "Second Payment"
+      : "Final Payment";
+
     return {
-      text: isSingleInstallment
-        ? "Waiting for Payment Verification"
-        : "Waiting for Initial Payment Verification",
+      text: `Waiting for ${pendingLabel} Verification`,
       href: null,
       variant: "disabled",
     };
@@ -318,6 +351,21 @@ export function getJourneyAction(
       text: isSingleInstallment ? "Pay Full Payment" : "Pay Initial Payment",
       href: `/student/payments/${registration.id}`,
       variant: "pay",
+    };
+  }
+
+  // A 3-installment trek's second leg takes priority over trip centre —
+  // same idea as the final-payment gate below, just earlier in the journey.
+  if (
+    hasSecondInstallment &&
+    registration.initialPaymentPaid &&
+    registration.secondPaymentUnlocked &&
+    !registration.secondPaymentPaid
+  ) {
+    return {
+      text: "Pay Second Payment",
+      href: `/student/payments/${registration.id}?type=SECOND`,
+      variant: "secondPay",
     };
   }
 
@@ -388,7 +436,7 @@ export function getJourneyAction(
 }
 
 export type PaymentInfo = {
-  type: "INITIAL" | "FINAL";
+  type: "INITIAL" | "SECOND" | "FINAL";
   amount: number;
   status: "LOCKED" | "PENDING" | "PAID";
   paidAt?: string | null;
@@ -408,6 +456,7 @@ export type PaymentRegistrationLike = RegistrationLike & {
   payments: PaymentInfo[];
   trek?: {
     initialPayment: number;
+    secondPayment?: number;
     finalPayment: number;
     tripCentrePublished?: boolean;
     installments?: number;
@@ -420,6 +469,9 @@ export function getPaymentBadge(
   if (reg.finalPaymentPaid) return { text: "Fully Paid", tone: "success" };
   if (reg.finalPaymentDidNotPay) return { text: "Didn't Pay", tone: "danger" };
   if (reg.finalPaymentUnlocked) return { text: "Final Payment Due", tone: "waiting" };
+  if (reg.secondPaymentPaid) return { text: "Second Paid", tone: "success" };
+  if (reg.secondPaymentDidNotPay) return { text: "Didn't Pay", tone: "danger" };
+  if (reg.secondPaymentUnlocked) return { text: "Second Payment Due", tone: "waiting" };
   if (reg.initialPaymentPaid) return { text: "Initial Paid", tone: "success" };
   if (reg.initialPaymentDidNotPay) return { text: "Didn't Pay", tone: "danger" };
   if (reg.offlinePaymentCreated) return { text: "Verification Pending", tone: "waiting" };
@@ -435,7 +487,7 @@ export function getPaymentBadge(
 // initialPaymentPaid flag (and the badge next to it) already say Paid.
 function latestRelevantPayment(
   payments: PaymentInfo[],
-  type: "INITIAL" | "FINAL"
+  type: "INITIAL" | "SECOND" | "FINAL"
 ): PaymentInfo | undefined {
   const matches = payments.filter((p) => p.type === type);
   return matches.find((p) => p.status === "PAID") ?? matches[matches.length - 1];
@@ -443,9 +495,11 @@ function latestRelevantPayment(
 
 export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
   const isSingleInstallment = reg.trek?.installments === 1;
+  const hasSecondInstallment = reg.trek?.installments === 3;
   const initialLabel = isSingleInstallment ? "Full Payment" : "Initial Payment";
 
   const initial = latestRelevantPayment(reg.payments, "INITIAL");
+  const second = latestRelevantPayment(reg.payments, "SECOND");
   const final = latestRelevantPayment(reg.payments, "FINAL");
 
   const rows: PaymentRow[] = [
@@ -479,6 +533,40 @@ export function getPaymentRows(reg: PaymentRegistrationLike): PaymentRow[] {
           tone: "neutral",
         },
   ];
+
+  if (hasSecondInstallment && (reg.secondPaymentUnlocked || second)) {
+    rows.push(
+      second?.status === "PAID"
+        ? {
+            label: "Second Payment",
+            amount: second.amount,
+            text: "Paid & Verified",
+            tone: "success",
+            paidAt: second.paidAt,
+            displayOverride: second.displayOverride,
+          }
+        : second?.status === "PENDING"
+        ? {
+            label: "Second Payment",
+            amount: second.amount,
+            text: "Verification Pending",
+            tone: "waiting",
+          }
+        : reg.secondPaymentDidNotPay
+        ? {
+            label: "Second Payment",
+            amount: reg.trek?.secondPayment ?? 0,
+            text: "Didn't Pay",
+            tone: "danger",
+          }
+        : {
+            label: "Second Payment",
+            amount: reg.trek?.secondPayment ?? 0,
+            text: "Not Paid Yet",
+            tone: "neutral",
+          }
+    );
+  }
 
   if (!isSingleInstallment && (reg.finalPaymentUnlocked || final)) {
     rows.push(

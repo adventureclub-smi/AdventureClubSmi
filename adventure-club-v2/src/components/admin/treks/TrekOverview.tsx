@@ -120,6 +120,13 @@ const completed = trek.registrations.filter(
             <p>₹{trek.initialPayment}</p>
           </div>
 
+          {trek.installments === 3 && (
+            <div>
+              <strong>Second Payment</strong>
+              <p>₹{trek.secondPayment}</p>
+            </div>
+          )}
+
           {trek.installments !== 1 && (
             <div>
               <strong>Final Payment</strong>

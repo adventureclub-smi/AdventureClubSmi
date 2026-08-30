@@ -13,16 +13,18 @@ interface Props {
 
 export default function PaymentDrawer({ registration, onClose, refresh }: Props) {
   const [loading, setLoading] = useState(false);
-  const [resubmitting, setResubmitting] = useState<"INITIAL" | "FINAL" | null>(null);
-  const [markingNotPaid, setMarkingNotPaid] = useState<"INITIAL" | "FINAL" | null>(null);
+  const [resubmitting, setResubmitting] = useState<"INITIAL" | "SECOND" | "FINAL" | null>(null);
+  const [markingNotPaid, setMarkingNotPaid] = useState<"INITIAL" | "SECOND" | "FINAL" | null>(null);
   const [markingPaidAtOnce, setMarkingPaidAtOnce] = useState(false);
-  const [editingAmount, setEditingAmount] = useState<"INITIAL" | "FINAL" | null>(null);
+  const [editingAmount, setEditingAmount] = useState<"INITIAL" | "SECOND" | "FINAL" | null>(null);
   const [amountDraft, setAmountDraft] = useState("");
   const [savingAmount, setSavingAmount] = useState(false);
 
   const initialPayment = registration.payments?.find((p) => p.type === "INITIAL");
+  const secondPayment = registration.payments?.find((p) => p.type === "SECOND");
   const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
   const isSingleInstallment = registration.trek?.installments === 1;
+  const hasSecondInstallment = registration.trek?.installments === 3;
 
   const [method, setMethod] = useState("Cash");
   const [reference, setReference] = useState("");
@@ -78,6 +80,21 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
     onClose();
   }
 
+  async function verifySecond() {
+    await fetch("/api/admin/payments/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        registrationId: registration.id,
+        verified: !registration.secondPaymentPaid,
+        type: "SECOND",
+      }),
+    });
+
+    refresh();
+    onClose();
+  }
+
   async function verifyFinal() {
     await fetch("/api/admin/payments/verify", {
       method: "POST",
@@ -93,7 +110,7 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
     onClose();
   }
 
-  async function toggleDidNotPay(type: "INITIAL" | "FINAL", notPaid: boolean) {
+  async function toggleDidNotPay(type: "INITIAL" | "SECOND" | "FINAL", notPaid: boolean) {
     setMarkingNotPaid(type);
 
     try {
@@ -127,12 +144,12 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
     }
   }
 
-  function startEditAmount(type: "INITIAL" | "FINAL", currentAmount: number) {
+  function startEditAmount(type: "INITIAL" | "SECOND" | "FINAL", currentAmount: number) {
     setEditingAmount(type);
     setAmountDraft(String(currentAmount));
   }
 
-  async function saveAmount(type: "INITIAL" | "FINAL") {
+  async function saveAmount(type: "INITIAL" | "SECOND" | "FINAL") {
     setSavingAmount(true);
 
     try {
@@ -150,9 +167,10 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
     }
   }
 
-  async function requireResubmission(type: "INITIAL" | "FINAL") {
+  async function requireResubmission(type: "INITIAL" | "SECOND" | "FINAL") {
+    const label = type === "FINAL" ? "final" : type === "SECOND" ? "second" : "initial";
     const confirmReset = confirm(
-      `This will reopen ${type === "FINAL" ? "final" : "initial"} payment for this student and they'll need to resubmit. Continue?`
+      `This will reopen ${label} payment for this student and they'll need to resubmit. Continue?`
     );
 
     if (!confirmReset) return;
@@ -351,6 +369,124 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
           </button>
         </div>
 
+        {/* Second Payment — only on a 3-installment trek. */}
+
+        {hasSecondInstallment && (
+          <div className={styles.card}>
+            <h3>Second Payment</h3>
+
+            <div className={styles.item}>
+              <span>Status</span>
+
+              <strong>
+                {registration.secondPaymentPaid
+                  ? "🟢 Paid"
+                  : registration.secondPaymentDidNotPay
+                  ? "⚫ Didn't Pay"
+                  : secondPayment?.status === "PENDING"
+                  ? "🟡 Waiting Verification"
+                  : registration.secondPaymentUnlocked
+                  ? "🟡 Unlocked"
+                  : "🔒 Locked"}
+              </strong>
+            </div>
+
+            <div className={styles.item}>
+              <span>Recorded Amount</span>
+
+              {editingAmount === "SECOND" ? (
+                <div className={styles.amountEdit}>
+                  <input
+                    type="number"
+                    className={styles.amountInput}
+                    value={amountDraft}
+                    onChange={(e) => setAmountDraft(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    className={styles.amountSave}
+                    disabled={savingAmount}
+                    onClick={() => saveAmount("SECOND")}
+                    aria-label="Save amount"
+                  >
+                    <Check size={14} />
+                  </button>
+                  <button
+                    className={styles.amountCancel}
+                    onClick={() => setEditingAmount(null)}
+                    aria-label="Cancel"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <span className={styles.amountValue}>
+                  <strong>₹{secondPayment?.amount ?? 0}</strong>
+                  <button
+                    className={styles.editAmountButton}
+                    onClick={() => startEditAmount("SECOND", secondPayment?.amount ?? 0)}
+                    aria-label="Edit recorded amount"
+                  >
+                    <Pencil size={12} />
+                  </button>
+                </span>
+              )}
+            </div>
+
+            <div className={styles.item}>
+              <span>UTR / Reference</span>
+              <strong>{secondPayment?.reference || "-"}</strong>
+            </div>
+
+            <div className={styles.screenshotSection}>
+              <span>Payment Screenshot</span>
+
+              {secondPayment?.notes ? (
+                <a
+                  href={secondPayment.notes}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={styles.imageLink}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={secondPayment.notes}
+                    alt="Second payment screenshot"
+                    className={styles.paymentImage}
+                  />
+                  <p>Click to enlarge</p>
+                </a>
+              ) : (
+                <div className={styles.noImage}>No Screenshot Uploaded</div>
+              )}
+            </div>
+
+            <button className={styles.action} onClick={verifySecond}>
+              {registration.secondPaymentPaid ? "Undo Verification" : "Verify Second Payment"}
+            </button>
+
+            <button
+              className={styles.didNotPayAction}
+              disabled={markingNotPaid === "SECOND"}
+              onClick={() => toggleDidNotPay("SECOND", !registration.secondPaymentDidNotPay)}
+            >
+              {markingNotPaid === "SECOND"
+                ? "Working..."
+                : registration.secondPaymentDidNotPay
+                ? "Undo Didn't Pay"
+                : "Didn't Pay"}
+            </button>
+
+            <button
+              className={styles.secondaryAction}
+              disabled={resubmitting === "SECOND"}
+              onClick={() => requireResubmission("SECOND")}
+            >
+              {resubmitting === "SECOND" ? "Requesting..." : "Require Resubmission"}
+            </button>
+          </div>
+        )}
+
         {/* Final Payment — not applicable to single-installment treks, whose
             one payment (above) already covers the whole trek cost. */}
 
@@ -532,6 +668,12 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
           {registration.paymentPortal && <p>✅ Added to Payment Portal</p>}
           {registration.offlinePaymentCreated && <p>✅ Payment Submitted</p>}
           {registration.initialPaymentPaid && <p>✅ Payment Verified</p>}
+          {hasSecondInstallment && registration.secondPaymentUnlocked && (
+            <p>✅ Second Payment Unlocked</p>
+          )}
+          {hasSecondInstallment && registration.secondPaymentPaid && (
+            <p>✅ Second Payment Paid</p>
+          )}
           {!isSingleInstallment && registration.finalPaymentUnlocked && (
             <p>✅ Final Payment Unlocked</p>
           )}

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const { registrationId, type } = await req.json();
 
-    if (!registrationId || (type !== "INITIAL" && type !== "FINAL")) {
+    if (!registrationId || (type !== "INITIAL" && type !== "SECOND" && type !== "FINAL")) {
       return NextResponse.json(
         { message: "registrationId and a valid type are required." },
         { status: 400 }
@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
 
         ...(type === "FINAL"
           ? { finalPaymentPaid: false, finalPaymentPaidAt: null }
+          : type === "SECOND"
+          ? { secondPaymentPaid: false, secondPaymentPaidAt: null }
           : { initialPaymentPaid: false, initialPaymentPaidAt: null }),
       },
     });

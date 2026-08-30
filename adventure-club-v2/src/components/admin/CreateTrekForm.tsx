@@ -20,8 +20,9 @@ type FormState = {
   trekDay: string;
   date: string;
   price: string;
-  installments: "1" | "2";
+  installments: "1" | "2" | "3";
   initialPayment: string;
+  secondPayment: string;
   finalPayment: string;
   seats: string;
   description: string;
@@ -51,6 +52,7 @@ const emptyForm: FormState = {
   price: "",
   installments: "2",
   initialPayment: "",
+  secondPayment: "",
   finalPayment: "",
   seats: "",
   description: "",
@@ -127,8 +129,9 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           trekDay: trek.trekDay || "",
           date: toDateInput(trek.date),
           price: String(trek.price ?? ""),
-          installments: trek.installments === 1 ? "1" : "2",
+          installments: trek.installments === 1 ? "1" : trek.installments === 3 ? "3" : "2",
           initialPayment: String(trek.initialPayment ?? ""),
+          secondPayment: String(trek.secondPayment ?? ""),
           finalPayment: String(trek.finalPayment ?? ""),
           seats: String(trek.seats ?? ""),
           description: trek.description || "",
@@ -237,6 +240,7 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
       coverImage,
       price: Number(form.price),
       initialPayment: Number(form.initialPayment),
+      secondPayment: Number(form.secondPayment) || 0,
       finalPayment: Number(form.finalPayment),
       seats: Number(form.seats),
       distanceKm: Number(form.distanceKm) || 0,
@@ -512,6 +516,7 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
               </small>
               <select name="installments" value={form.installments} onChange={handleChange}>
                 <option value="2">2 Installments (Initial + Final)</option>
+                <option value="3">3 Installments (Initial + Second + Final)</option>
                 <option value="1">1 Installment (Full Payment)</option>
               </select>
             </label>
@@ -527,6 +532,20 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
                 required
               />
             </label>
+
+            {form.installments === "3" && (
+              <label className={styles.field}>
+                <span>Second Payment (₹)</span>
+                <input
+                  type="number"
+                  name="secondPayment"
+                  placeholder="e.g. 500"
+                  value={form.secondPayment}
+                  onChange={handleChange}
+                  required
+                />
+              </label>
+            )}
 
             {form.installments !== "1" && (
               <label className={styles.field}>

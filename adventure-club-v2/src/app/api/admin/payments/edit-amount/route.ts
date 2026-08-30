@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const { registrationId, type, amount } = await req.json();
 
-    const paymentType = type === "FINAL" ? "FINAL" : "INITIAL";
+    const paymentType = type === "FINAL" ? "FINAL" : type === "SECOND" ? "SECOND" : "INITIAL";
     const parsedAmount = Number(amount);
 
     const registration = await prisma.registration.findUnique({
@@ -38,7 +38,11 @@ export async function POST(req: NextRequest) {
       // separately) — create one so the correction actually has somewhere
       // to live, matching whatever paid/not-paid state already exists.
       const isPaid =
-        paymentType === "FINAL" ? registration.finalPaymentPaid : registration.initialPaymentPaid;
+        paymentType === "FINAL"
+          ? registration.finalPaymentPaid
+          : paymentType === "SECOND"
+          ? registration.secondPaymentPaid
+          : registration.initialPaymentPaid;
 
       await prisma.payment.create({
         data: {

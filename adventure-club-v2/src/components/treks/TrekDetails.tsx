@@ -29,6 +29,7 @@ type Trek = {
   price: number;
   installments: number;
   initialPayment: number;
+  secondPayment: number;
   finalPayment: number;
   difficulty: string;
   duration: string;
@@ -58,6 +59,8 @@ function journeyActionNote(variant: JourneyAction["variant"], isSingleInstallmen
       return `Your registration has been approved. Complete the ${
         isSingleInstallment ? "payment" : "initial payment"
       } before the countdown ends to confirm your seat.`;
+    case "secondPay":
+      return "Your second payment is now open — complete it to stay on track for your spot.";
     case "finalPay":
       return "Your final payment is now open — complete it to lock in your spot.";
     case "tripCentre":
@@ -231,6 +234,13 @@ export default function TrekDetails({
                     <p>Initial Payment</p>
                     <h3>₹{trek.initialPayment}</h3>
                   </div>
+
+                  {trek.installments === 3 && (
+                    <div>
+                      <p>Second Payment</p>
+                      <h3>₹{trek.secondPayment}</h3>
+                    </div>
+                  )}
 
                   <div>
                     <p>Final Payment</p>
@@ -441,6 +451,7 @@ export default function TrekDetails({
                   <Wallet size={16} />{" "}
                   {journeyAction.text}
                   {journeyAction.variant === "pay" && ` ₹${trek.initialPayment}`}
+                  {journeyAction.variant === "secondPay" && ` ₹${trek.secondPayment}`}
                   {journeyAction.variant === "finalPay" && ` ₹${trek.finalPayment}`}
                 </Link>
               ) : (

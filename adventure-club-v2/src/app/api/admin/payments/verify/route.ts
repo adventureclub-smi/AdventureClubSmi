@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     const { registrationId, verified, type } = await req.json();
 
-    const paymentType = type === "FINAL" ? "FINAL" : "INITIAL";
+    const paymentType = type === "FINAL" ? "FINAL" : type === "SECOND" ? "SECOND" : "INITIAL";
 
     const payment = await prisma.payment.findFirst({
       where: {
@@ -68,6 +68,13 @@ export async function POST(req: NextRequest) {
               finalPaymentPaidAtOnce: false,
               ...(verified ? { finalPaymentDidNotPay: false } : {}),
             }
+          : paymentType === "SECOND"
+          ? {
+              secondPaymentPaid: verified,
+              offlinePaymentVerified: verified,
+              secondPaymentPaidAt: verified ? new Date() : null,
+              ...(verified ? { secondPaymentDidNotPay: false } : {}),
+            }
           : {
               initialPaymentPaid: verified,
               offlinePaymentVerified: verified,
@@ -89,7 +96,7 @@ export async function POST(req: NextRequest) {
     // and only if the trek even has a group link set. The atomic claim
     // (updateMany matching whatsappInviteSentAt: null) guards against a
     // double-send if this ever races.
-    if (paymentType !== "FINAL" && verified && registration?.trek.whatsappGroupLink && registration.user) {
+    if (paymentType === "INITIAL" && verified && registration?.trek.whatsappGroupLink && registration.user) {
       const claimed = await prisma.registration.updateMany({
         where: { id: registrationId, whatsappInviteSentAt: null },
         data: { whatsappInviteSentAt: new Date() },

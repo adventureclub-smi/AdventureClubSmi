@@ -20,9 +20,11 @@ type PaymentRegistration = {
   registrationNumber: string;
   guestName?: string | null;
   user?: { fullName: string } | null;
-  trek: { initialPayment: number; finalPayment: number; installments: number };
+  trek: { initialPayment: number; secondPayment: number; finalPayment: number; installments: number };
   initialPaymentPaid: boolean;
   offlinePaymentCreated: boolean;
+  secondPaymentPaid: boolean;
+  secondPaymentUnlocked: boolean;
   finalPaymentPaid: boolean;
   finalPaymentUnlocked: boolean;
   attendanceMarked: boolean;
@@ -30,7 +32,7 @@ type PaymentRegistration = {
 
 type Props = {
   registrationId: string;
-  paymentType: "INITIAL" | "FINAL";
+  paymentType: "INITIAL" | "SECOND" | "FINAL";
 };
 
 export default function StudentPaymentPage({ registrationId, paymentType }: Props) {
@@ -72,6 +74,8 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
           const amount =
             paymentType === "FINAL"
               ? registrationData.trek.finalPayment
+              : paymentType === "SECOND"
+              ? registrationData.trek.secondPayment
               : registrationData.trek.initialPayment;
 
           const paymentNote = `${registrationData.registrationNumber} - ${
@@ -132,7 +136,11 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
   }
 
   const amount =
-    paymentType === "FINAL" ? registration.trek.finalPayment : registration.trek.initialPayment;
+    paymentType === "FINAL"
+      ? registration.trek.finalPayment
+      : paymentType === "SECOND"
+      ? registration.trek.secondPayment
+      : registration.trek.initialPayment;
 
   const paymentNote = `${registration.registrationNumber} - ${
     registration.user?.fullName ?? registration.guestName
@@ -170,6 +178,8 @@ export default function StudentPaymentPage({ registrationId, paymentType }: Prop
           <h1>
             {paymentType === "FINAL"
               ? "Final Payment"
+              : paymentType === "SECOND"
+              ? "Second Payment"
               : registration.trek.installments === 1
               ? "Full Payment"
               : "Initial Payment"}

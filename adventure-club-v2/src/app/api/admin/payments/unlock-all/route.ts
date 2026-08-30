@@ -11,32 +11,45 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { trekId } = await req.json();
+    const { trekId, type } = await req.json();
 
     if (!trekId) {
       return NextResponse.json({ message: "trekId is required." }, { status: 400 });
     }
 
-    const where = {
-      trekId,
-      initialPaymentPaid: true,
-      status: { not: "REJECTED" as const },
-      finalPaymentUnlocked: false,
-    };
+    // type is optional and defaults to FINAL — every existing caller
+    // predates the second-payment leg and never sends it.
+    const isSecond = type === "SECOND";
+
+    const where = isSecond
+      ? {
+          trekId,
+          initialPaymentPaid: true,
+          status: { not: "REJECTED" as const },
+          secondPaymentUnlocked: false,
+        }
+      : {
+          trekId,
+          initialPaymentPaid: true,
+          status: { not: "REJECTED" as const },
+          finalPaymentUnlocked: false,
+        };
 
     // Fetched before the updateMany (which only returns a count) so every
     // newly-unlocked participant can be emailed — the where clause itself
     // guarantees each of these is a genuine locked -> unlocked transition.
-    const toNotify = await prisma.registration.findMany({
-      where,
-      include: { user: true, trek: true },
-    });
+    // (No "second payment open" email exists yet, so this list only gets
+    // used for the FINAL case below.)
+    const toNotify = isSecond
+      ? []
+      : await prisma.registration.findMany({
+          where,
+          include: { user: true, trek: true },
+        });
 
     const result = await prisma.registration.updateMany({
       where,
-      data: {
-        finalPaymentUnlocked: true,
-      },
+      data: isSecond ? { secondPaymentUnlocked: true } : { finalPaymentUnlocked: true },
     });
 
     for (const registration of toNotify) {
@@ -48,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      message: `Final payment unlocked for ${result.count} participant(s).`,
+      message: `${isSecond ? "Second" : "Final"} payment unlocked for ${result.count} participant(s).`,
       count: result.count,
     });
   } catch (error) {

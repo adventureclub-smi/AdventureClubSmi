@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       price,
       installments,
       initialPayment,
+      secondPayment,
       finalPayment,
       seats,
       description,
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
       restrictedYears,
     } = body;
 
-    const installmentCount = Number(installments) === 1 ? 1 : 2;
+    const installmentCount = Number(installments) === 1 ? 1 : Number(installments) === 3 ? 3 : 2;
 
     if (
       !title ||
@@ -70,7 +71,8 @@ export async function POST(req: Request) {
       !date ||
       !price ||
       !initialPayment ||
-      (installmentCount === 2 && !finalPayment) ||
+      (installmentCount >= 2 && !finalPayment) ||
+      (installmentCount === 3 && !secondPayment) ||
       !seats ||
       !description
     ) {
@@ -102,6 +104,8 @@ export async function POST(req: Request) {
         installments: installmentCount,
 
         initialPayment: Number(initialPayment),
+
+        secondPayment: installmentCount === 3 ? Number(secondPayment) : 0,
 
         finalPayment: installmentCount === 1 ? 0 : Number(finalPayment),
 

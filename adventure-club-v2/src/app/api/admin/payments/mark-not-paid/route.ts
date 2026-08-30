@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const { registrationId, type, notPaid } = await req.json();
 
-    const paymentType = type === "FINAL" ? "FINAL" : "INITIAL";
+    const paymentType = type === "FINAL" ? "FINAL" : type === "SECOND" ? "SECOND" : "INITIAL";
 
     // The student-facing view reads the Payment record before falling back
     // to the registration's own flags, so a stale PAID/PENDING row (common
@@ -32,6 +32,11 @@ export async function POST(req: NextRequest) {
               ...(notPaid
                 ? { finalPaymentPaid: false, finalPaymentPaidAt: null, finalPaymentPaidAtOnce: false }
                 : {}),
+            }
+          : paymentType === "SECOND"
+          ? {
+              secondPaymentDidNotPay: !!notPaid,
+              ...(notPaid ? { secondPaymentPaid: false, secondPaymentPaidAt: null } : {}),
             }
           : {
               initialPaymentDidNotPay: !!notPaid,

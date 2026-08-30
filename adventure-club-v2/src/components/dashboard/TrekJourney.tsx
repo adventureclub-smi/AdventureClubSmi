@@ -22,7 +22,7 @@ import styles from "./TrekJourney.module.scss";
 
 type Payment = {
   id: string;
-  type: "INITIAL" | "FINAL";
+  type: "INITIAL" | "SECOND" | "FINAL";
   amount: number;
   status: "LOCKED" | "PENDING" | "PAID";
   paidAt?: string | null;

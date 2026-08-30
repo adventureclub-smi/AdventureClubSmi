@@ -12,25 +12,31 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
+  // type is optional and defaults to FINAL — every existing caller predates
+  // the second-payment leg and never sends it.
+  const isSecond = body.type === "SECOND";
+
   const existing = await prisma.registration.findUnique({
     where: { id: body.registrationId },
-    select: { finalPaymentUnlocked: true },
+    select: { finalPaymentUnlocked: true, secondPaymentUnlocked: true },
   });
 
   const registration = await prisma.registration.update({
     where: {
       id: body.registrationId,
     },
-    data: {
-      finalPaymentUnlocked: body.unlock,
-    },
+    data: isSecond
+      ? { secondPaymentUnlocked: body.unlock }
+      : { finalPaymentUnlocked: body.unlock },
     include: {
       user: true,
       trek: true,
     },
   });
 
-  if (body.unlock && existing && !existing.finalPaymentUnlocked) {
+  // No "second payment open" email exists yet (unlike Final Payment) — this
+  // just flips the flag silently for now.
+  if (!isSecond && body.unlock && existing && !existing.finalPaymentUnlocked) {
     try {
       await notifyFinalPaymentOpen(registration);
     } catch (emailError) {

@@ -4,6 +4,8 @@ import styles from "./PaymentTimeline.module.scss";
 type TimelineRegistration = {
   initialPaymentPaid: boolean;
   offlinePaymentCreated: boolean;
+  secondPaymentPaid?: boolean;
+  secondPaymentUnlocked?: boolean;
   finalPaymentPaid: boolean;
   finalPaymentUnlocked: boolean;
   attendanceMarked: boolean;
@@ -17,6 +19,7 @@ export default function PaymentTimeline({
   installments?: number;
 }) {
   const isSingleInstallment = installments === 1;
+  const hasSecondInstallment = installments === 3;
 
   const steps = [
     {
@@ -50,6 +53,25 @@ export default function PaymentTimeline({
       state: registration.initialPaymentPaid ? ("done" as const) : ("locked" as const),
       icon: FileText,
     },
+    ...(hasSecondInstallment
+      ? [
+          {
+            key: "second",
+            title: "Second Payment",
+            subtitle: registration.secondPaymentPaid
+              ? "Verified"
+              : registration.secondPaymentUnlocked
+              ? "Ready to pay"
+              : "Locked",
+            state: registration.secondPaymentPaid
+              ? ("done" as const)
+              : registration.secondPaymentUnlocked
+              ? ("waiting" as const)
+              : ("locked" as const),
+            icon: CreditCard,
+          },
+        ]
+      : []),
     ...(isSingleInstallment
       ? []
       : [

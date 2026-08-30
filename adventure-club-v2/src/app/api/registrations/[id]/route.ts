@@ -86,6 +86,9 @@ export async function PUT(
           ? {
               initialPaymentPaid: true,
               initialPaymentPaidAt: new Date(),
+              secondPaymentUnlocked: true,
+              secondPaymentPaid: true,
+              secondPaymentPaidAt: new Date(),
               finalPaymentUnlocked: true,
               finalPaymentPaid: true,
               finalPaymentPaidAt: new Date(),

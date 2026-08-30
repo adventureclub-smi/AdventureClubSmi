@@ -19,6 +19,7 @@ enum RegistrationStatus {
 
 enum PaymentType {
   INITIAL
+  SECOND
   FINAL
 }
 
@@ -199,9 +200,14 @@ model Trek {
   // single payment auto-completes both the initial and final payment flags
   // once verified — see the payments/verify and payments/offline routes).
   // 2 = the existing initial-then-final split.
+  // 3 = initial + second + final — secondPayment is only meaningful here;
+  // it stays 0 for 1- and 2-installment treks the same way finalPayment
+  // stays 0 for a 1-installment one.
   installments Int @default(2)
 
   initialPayment Int
+
+  secondPayment Int @default(0)
 
   finalPayment Int
 
@@ -401,6 +407,20 @@ model Registration {
   // then flip this manually. Purely a bookkeeping flag, independent of
   // whether the invite email itself was ever sent.
   whatsappGroupJoined Boolean @default(false)
+
+  // ===== Second Payment (installments === 3 only) =====
+
+  secondPaymentUnlocked Boolean @default(false)
+
+  secondPaymentPaid Boolean @default(false)
+
+  secondPaymentPaidAt DateTime?
+
+  secondPaymentId String?
+
+  // Explicitly recorded as never paid (distinct from just not-yet-paid) —
+  // mainly for historical trek records where there's no one left to chase.
+  secondPaymentDidNotPay Boolean @default(false)
 
   // ===== Bond Form =====
 

@@ -13,7 +13,7 @@ export default async function Page({
   return (
     <PaymentProofPage
       registrationId={registrationId}
-      paymentType={type === "FINAL" ? "FINAL" : "INITIAL"}
+      paymentType={type === "FINAL" ? "FINAL" : type === "SECOND" ? "SECOND" : "INITIAL"}
     />
   );
 }

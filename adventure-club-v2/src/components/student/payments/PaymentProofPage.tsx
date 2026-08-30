@@ -11,7 +11,7 @@ const MAX_SCREENSHOT_BYTES = 1024 * 1024; // 1MB
 
 type Props = {
   registrationId: string;
-  paymentType: "INITIAL" | "FINAL";
+  paymentType: "INITIAL" | "SECOND" | "FINAL";
 };
 
 export default function PaymentProofPage({ registrationId, paymentType }: Props) {

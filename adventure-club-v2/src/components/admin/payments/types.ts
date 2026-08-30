@@ -1,6 +1,6 @@
 export type PaymentRecord = {
   id: string;
-  type: "INITIAL" | "FINAL";
+  type: "INITIAL" | "SECOND" | "FINAL";
   amount: number;
   status: string;
   reference: string | null;
@@ -14,6 +14,9 @@ export type PaymentRegistration = {
 
   initialPaymentPaid: boolean;
   initialPaymentDidNotPay: boolean;
+  secondPaymentPaid: boolean;
+  secondPaymentDidNotPay: boolean;
+  secondPaymentUnlocked: boolean;
   finalPaymentPaid: boolean;
   finalPaymentDidNotPay: boolean;
   finalPaymentPaidAtOnce: boolean;

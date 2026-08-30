@@ -17,6 +17,9 @@ type FilterOption =
   | "initialPaid"
   | "initialDidNotPay"
   | "initialPending"
+  | "secondPaid"
+  | "secondDidNotPay"
+  | "secondPending"
   | "finalPaid"
   | "finalDidNotPay"
   | "finalPending";
@@ -28,6 +31,9 @@ const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
   { value: "initialPaid", label: "Initial: Paid" },
   { value: "initialDidNotPay", label: "Initial: Didn't Pay" },
   { value: "initialPending", label: "Initial: Pending" },
+  { value: "secondPaid", label: "Second: Paid" },
+  { value: "secondDidNotPay", label: "Second: Didn't Pay" },
+  { value: "secondPending", label: "Second: Pending" },
   { value: "finalPaid", label: "Final: Paid" },
   { value: "finalDidNotPay", label: "Final: Didn't Pay" },
   { value: "finalPending", label: "Final: Pending" },
@@ -150,9 +156,11 @@ export default function PaymentsTable({ trekId }: Props) {
     }
   }
 
-  async function handleUnlockAll() {
+  async function handleUnlockAll(type?: "SECOND") {
     const confirmUnlock = confirm(
-      "Unlock final payment for every participant who has completed their initial payment on this trek?"
+      type === "SECOND"
+        ? "Unlock second payment for every participant who has completed their initial payment on this trek?"
+        : "Unlock final payment for every participant who has completed their initial payment on this trek?"
     );
 
     if (!confirmUnlock) return;
@@ -164,7 +172,7 @@ export default function PaymentsTable({ trekId }: Props) {
       const res = await fetch("/api/admin/payments/unlock-all", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trekId }),
+        body: JSON.stringify({ trekId, type }),
       });
 
       const data = await res.json();
@@ -177,6 +185,7 @@ export default function PaymentsTable({ trekId }: Props) {
   }
 
   const isSingleInstallment = registrations[0]?.trek?.installments === 1;
+  const hasSecondInstallment = registrations[0]?.trek?.installments === 3;
 
   // registrations.some(...) alone is always false on a trek with zero
   // registrations, no matter what the trek's own status actually is — so
@@ -243,6 +252,12 @@ export default function PaymentsTable({ trekId }: Props) {
           return !registration.initialPaymentPaid && registration.initialPaymentDidNotPay;
         case "initialPending":
           return !registration.initialPaymentPaid && !registration.initialPaymentDidNotPay;
+        case "secondPaid":
+          return registration.secondPaymentPaid;
+        case "secondDidNotPay":
+          return !registration.secondPaymentPaid && registration.secondPaymentDidNotPay;
+        case "secondPending":
+          return !registration.secondPaymentPaid && !registration.secondPaymentDidNotPay;
         case "finalPaid":
           return registration.finalPaymentPaid;
         case "finalDidNotPay":
@@ -353,11 +368,22 @@ export default function PaymentsTable({ trekId }: Props) {
       </div>
 
       <div className={styles.bulkActions}>
+        {hasSecondInstallment && (
+          <button
+            className={styles.unlockAllButton}
+            disabled={unlockingAll}
+            onClick={() => handleUnlockAll("SECOND")}
+          >
+            <Unlock size={15} />
+            {unlockingAll ? "Unlocking..." : "Unlock Second Payment for All"}
+          </button>
+        )}
+
         {!isSingleInstallment && (
           <button
             className={styles.unlockAllButton}
             disabled={unlockingAll}
-            onClick={handleUnlockAll}
+            onClick={() => handleUnlockAll()}
           >
             <Unlock size={15} />
             {unlockingAll ? "Unlocking..." : "Unlock Final Payment for All"}
@@ -389,6 +415,7 @@ export default function PaymentsTable({ trekId }: Props) {
             const participant =
               registration.user?.fullName ?? registration.guestName ?? "Unknown Participant";
             const clubId = registration.user?.clubId ?? "-";
+            const secondPayment = registration.payments?.find((p) => p.type === "SECOND");
             const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
 
             return (
@@ -426,6 +453,34 @@ export default function PaymentsTable({ trekId }: Props) {
                       </strong>
                     )}
                   </div>
+
+                  {hasSecondInstallment && (
+                    <div className={styles.infoCard}>
+                      <span>Second Payment</span>
+
+                      {registration.secondPaymentPaid ? (
+                        <strong className={styles.success}>
+                          <CheckCircle2 size={15} /> Paid
+                        </strong>
+                      ) : registration.secondPaymentDidNotPay ? (
+                        <strong className={styles.danger}>
+                          <XCircle size={15} /> Didn&apos;t Pay
+                        </strong>
+                      ) : secondPayment?.status === "PENDING" ? (
+                        <strong className={styles.warning}>
+                          <Clock size={15} /> Waiting Verification
+                        </strong>
+                      ) : registration.secondPaymentUnlocked ? (
+                        <strong className={styles.warning}>
+                          <Clock size={15} /> Unlocked
+                        </strong>
+                      ) : (
+                        <strong className={styles.locked}>
+                          <Lock size={15} /> Locked
+                        </strong>
+                      )}
+                    </div>
+                  )}
 
                   {!isSingleInstallment && (
                     <div className={styles.infoCard}>

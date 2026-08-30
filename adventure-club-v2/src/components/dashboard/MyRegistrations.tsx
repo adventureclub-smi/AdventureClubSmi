@@ -19,7 +19,7 @@ import styles from "./MyRegistrations.module.scss";
 
 type Payment = {
   id: string;
-  type: "INITIAL" | "FINAL";
+  type: "INITIAL" | "SECOND" | "FINAL";
   amount: number;
   status: "LOCKED" | "PENDING" | "PAID";
   paymentMethod?: string | null;
