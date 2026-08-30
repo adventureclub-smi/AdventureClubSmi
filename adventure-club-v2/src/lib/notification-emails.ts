@@ -390,6 +390,23 @@ export async function notifyFinalPaymentOpen(registration: RegistrationWithUserA
   });
 }
 
+// ===== Second payment opens -> that student (3-installment treks only) =====
+export async function notifySecondPaymentOpen(registration: RegistrationWithUserAndTrek) {
+  if (!registration.user) return;
+
+  const { user, trek } = registration;
+
+  await sendEmail({
+    to: user.email,
+    subject: `Second payment is open: ${trek.title}`,
+    html: emailShell(`
+      <h2 style="color:#008862;">Second payment is now open</h2>
+      <p>Hi ${firstName(user.fullName)}, the second payment for <strong>${trek.title}</strong> is now open.</p>
+      ${emailButton(`${getSiteUrl()}/student/payments/${registration.id}?type=SECOND`, "Pay Second Payment")}
+    `),
+  });
+}
+
 // ===== Certificate issued -> that student =====
 export async function notifyCertificateReady(
   registration: RegistrationWithUserAndTrek,

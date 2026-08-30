@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { notifyFinalPaymentOpen } from "@/lib/notification-emails";
+import { notifyFinalPaymentOpen, notifySecondPaymentOpen } from "@/lib/notification-emails";
 
 export async function POST(req: NextRequest) {
   const admin = await requireAdmin();
@@ -38,14 +38,10 @@ export async function POST(req: NextRequest) {
     // Fetched before the updateMany (which only returns a count) so every
     // newly-unlocked participant can be emailed — the where clause itself
     // guarantees each of these is a genuine locked -> unlocked transition.
-    // (No "second payment open" email exists yet, so this list only gets
-    // used for the FINAL case below.)
-    const toNotify = isSecond
-      ? []
-      : await prisma.registration.findMany({
-          where,
-          include: { user: true, trek: true },
-        });
+    const toNotify = await prisma.registration.findMany({
+      where,
+      include: { user: true, trek: true },
+    });
 
     const result = await prisma.registration.updateMany({
       where,
@@ -54,9 +50,13 @@ export async function POST(req: NextRequest) {
 
     for (const registration of toNotify) {
       try {
-        await notifyFinalPaymentOpen(registration);
+        if (isSecond) {
+          await notifySecondPaymentOpen(registration);
+        } else {
+          await notifyFinalPaymentOpen(registration);
+        }
       } catch (emailError) {
-        console.error("Failed to send final-payment-open email:", emailError);
+        console.error(`Failed to send ${isSecond ? "second" : "final"}-payment-open email:`, emailError);
       }
     }
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     console.error(error);
 
     return NextResponse.json(
-      { message: "Failed to unlock final payment for all." },
+      { message: "Failed to unlock payment for all." },
       { status: 500 }
     );
   }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { notifyFinalPaymentOpen } from "@/lib/notification-emails";
+import { notifyFinalPaymentOpen, notifySecondPaymentOpen } from "@/lib/notification-emails";
 
 export async function POST(req: NextRequest) {
   const admin = await requireAdmin();
@@ -34,8 +34,14 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // No "second payment open" email exists yet (unlike Final Payment) — this
-  // just flips the flag silently for now.
+  if (isSecond && body.unlock && existing && !existing.secondPaymentUnlocked) {
+    try {
+      await notifySecondPaymentOpen(registration);
+    } catch (emailError) {
+      console.error("Failed to send second-payment-open email:", emailError);
+    }
+  }
+
   if (!isSecond && body.unlock && existing && !existing.finalPaymentUnlocked) {
     try {
       await notifyFinalPaymentOpen(registration);
