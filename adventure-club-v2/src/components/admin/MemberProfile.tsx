@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Lock, Unlock, ExternalLink, Mail, MessageCircle } from "lucide-react";
+import { ShieldCheck, Lock, Unlock, ExternalLink, Mail, MessageCircle, Copy, Check } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import { getProfileCompletion } from "@/lib/profile-completion";
@@ -211,6 +211,14 @@ export default function MemberProfile({
     });
 
     if (res.ok) setUser({ ...user, emailLocked: nextLocked });
+  }
+
+  const [copiedField, setCopiedField] = useState<"type" | "number" | null>(null);
+
+  function copyGovtField(value: string, field: "type" | "number") {
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
   }
 
   async function toggleGovtVerified() {
@@ -557,11 +565,31 @@ export default function MemberProfile({
 
           {user.govtIdType ? (
             <>
-              <p>
-                <strong>ID Type:</strong> {ID_TYPE_LABELS[user.govtIdType] || user.govtIdType}
+              <p className={styles.idRow}>
+                <span>
+                  <strong>ID Type:</strong> {ID_TYPE_LABELS[user.govtIdType] || user.govtIdType}
+                </span>
+                <button
+                  type="button"
+                  className={styles.copyBtn}
+                  onClick={() => copyGovtField(ID_TYPE_LABELS[user.govtIdType!] || user.govtIdType!, "type")}
+                  aria-label="Copy ID type"
+                >
+                  {copiedField === "type" ? <Check size={13} /> : <Copy size={13} />}
+                </button>
               </p>
-              <p>
-                <strong>ID Number:</strong> {user.govtIdNumber}
+              <p className={styles.idRow}>
+                <span>
+                  <strong>ID Number:</strong> {user.govtIdNumber}
+                </span>
+                <button
+                  type="button"
+                  className={styles.copyBtn}
+                  onClick={() => copyGovtField(user.govtIdNumber!, "number")}
+                  aria-label="Copy ID number"
+                >
+                  {copiedField === "number" ? <Check size={13} /> : <Copy size={13} />}
+                </button>
               </p>
 
               {user.govtIdImageUrl && (
