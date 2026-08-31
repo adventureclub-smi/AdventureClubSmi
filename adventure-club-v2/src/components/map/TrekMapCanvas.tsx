@@ -115,12 +115,17 @@ export default function TrekMapCanvas({ pins }: { pins: TrekMapPin[] }) {
       scrollWheelZoom: false,
     }).setView([13.0827, 77.5946], 8);
 
+    // CARTO's free unauthenticated basemap CDN (basemaps.cartocdn.com) now
+    // requires an API key — unauthenticated requests still return 200, but
+    // the tile image itself is watermarked "API KEY REQUIRED" instead of
+    // showing the actual map. Esri's dark gray canvas is a genuinely free,
+    // no-key raster basemap that reads the same way visually.
     L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
       {
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        maxZoom: 19,
+          '&copy; <a href="https://www.esri.com">Esri</a> — Esri, DeLorme, NAVTEQ',
+        maxZoom: 16,
       }
     ).addTo(map);
 
