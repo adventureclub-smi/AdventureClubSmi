@@ -119,7 +119,10 @@ export default function TrekMapCanvas({ pins }: { pins: TrekMapPin[] }) {
     // requires an API key — unauthenticated requests still return 200, but
     // the tile image itself is watermarked "API KEY REQUIRED" instead of
     // showing the actual map. Esri's dark gray canvas is a genuinely free,
-    // no-key raster basemap that reads the same way visually.
+    // no-key raster basemap that reads the same way visually — but unlike
+    // CARTO's single-layer tiles, Esri splits it into a terrain/boundary
+    // base layer and a separate transparent labels layer, so both are
+    // needed to get place names back.
     L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
       {
@@ -127,6 +130,11 @@ export default function TrekMapCanvas({ pins }: { pins: TrekMapPin[] }) {
           '&copy; <a href="https://www.esri.com">Esri</a> — Esri, DeLorme, NAVTEQ',
         maxZoom: 16,
       }
+    ).addTo(map);
+
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom: 16 }
     ).addTo(map);
 
     const markers: L.Marker[] = pins.map((pin) => {
