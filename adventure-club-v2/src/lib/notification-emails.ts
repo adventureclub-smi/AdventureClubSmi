@@ -427,6 +427,7 @@ export async function notifyRecruitmentDecision(
   const trimmedContext = options?.message?.trim();
   const contextHtml = trimmedContext ? escapeHtml(trimmedContext) : null;
   const team = options?.team?.trim();
+  const isGuide = accepted && team === "Guide";
   const name = escapeHtml(firstName(applicant.fullName));
 
   await sendEmail({
@@ -435,7 +436,18 @@ export async function notifyRecruitmentDecision(
       ? "You're in! Your NAVIRA recruitment result"
       : "Your NAVIRA recruitment result",
     html: emailShell(
-      accepted
+      isGuide
+        ? `
+          <h2 style="color:#008862;">Hey ${name}!! 🌻</h2>
+          <p>We're excited to let you know that you've been selected to be a part of the NAVIRA guides🎉🏔️</p>
+          <p><strong>Selected Team:</strong> Trek Guide</p>
+          <p>🟢As a trek guide ,your role is different from that of a core team member .  Your responsibilities include helping , encouraging and assisting people on the actual treks. This is a very crucial part of making the trek  a memorable experience for everyone .</p>
+          <p>We really enjoyed getting to know you through the interview and felt that your skills and energy would be a great fit for NAVIRA. We're looking forward to having you on this journey with us and building something amazing together! 🌿✨</p>
+          <p>Welcome to the team! 🌻</p>
+          ${contextHtml ? `<p>${contextHtml}</p>` : ""}
+          <p>-Team NAVIRA</p>
+        `
+        : accepted
         ? `
           <h2 style="color:#008862;">Hey ${name}!! 🌻</h2>
           <p>We're excited to let you know that you've been SELECTED to be a part of the NAVIRA Core Team! 🎉🏔️</p>
