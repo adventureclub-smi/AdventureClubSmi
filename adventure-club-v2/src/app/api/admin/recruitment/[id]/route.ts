@@ -35,11 +35,18 @@ export async function PUT(
   }
 
   const { id } = await params;
-  const { decisionStatus, message } = await req.json();
+  const { decisionStatus, message, team } = await req.json();
 
   if (decisionStatus !== "ACCEPTED" && decisionStatus !== "REJECTED") {
     return NextResponse.json(
       { message: "decisionStatus must be ACCEPTED or REJECTED." },
+      { status: 400 }
+    );
+  }
+
+  if (decisionStatus === "ACCEPTED" && !team?.trim()) {
+    return NextResponse.json(
+      { message: "Pick which team they're joining before sending the acceptance email." },
       { status: 400 }
     );
   }
@@ -56,11 +63,10 @@ export async function PUT(
   });
 
   try {
-    await notifyRecruitmentDecision(
-      application.user,
-      decisionStatus === "ACCEPTED",
-      typeof message === "string" ? message : undefined
-    );
+    await notifyRecruitmentDecision(application.user, decisionStatus === "ACCEPTED", {
+      team: typeof team === "string" ? team : undefined,
+      message: typeof message === "string" ? message : undefined,
+    });
   } catch (emailError) {
     console.error("Failed to send recruitment decision email:", emailError);
     return NextResponse.json(

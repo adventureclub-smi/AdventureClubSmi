@@ -7,7 +7,7 @@ import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
 import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
-import { PREFERENCE_LABELS } from "@/lib/recruitment-options";
+import { PREFERENCE_LABELS, RECRUITMENT_TEAMS } from "@/lib/recruitment-options";
 import { formatIstDateTimeLocal } from "@/lib/ist-time";
 import styles from "./RecruitmentAdmin.module.scss";
 
@@ -67,6 +67,7 @@ export default function RecruitmentAdmin() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [decidingId, setDecidingId] = useState<string | null>(null);
   const [messageDrafts, setMessageDrafts] = useState<Record<string, string>>({});
+  const [teamChoices, setTeamChoices] = useState<Record<string, string>>({});
 
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [generatingQr, setGeneratingQr] = useState(false);
@@ -114,7 +115,11 @@ export default function RecruitmentAdmin() {
     }
   }
 
-  async function decideApplication(id: string, decisionStatus: "ACCEPTED" | "REJECTED") {
+  async function decideApplication(
+    id: string,
+    decisionStatus: "ACCEPTED" | "REJECTED",
+    team?: string
+  ) {
     const verb = decisionStatus === "ACCEPTED" ? "accept" : "reject";
     if (!confirm(`Email this applicant to let them know they're ${verb === "accept" ? "in" : "not moving forward"}?`)) {
       return;
@@ -126,24 +131,27 @@ export default function RecruitmentAdmin() {
       const res = await fetch(`/api/admin/recruitment/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ decisionStatus, message: messageDrafts[id] ?? "" }),
+        body: JSON.stringify({ decisionStatus, message: messageDrafts[id] ?? "", team }),
       });
 
       const data = await res.json().catch(() => null);
 
-      if (res.ok || res.status === 207) {
-        setApplications((prev) =>
-          prev.map((app) =>
-            app.id === id
-              ? {
-                  ...app,
-                  decisionStatus,
-                  decisionEmailSentAt: data?.application?.decisionEmailSentAt ?? new Date().toISOString(),
-                }
-              : app
-          )
-        );
+      if (!res.ok && res.status !== 207) {
+        alert(data?.message || "Couldn't send the decision email.");
+        return;
       }
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === id
+            ? {
+                ...app,
+                decisionStatus,
+                decisionEmailSentAt: data?.application?.decisionEmailSentAt ?? new Date().toISOString(),
+              }
+            : app
+        )
+      );
 
       if (res.status === 207) {
         alert(data?.message || "Decision saved, but the email failed to send.");
@@ -430,6 +438,26 @@ export default function RecruitmentAdmin() {
 
                             <div>
                               <strong>Decision</strong>
+
+                              <label className={styles.teamSelectLabel}>
+                                Selected Team (for the acceptance email)
+                                <select
+                                  className={styles.teamSelect}
+                                  value={teamChoices[app.id] ?? app.teamPreferences[0] ?? ""}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) =>
+                                    setTeamChoices((prev) => ({ ...prev, [app.id]: e.target.value }))
+                                  }
+                                >
+                                  <option value="">Select a team...</option>
+                                  {RECRUITMENT_TEAMS.map((team) => (
+                                    <option key={team} value={team}>
+                                      {team}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+
                               <textarea
                                 className={styles.messageInput}
                                 placeholder="Optional note to add to the email (e.g. interview feedback, next steps)..."
@@ -443,10 +471,17 @@ export default function RecruitmentAdmin() {
                                 <button
                                   type="button"
                                   className={styles.acceptButton}
-                                  disabled={decidingId === app.id}
+                                  disabled={
+                                    decidingId === app.id ||
+                                    !(teamChoices[app.id] ?? app.teamPreferences[0] ?? "")
+                                  }
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    decideApplication(app.id, "ACCEPTED");
+                                    decideApplication(
+                                      app.id,
+                                      "ACCEPTED",
+                                      teamChoices[app.id] ?? app.teamPreferences[0] ?? ""
+                                    );
                                   }}
                                 >
                                   <Mail size={14} />

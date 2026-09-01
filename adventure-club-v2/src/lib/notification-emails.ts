@@ -422,10 +422,12 @@ export async function notifySecondPaymentOpen(registration: RegistrationWithUser
 export async function notifyRecruitmentDecision(
   applicant: { email: string; fullName: string },
   accepted: boolean,
-  context?: string
+  options?: { team?: string; message?: string }
 ) {
-  const trimmedContext = context?.trim();
+  const trimmedContext = options?.message?.trim();
   const contextHtml = trimmedContext ? escapeHtml(trimmedContext) : null;
+  const team = options?.team?.trim();
+  const name = escapeHtml(firstName(applicant.fullName));
 
   await sendEmail({
     to: applicant.email,
@@ -435,16 +437,22 @@ export async function notifyRecruitmentDecision(
     html: emailShell(
       accepted
         ? `
-          <h2 style="color:#008862;">Welcome to NAVIRA! 🎉</h2>
-          <p>Hi ${firstName(applicant.fullName)}, congratulations — you've been selected to join the team.</p>
-          <p>We'll be in touch shortly with next steps. Glad to have you with us.</p>
+          <h2 style="color:#008862;">Hey ${name}!! 🌻</h2>
+          <p>We're excited to let you know that you've been SELECTED to be a part of the NAVIRA Core Team! 🎉🏔️</p>
+          <p><strong>Selected Team:</strong> ${team ? escapeHtml(team) : "__________"}</p>
+          <p>We really enjoyed getting to know you through the interview and felt that your skills and energy would be a great fit for NAVIRA. We're looking forward to having you on this journey with us and building something amazing together! 🌿✨</p>
+          <p>Welcome to the team! 🌻</p>
           ${contextHtml ? `<p>${contextHtml}</p>` : ""}
+          <p>-Team NAVIRA</p>
         `
         : `
-          <h2 style="color:#008862;">Thank you for applying</h2>
-          <p>Hi ${firstName(applicant.fullName)}, thank you for taking the time to apply to NAVIRA and for coming in to meet us.</p>
-          <p>After reviewing applications, we won't be moving forward this time. It genuinely wasn't an easy call, and we'd love to see you apply again in a future cycle.</p>
+          <h2 style="color:#008862;">Hey ${name}!! 🌻</h2>
+          <p>Thank you so much for taking the time to interview for the NAVIRA Core Team and for showing interest in being a part of the club! 🏔️</p>
+          <p>Although your skills are truly impressive, it does not align with what our club needs right now. This is no way a reflection of your abilities, and we truly appreciate your interest and effort.</p>
+          <p>We hope you'll still be a part of NAVIRA through our upcoming treks, events, and adventures! 🌿🌻</p>
+          <p>Thank you once again, and we hope to see you around soon!</p>
           ${contextHtml ? `<p>${contextHtml}</p>` : ""}
+          <p>-Team NAVIRA</p>
         `
     ),
   });
