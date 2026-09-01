@@ -5,6 +5,7 @@ export const RECRUITMENT_TEAMS = [
   "Finance",
   "Logistics",
   "Events",
+  "Guide",
 ] as const;
 
 export type RecruitmentTeam = (typeof RECRUITMENT_TEAMS)[number];
@@ -41,4 +42,8 @@ We are the gatekeepers of organization. From the moment someone signs up to the 
   Events: `We are the masterminds behind every single experience that defines Navira. From intense, skill-building workshops to our craziest, most ambitious treks, our team is solely responsible for making it all happen. We don't just plan events, we bring the wild, legendary ideas to life that give Navira its true identity.
 
 We take total ownership of the entire event blueprint. We decide when an event happens, map out exactly how it will unfold, and manage every single detail from the initial spark of an idea to the final cleanup. If you love master planning, and want to be the one pulling the strings behind our biggest moments, this is your team.`,
+
+  Guide: `We are the ones on the trail with the group, not behind a screen. Our job starts the moment everyone's boots hit the dirt — reading the terrain, setting the pace, and keeping every single person accounted for from the first step to the last.
+
+Being a guide means staying calm when plans change, knowing the route well enough to trust your gut, and looking out for people who don't yet know what they're capable of. If you're comfortable leading in the outdoors and taking responsibility for a group's safety and experience, this is your team.`,
 };
