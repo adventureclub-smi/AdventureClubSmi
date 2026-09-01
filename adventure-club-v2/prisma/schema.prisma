@@ -34,6 +34,12 @@ enum RefundStatus {
   COMPLETED
 }
 
+enum RecruitmentDecisionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 enum PaymentMethod {
   ONLINE
   CASH
@@ -687,6 +693,15 @@ model RecruitmentApplication {
   submittedAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+
+  // ===== Decision =====
+
+  decisionStatus RecruitmentDecisionStatus @default(PENDING)
+
+  // Set the moment the "you're in / not this time" email actually goes
+  // out — lets the admin panel show whether an applicant's already been
+  // notified, distinct from just having a decision recorded.
+  decisionEmailSentAt DateTime?
 }
 
 model Song {

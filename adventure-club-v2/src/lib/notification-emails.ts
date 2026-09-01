@@ -407,6 +407,32 @@ export async function notifySecondPaymentOpen(registration: RegistrationWithUser
   });
 }
 
+// ===== Recruitment decision -> that applicant =====
+export async function notifyRecruitmentDecision(
+  applicant: { email: string; fullName: string },
+  accepted: boolean
+) {
+  await sendEmail({
+    to: applicant.email,
+    subject: accepted
+      ? "You're in! Your NAVIRA recruitment result"
+      : "Your NAVIRA recruitment result",
+    html: emailShell(
+      accepted
+        ? `
+          <h2 style="color:#008862;">Welcome to NAVIRA! 🎉</h2>
+          <p>Hi ${firstName(applicant.fullName)}, congratulations — you've been selected to join the team.</p>
+          <p>We'll be in touch shortly with next steps. Glad to have you with us.</p>
+        `
+        : `
+          <h2 style="color:#008862;">Thank you for applying</h2>
+          <p>Hi ${firstName(applicant.fullName)}, thank you for taking the time to apply to NAVIRA and for coming in to meet us.</p>
+          <p>After reviewing applications, we won't be moving forward this time. It genuinely wasn't an easy call, and we'd love to see you apply again in a future cycle.</p>
+        `
+    ),
+  });
+}
+
 // ===== Certificate issued -> that student =====
 export async function notifyCertificateReady(
   registration: RegistrationWithUserAndTrek,

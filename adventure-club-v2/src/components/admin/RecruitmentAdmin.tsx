@@ -2,8 +2,9 @@
 
 import { Fragment, useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { Download, Plus, QrCode, Save, Trash2, X } from "lucide-react";
+import { Download, Mail, Plus, QrCode, Save, Trash2, X } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
+import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
 import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
 import { PREFERENCE_LABELS } from "@/lib/recruitment-options";
@@ -40,6 +41,8 @@ type Application = {
   interviewDay: string;
   teamPreferences: string[];
   submittedAt: string;
+  decisionStatus: "PENDING" | "ACCEPTED" | "REJECTED";
+  decisionEmailSentAt: string | null;
 };
 
 // The fetched value is a UTC instant (as an ISO string); render it as India
@@ -62,6 +65,7 @@ export default function RecruitmentAdmin() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [decidingId, setDecidingId] = useState<string | null>(null);
 
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [generatingQr, setGeneratingQr] = useState(false);
@@ -106,6 +110,45 @@ export default function RecruitmentAdmin() {
       }
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function decideApplication(id: string, decisionStatus: "ACCEPTED" | "REJECTED") {
+    const verb = decisionStatus === "ACCEPTED" ? "accept" : "reject";
+    if (!confirm(`Email this applicant to let them know they're ${verb === "accept" ? "in" : "not moving forward"}?`)) {
+      return;
+    }
+
+    setDecidingId(id);
+
+    try {
+      const res = await fetch(`/api/admin/recruitment/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decisionStatus }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok || res.status === 207) {
+        setApplications((prev) =>
+          prev.map((app) =>
+            app.id === id
+              ? {
+                  ...app,
+                  decisionStatus,
+                  decisionEmailSentAt: data?.application?.decisionEmailSentAt ?? new Date().toISOString(),
+                }
+              : app
+          )
+        );
+      }
+
+      if (res.status === 207) {
+        alert(data?.message || "Decision saved, but the email failed to send.");
+      }
+    } finally {
+      setDecidingId(null);
     }
   }
 
@@ -304,6 +347,7 @@ export default function RecruitmentAdmin() {
                   <th>Preferences</th>
                   <th>Interview Day</th>
                   <th>Submitted</th>
+                  <th>Decision</th>
                   <th></th>
                 </tr>
               </thead>
@@ -334,6 +378,15 @@ export default function RecruitmentAdmin() {
                       <td>{app.interviewDay}</td>
                       <td>{new Date(app.submittedAt).toLocaleDateString("en-IN")}</td>
                       <td>
+                        {app.decisionStatus === "ACCEPTED" ? (
+                          <StatusBadge text="Accepted" tone="success" />
+                        ) : app.decisionStatus === "REJECTED" ? (
+                          <StatusBadge text="Rejected" tone="danger" />
+                        ) : (
+                          <StatusBadge text="Pending" tone="waiting" />
+                        )}
+                      </td>
+                      <td>
                         <button
                           type="button"
                           className={styles.deleteButton}
@@ -350,7 +403,7 @@ export default function RecruitmentAdmin() {
 
                     {expandedId === app.id && (
                       <tr className={styles.detailRow}>
-                        <td colSpan={8}>
+                        <td colSpan={9}>
                           <div className={styles.detail}>
                             <div>
                               <strong>Why they want to join</strong>
@@ -373,6 +426,51 @@ export default function RecruitmentAdmin() {
                                 )}
                               </div>
                             )}
+
+                            <div>
+                              <strong>Decision</strong>
+                              <div className={styles.decisionRow}>
+                                <button
+                                  type="button"
+                                  className={styles.acceptButton}
+                                  disabled={decidingId === app.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    decideApplication(app.id, "ACCEPTED");
+                                  }}
+                                >
+                                  <Mail size={14} />
+                                  {decidingId === app.id
+                                    ? "Sending..."
+                                    : app.decisionStatus === "ACCEPTED"
+                                    ? "Re-send Acceptance Email"
+                                    : "Accept & Email"}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className={styles.rejectButton}
+                                  disabled={decidingId === app.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    decideApplication(app.id, "REJECTED");
+                                  }}
+                                >
+                                  <Mail size={14} />
+                                  {decidingId === app.id
+                                    ? "Sending..."
+                                    : app.decisionStatus === "REJECTED"
+                                    ? "Re-send Rejection Email"
+                                    : "Reject & Email"}
+                                </button>
+                              </div>
+
+                              {app.decisionEmailSentAt && (
+                                <p className={styles.muted}>
+                                  Last emailed {new Date(app.decisionEmailSentAt).toLocaleString("en-IN")}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </tr>
