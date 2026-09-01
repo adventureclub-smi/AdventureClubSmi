@@ -66,6 +66,7 @@ export default function RecruitmentAdmin() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [decidingId, setDecidingId] = useState<string | null>(null);
+  const [messageDrafts, setMessageDrafts] = useState<Record<string, string>>({});
 
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [generatingQr, setGeneratingQr] = useState(false);
@@ -125,7 +126,7 @@ export default function RecruitmentAdmin() {
       const res = await fetch(`/api/admin/recruitment/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ decisionStatus }),
+        body: JSON.stringify({ decisionStatus, message: messageDrafts[id] ?? "" }),
       });
 
       const data = await res.json().catch(() => null);
@@ -429,6 +430,15 @@ export default function RecruitmentAdmin() {
 
                             <div>
                               <strong>Decision</strong>
+                              <textarea
+                                className={styles.messageInput}
+                                placeholder="Optional note to add to the email (e.g. interview feedback, next steps)..."
+                                value={messageDrafts[app.id] ?? ""}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) =>
+                                  setMessageDrafts((prev) => ({ ...prev, [app.id]: e.target.value }))
+                                }
+                              />
                               <div className={styles.decisionRow}>
                                 <button
                                   type="button"

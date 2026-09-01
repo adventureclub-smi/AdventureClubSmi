@@ -35,7 +35,7 @@ export async function PUT(
   }
 
   const { id } = await params;
-  const { decisionStatus } = await req.json();
+  const { decisionStatus, message } = await req.json();
 
   if (decisionStatus !== "ACCEPTED" && decisionStatus !== "REJECTED") {
     return NextResponse.json(
@@ -56,7 +56,11 @@ export async function PUT(
   });
 
   try {
-    await notifyRecruitmentDecision(application.user, decisionStatus === "ACCEPTED");
+    await notifyRecruitmentDecision(
+      application.user,
+      decisionStatus === "ACCEPTED",
+      typeof message === "string" ? message : undefined
+    );
   } catch (emailError) {
     console.error("Failed to send recruitment decision email:", emailError);
     return NextResponse.json(

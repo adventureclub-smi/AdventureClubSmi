@@ -6,6 +6,17 @@ function firstName(fullName: string) {
   return fullName.split(" ")[0];
 }
 
+// Free-form text an admin types in (unlike the fixed copy elsewhere in this
+// file) — escape it before dropping it into the email HTML, and keep line
+// breaks since it's typically typed as a short multi-line note.
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+}
+
 function formatTrekDate(date: Date) {
   return date.toLocaleDateString("en-IN", {
     day: "numeric",
@@ -410,8 +421,12 @@ export async function notifySecondPaymentOpen(registration: RegistrationWithUser
 // ===== Recruitment decision -> that applicant =====
 export async function notifyRecruitmentDecision(
   applicant: { email: string; fullName: string },
-  accepted: boolean
+  accepted: boolean,
+  context?: string
 ) {
+  const trimmedContext = context?.trim();
+  const contextHtml = trimmedContext ? escapeHtml(trimmedContext) : null;
+
   await sendEmail({
     to: applicant.email,
     subject: accepted
@@ -423,11 +438,13 @@ export async function notifyRecruitmentDecision(
           <h2 style="color:#008862;">Welcome to NAVIRA! 🎉</h2>
           <p>Hi ${firstName(applicant.fullName)}, congratulations — you've been selected to join the team.</p>
           <p>We'll be in touch shortly with next steps. Glad to have you with us.</p>
+          ${contextHtml ? `<p>${contextHtml}</p>` : ""}
         `
         : `
           <h2 style="color:#008862;">Thank you for applying</h2>
           <p>Hi ${firstName(applicant.fullName)}, thank you for taking the time to apply to NAVIRA and for coming in to meet us.</p>
           <p>After reviewing applications, we won't be moving forward this time. It genuinely wasn't an easy call, and we'd love to see you apply again in a future cycle.</p>
+          ${contextHtml ? `<p>${contextHtml}</p>` : ""}
         `
     ),
   });

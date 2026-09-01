@@ -217,6 +217,20 @@
   background: rgba(245, 245, 245, 0.02);
 }
 
+.messageInput {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  background: rgba(245, 245, 245, 0.04);
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+  margin: 8px 0 12px;
+}
+
 .decisionRow {
   display: flex;
   gap: 10px;
