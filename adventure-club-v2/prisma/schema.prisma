@@ -516,6 +516,11 @@ model Registration {
   // =========================
 
   bookingAssignedTo String?
+
+  // Lets an admin correct how a name is spelled for the govt permit
+  // without touching the person's actual account name — display-only,
+  // scoped to this registration/the booking page.
+  bookingNameOverride String?
 }
 
 model Payment {

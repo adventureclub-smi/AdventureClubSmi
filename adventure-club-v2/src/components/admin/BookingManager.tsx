@@ -9,6 +9,7 @@ import {
   Copy,
   IdCard,
   MessageCircle,
+  Pencil,
   UserRound,
 } from "lucide-react";
 
@@ -18,7 +19,8 @@ import styles from "./BookingManager.module.scss";
 type Person = {
   registrationId: string;
   registrationNumber: string;
-  name: string;
+  baseName: string;
+  nameOverride: string | null;
   phoneNumber: string | null;
   isGuest: boolean;
   govtIdType: string | null;
@@ -63,19 +65,59 @@ function PersonRow({
   person,
   coreMembers,
   onAssign,
+  onEditName,
+  onEditGovtId,
 }: {
   person: Person;
   coreMembers: string[];
   onAssign: (registrationId: string, value: string) => void;
+  onEditName: (registrationId: string, value: string) => void;
+  onEditGovtId: (registrationId: string, value: string) => void;
 }) {
   const waHref = whatsappHref(person.phoneNumber);
+  const [editingName, setEditingName] = useState(false);
+  const [editingId, setEditingId] = useState(false);
+  const displayName = person.nameOverride || person.baseName;
 
   return (
     <div className={styles.row}>
       <div className={styles.identity}>
         <div className={styles.nameLine}>
-          <strong>{person.name}</strong>
-          <CopyButton value={person.name} label="name" />
+          {editingName ? (
+            <input
+              autoFocus
+              className={styles.inlineInput}
+              defaultValue={displayName}
+              placeholder={person.baseName}
+              onClick={(e) => e.stopPropagation()}
+              onBlur={(e) => {
+                onEditName(person.registrationId, e.target.value);
+                setEditingName(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+                if (e.key === "Escape") setEditingName(false);
+              }}
+            />
+          ) : (
+            <>
+              <strong>{displayName}</strong>
+              <CopyButton value={displayName} label="name" />
+              <button
+                type="button"
+                className={styles.editButton}
+                onClick={() => setEditingName(true)}
+                aria-label="Edit name for booking"
+                title={
+                  person.nameOverride
+                    ? `Booking-only correction (account name: ${person.baseName})`
+                    : "Edit name for booking (doesn't change their account)"
+                }
+              >
+                <Pencil size={12} />
+              </button>
+            </>
+          )}
           {person.isGuest && <span className={styles.guestTag}>Guest</span>}
         </div>
 
@@ -102,16 +144,47 @@ function PersonRow({
       </div>
 
       <div className={styles.idCell}>
-        {person.govtIdNumber ? (
-          <div className={styles.idNumberLine}>
-            <span>
-              {person.govtIdType ? `${person.govtIdType}: ` : ""}
-              {person.govtIdNumber}
-            </span>
-            <CopyButton value={person.govtIdNumber} label="Govt ID number" />
-          </div>
+        {editingId ? (
+          <input
+            autoFocus
+            className={styles.inlineInput}
+            defaultValue={person.govtIdNumber ?? ""}
+            placeholder="PAN / Govt ID number"
+            onClick={(e) => e.stopPropagation()}
+            onBlur={(e) => {
+              onEditGovtId(person.registrationId, e.target.value);
+              setEditingId(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") setEditingId(false);
+            }}
+          />
         ) : (
-          <span className={styles.muted}>Not submitted</span>
+          <div className={styles.idNumberLine}>
+            {person.govtIdNumber ? (
+              <>
+                <span>
+                  {person.govtIdType ? `${person.govtIdType}: ` : ""}
+                  {person.govtIdNumber}
+                </span>
+                <CopyButton value={person.govtIdNumber} label="Govt ID number" />
+              </>
+            ) : (
+              <span className={styles.muted}>Not submitted</span>
+            )}
+            {!person.isGuest && (
+              <button
+                type="button"
+                className={styles.editButton}
+                onClick={() => setEditingId(true)}
+                aria-label={person.govtIdNumber ? "Edit govt ID number" : "Add govt ID number"}
+                title={person.govtIdNumber ? "Edit govt ID number" : "Add govt ID number"}
+              >
+                <Pencil size={12} />
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -125,7 +198,7 @@ function PersonRow({
           >
             <Image
               src={person.govtIdImageUrl}
-              alt={`${person.name} Govt ID`}
+              alt={`${displayName} Govt ID`}
               fill
               sizes="60px"
               className={styles.idImage}
@@ -199,6 +272,38 @@ export default function BookingManager({ trekId }: { trekId: string }) {
     });
   }
 
+  async function handleEditName(registrationId: string, value: string) {
+    const trimmed = value.trim() || null;
+
+    setPeople((prev) =>
+      prev.map((p) =>
+        p.registrationId === registrationId ? { ...p, nameOverride: trimmed } : p
+      )
+    );
+
+    await fetch(`/api/admin/booking/${trekId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ registrationId, name: trimmed }),
+    });
+  }
+
+  async function handleEditGovtId(registrationId: string, value: string) {
+    const trimmed = value.trim() || null;
+
+    setPeople((prev) =>
+      prev.map((p) =>
+        p.registrationId === registrationId ? { ...p, govtIdNumber: trimmed } : p
+      )
+    );
+
+    await fetch(`/api/admin/booking/${trekId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ registrationId, govtIdNumber: trimmed }),
+    });
+  }
+
   const coreMembers = useMemo(
     () =>
       Array.from(
@@ -212,9 +317,11 @@ export default function BookingManager({ trekId }: { trekId: string }) {
   );
 
   const groups = useMemo(() => {
-    const sorted = [...people].sort((a, b) =>
-      sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
-    );
+    const sorted = [...people].sort((a, b) => {
+      const nameA = a.nameOverride || a.baseName;
+      const nameB = b.nameOverride || b.baseName;
+      return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
 
     const byMember = new Map<string, Person[]>();
     const unassigned: Person[] = [];
@@ -287,6 +394,8 @@ export default function BookingManager({ trekId }: { trekId: string }) {
                     person={person}
                     coreMembers={coreMembers}
                     onAssign={handleAssign}
+                    onEditName={handleEditName}
+                    onEditGovtId={handleEditGovtId}
                   />
                 ))}
               </div>
@@ -305,6 +414,8 @@ export default function BookingManager({ trekId }: { trekId: string }) {
                   person={person}
                   coreMembers={coreMembers}
                   onAssign={handleAssign}
+                  onEditName={handleEditName}
+                  onEditGovtId={handleEditGovtId}
                 />
               ))}
             </div>
