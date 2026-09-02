@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import {
   ArrowDownAZ,
@@ -29,6 +30,31 @@ type Person = {
   govtIdStatus: string;
   bookingAssignedTo: string | null;
 };
+
+// Gives each core member a stable, distinct color for their card header/
+// avatar — so at a glance you can tell whose group is whose without reading
+// every name, even scrolling past a long list of them.
+const MEMBER_COLORS = [
+  "#00a073",
+  "#f59e0b",
+  "#3b82f6",
+  "#ec4899",
+  "#a855f7",
+  "#14b8a6",
+  "#ef4444",
+  "#84cc16",
+];
+
+function memberColor(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return MEMBER_COLORS[Math.abs(hash) % MEMBER_COLORS.length];
+}
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase();
+}
 
 function whatsappHref(phoneNumber: string | null) {
   if (!phoneNumber) return null;
@@ -381,30 +407,39 @@ export default function BookingManager({ trekId }: { trekId: string }) {
         </div>
       ) : (
         <div className={styles.groups}>
-          {groups.assigned.map(([member, list]) => (
-            <section key={member} className={styles.group}>
-              <h3>
-                {member} <span>({list.length})</span>
-              </h3>
+          {groups.assigned.map(([member, list]) => {
+            const color = memberColor(member);
 
-              <div className={styles.list}>
-                {list.map((person) => (
-                  <PersonRow
-                    key={person.registrationId}
-                    person={person}
-                    coreMembers={coreMembers}
-                    onAssign={handleAssign}
-                    onEditName={handleEditName}
-                    onEditGovtId={handleEditGovtId}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+            return (
+              <section
+                key={member}
+                className={styles.group}
+                style={{ "--member-color": color } as CSSProperties}
+              >
+                <h3>
+                  <span className={styles.avatar}>{initials(member)}</span>
+                  {member} <span className={styles.groupCount}>({list.length})</span>
+                </h3>
 
-          <section className={styles.group}>
+                <div className={styles.list}>
+                  {list.map((person) => (
+                    <PersonRow
+                      key={person.registrationId}
+                      person={person}
+                      coreMembers={coreMembers}
+                      onAssign={handleAssign}
+                      onEditName={handleEditName}
+                      onEditGovtId={handleEditGovtId}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+
+          <section className={`${styles.group} ${styles.unassignedGroup}`}>
             <h3>
-              Unassigned <span>({groups.unassigned.length})</span>
+              Unassigned <span className={styles.groupCount}>({groups.unassigned.length})</span>
             </h3>
 
             <div className={styles.list}>

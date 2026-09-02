@@ -60,23 +60,50 @@
 }
 
 .group {
+  background: rgba(245, 245, 245, 0.03);
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-left: 3px solid var(--member-color, rgba(245, 245, 245, 0.15));
+  border-radius: 16px;
+  padding: 18px 18px 20px;
+
   h3 {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
     font-family: var(--font-display);
     letter-spacing: 0.5px;
     color: var(--color-text);
     font-size: 17px;
     margin-bottom: 14px;
-
-    span {
-      color: var(--color-text-muted);
-      font-family: inherit;
-      font-size: 13px;
-      letter-spacing: normal;
-    }
   }
+}
+
+.groupCount {
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: normal;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--member-color, rgba(245, 245, 245, 0.1));
+  color: #0d0d0d;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.unassignedGroup {
+  border-left-color: rgba(245, 245, 245, 0.15);
+  border-style: dashed;
+  background: transparent;
 }
 
 .list {
