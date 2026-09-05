@@ -195,6 +195,16 @@
   }
 }
 
+.dashboardButton {
+  display: none;
+
+  @media (max-width: 700px) {
+    display: inline-block;
+    flex-basis: 100%;
+    text-align: center;
+  }
+}
+
 .scroll {
   // Now a normal-flow child of .content (already centered via
   // align-items: center) instead of absolutely positioned a fixed

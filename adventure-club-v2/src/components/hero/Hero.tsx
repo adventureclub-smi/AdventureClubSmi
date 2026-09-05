@@ -260,6 +260,25 @@ export default function Hero({
                 </motion.span>
               </Link>
             ))}
+
+          {loggedIn && (
+            // Phone-only shortcut to the dashboard, right under Explore
+            // Treks — logged-in sessions persist, so a student landing back
+            // on the homepage shouldn't have to open the hamburger menu just
+            // to get where they actually want to go.
+            <Link
+              href="/dashboard"
+              className={`${styles.secondaryButton} ${styles.dashboardButton}`}
+            >
+              <motion.span
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                className={styles.buttonInner}
+              >
+                Dashboard
+              </motion.span>
+            </Link>
+          )}
         </motion.div>
 
         {content.showCountdown && nextTrekDate && (
