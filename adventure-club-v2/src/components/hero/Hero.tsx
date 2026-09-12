@@ -266,10 +266,7 @@ export default function Hero({
             // Treks — logged-in sessions persist, so a student landing back
             // on the homepage shouldn't have to open the hamburger menu just
             // to get where they actually want to go.
-            <Link
-              href="/dashboard"
-              className={`${styles.secondaryButton} ${styles.dashboardButton}`}
-            >
+            <Link href="/dashboard" className={styles.dashboardButton}>
               <motion.span
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}

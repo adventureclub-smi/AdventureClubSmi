@@ -197,11 +197,28 @@
 
 .dashboardButton {
   display: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
 
+  // flex-basis: 100% pushes it onto its own row below Explore Treks (its
+  // parent is the same wrapping flex row), but the pill itself is sized to
+  // its content just like the other buttons — see .buttonInner override
+  // below, which switches out of the shared button's display: block.
   @media (max-width: 700px) {
     display: inline-block;
     flex-basis: 100%;
     text-align: center;
+  }
+
+  .buttonInner {
+    display: inline-block;
+    background: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  &:hover .buttonInner {
+    background: var(--color-accent-hover);
   }
 }
 
