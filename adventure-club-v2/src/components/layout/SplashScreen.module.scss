@@ -1,0 +1,101 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: var(--color-midnight);
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70vmax;
+  height: 70vmax;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    rgba(0, 160, 115, 0.35) 0%,
+    rgba(0, 160, 115, 0.12) 35%,
+    transparent 70%
+  );
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background: repeating-linear-gradient(
+    0deg,
+    #fff,
+    #fff 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.logo {
+  position: relative;
+  filter: drop-shadow(0 0 24px rgba(0, 160, 115, 0.5));
+
+  img {
+    display: block;
+  }
+}
+
+.wordmark {
+  position: relative;
+  display: flex;
+  gap: 0.06em;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 8vw, 48px);
+  letter-spacing: 0.35em;
+  color: var(--color-text);
+  padding-left: 0.35em; // optically balances the letter-spacing trail
+}
+
+.tagline {
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.bar {
+  position: relative;
+  width: 140px;
+  height: 2px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  transform-origin: left center;
+  box-shadow: 0 0 12px rgba(0, 160, 115, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow {
+    animation: none;
+  }
+}

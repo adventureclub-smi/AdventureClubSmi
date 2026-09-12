@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Bebas_Neue, Manrope } from "next/font/google";
 import ServiceWorkerRegister from "@/components/layout/ServiceWorkerRegister";
+import SplashScreen from "@/components/layout/SplashScreen";
 import "./globals.scss";
 
 const geistSans = Geist({
@@ -55,6 +56,7 @@ export default function RootLayout({
     >
       <body>
         <ServiceWorkerRegister />
+        <SplashScreen />
         {children}
       </body>
     </html>
