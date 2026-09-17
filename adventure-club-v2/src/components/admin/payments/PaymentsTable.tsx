@@ -273,10 +273,12 @@ export default function PaymentsTable({ trekId }: Props) {
     }
   }
 
-  // registrations arrives ordered by createdAt (registration order) from the
-  // API — capture each person's position here, before the filter/sort below
-  // reorders the visible list, so the number always reflects who signed up
-  // first regardless of how the cards are currently sorted.
+  // Signup order (registrations arrives ordered by createdAt from the API)
+  // — only used to drive the "Registration # (Low-High/High-Low)" sort
+  // options below. The number actually shown on each row is a plain 1..n
+  // position in whatever's currently displayed (see the `i + 1` in each
+  // view), not this — that's the Registrations page's own numbering, which
+  // has nothing to do with this section.
   const registrationOrder = useMemo(() => {
     const order = new Map<string, number>();
     registrations.forEach((r, i) => order.set(r.id, i + 1));
@@ -361,13 +363,13 @@ export default function PaymentsTable({ trekId }: Props) {
       "WhatsApp Group",
     ];
 
-    const rows = filtered.map((registration) => {
+    const rows = filtered.map((registration, i) => {
       const name =
         (registration.user?.fullName ?? registration.guestName ?? "Unknown Participant") +
         (registration.hiddenFromPayments ? " (Removed)" : "");
 
       return [
-        String(registrationOrder.get(registration.id) ?? ""),
+        String(i + 1),
         name,
         registration.user?.clubId ?? "-",
         registration.user?.phoneNumber ?? "-",
@@ -563,9 +565,9 @@ export default function PaymentsTable({ trekId }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((registration) => (
+                {filtered.map((registration, i) => (
                   <tr key={registration.id} onClick={() => setSelected(registration)}>
-                    <td>{registrationOrder.get(registration.id)}</td>
+                    <td>{i + 1}</td>
                     <td>
                       {registration.user?.fullName ?? registration.guestName ?? "Unknown Participant"}
                       {registration.hiddenFromPayments && (
@@ -600,7 +602,7 @@ export default function PaymentsTable({ trekId }: Props) {
         {filtered.length === 0 ? (
           <div className={styles.empty}>No participants found.</div>
         ) : (
-          filtered.map((registration) => {
+          filtered.map((registration, i) => {
             const participant =
               registration.user?.fullName ?? registration.guestName ?? "Unknown Participant";
             const clubId = registration.user?.clubId ?? "-";
@@ -611,7 +613,7 @@ export default function PaymentsTable({ trekId }: Props) {
               <div key={registration.id} className={styles.card}>
                 <div className={styles.cardHeader}>
                   <div className={styles.nameRow}>
-                    <span className={styles.orderNumber}>{registrationOrder.get(registration.id)}</span>
+                    <span className={styles.orderNumber}>{i + 1}</span>
 
                     <div>
                       <h3>
