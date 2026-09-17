@@ -374,7 +374,7 @@ export default function Logo3D({
 }) {
   return (
     <Canvas
-      camera={{ position: [0, 0.15, 4.6], fov: 34 }}
+      camera={{ position: [0, 0.15, 5.6], fov: 34 }}
       dpr={dpr}
       gl={{ alpha: true, antialias: true }}
       style={{ width: "100%", height: "100%" }}
