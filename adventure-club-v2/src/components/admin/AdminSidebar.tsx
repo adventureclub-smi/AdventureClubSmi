@@ -179,12 +179,14 @@ export default function AdminSidebar({
           Menu
         </button>
 
-        <Image
-          src="/logo/logo-bluegreen.png"
-          alt="NAVIRA"
-          width={28}
-          height={16}
-        />
+        <Link href="/" aria-label="Go to homepage" className={styles.mobileLogo}>
+          <Image
+            src="/logo/logo-bluegreen.png"
+            alt="NAVIRA"
+            width={28}
+            height={16}
+          />
+        </Link>
 
         <button aria-label="Logout" onClick={handleLogout}>
           <LogOut size={18} />
