@@ -1,9 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import styles from "./SplashScreen.module.scss";
+
+// Same "never touch a WebGL canvas during SSR" rule the hero's
+// ConstellationField follows — the renderer needs a real <canvas> element.
+const SplashLogo3D = dynamic(() => import("./SplashLogo3D"), { ssr: false });
+
+function supportsWebGL() {
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+    );
+  } catch {
+    return false;
+  }
+}
 
 const SESSION_KEY = "navira-splash-shown";
 const LETTERS = "NAVIRA".split("");
@@ -40,6 +57,13 @@ export default function SplashScreen() {
   const reducedMotion = useReducedMotion();
   const [visible, setVisible] = useState(true);
   const [exiting, setExiting] = useState(false);
+  const [webglOk, setWebglOk] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setWebglOk(supportsWebGL());
+    setIsMobile(window.innerWidth < 700);
+  }, []);
 
   useEffect(() => {
     // Only the very first load in a browser tab gets the full cinematic
@@ -104,41 +128,54 @@ export default function SplashScreen() {
           )}
 
           <div className={styles.mark}>
-            <svg
-              className={styles.ringSvg}
-              viewBox="0 0 160 160"
-              aria-hidden="true"
-            >
-              <motion.circle
-                className={styles.ring}
-                cx="80"
-                cy="80"
-                r="72"
-                fill="none"
-                strokeWidth="1.5"
-                initial={reducedMotion ? false : { pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: [0, 0.9, 0.55] }}
-                transition={{
-                  pathLength: { duration: 1.15, delay: 0.05, ease: [0.65, 0, 0.35, 1] },
-                  opacity: { duration: 1.15, delay: 0.05, times: [0, 0.15, 1] },
-                }}
-              />
-            </svg>
+            {!reducedMotion && webglOk ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className={styles.canvasWrap}
+              >
+                <SplashLogo3D dpr={isMobile ? 1 : [1, 2]} />
+              </motion.div>
+            ) : (
+              <>
+                <svg
+                  className={styles.ringSvg}
+                  viewBox="0 0 160 160"
+                  aria-hidden="true"
+                >
+                  <motion.circle
+                    className={styles.ring}
+                    cx="80"
+                    cy="80"
+                    r="72"
+                    fill="none"
+                    strokeWidth="1.5"
+                    initial={reducedMotion ? false : { pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: [0, 0.9, 0.55] }}
+                    transition={{
+                      pathLength: { duration: 1.15, delay: 0.05, ease: [0.65, 0, 0.35, 1] },
+                      opacity: { duration: 1.15, delay: 0.05, times: [0, 0.15, 1] },
+                    }}
+                  />
+                </svg>
 
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, scale: 0.78 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: reducedMotion ? 0.3 : 0.75, ease: [0.16, 1, 0.3, 1] }}
-              className={styles.logo}
-            >
-              <Image
-                src="/logo/logo-bluegreen.png"
-                alt="NAVIRA"
-                width={110}
-                height={62}
-                priority
-              />
-            </motion.div>
+                <motion.div
+                  initial={reducedMotion ? false : { opacity: 0, scale: 0.78 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: reducedMotion ? 0.3 : 0.75, ease: [0.16, 1, 0.3, 1] }}
+                  className={styles.logo}
+                >
+                  <Image
+                    src="/logo/logo-bluegreen.png"
+                    alt="NAVIRA"
+                    width={110}
+                    height={62}
+                    priority
+                  />
+                </motion.div>
+              </>
+            )}
           </div>
 
           <motion.div
