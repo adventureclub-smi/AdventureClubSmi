@@ -99,6 +99,7 @@ export default function Hero({
   const reducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const updateMobile = () => setIsMobile(window.innerWidth < 700);
@@ -117,7 +118,10 @@ export default function Hero({
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
-        if (active) setLoggedIn(!!data.loggedIn);
+        if (active) {
+          setLoggedIn(!!data.loggedIn);
+          setIsAdmin(!!data.isAdmin);
+        }
       })
       .catch(() => {});
 
@@ -273,6 +277,21 @@ export default function Hero({
                 className={styles.buttonInner}
               >
                 Dashboard
+              </motion.span>
+            </Link>
+          )}
+
+          {isAdmin && (
+            // Same phone-only shortcut as Dashboard, right next to it —
+            // an admin landing here otherwise has to open Dashboard first,
+            // then find their way to Admin from there, every single time.
+            <Link href="/admin" className={styles.adminPanelButton}>
+              <motion.span
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                className={styles.buttonInner}
+              >
+                Admin Panel
               </motion.span>
             </Link>
           )}

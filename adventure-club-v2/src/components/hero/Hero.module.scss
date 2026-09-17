@@ -222,6 +222,34 @@
   }
 }
 
+.adminPanelButton {
+  display: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+
+  // Same reasoning as .dashboardButton above — full-width own row on
+  // phone, sized-to-content pill via the .buttonInner override below.
+  @media (max-width: 700px) {
+    display: inline-block;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  // Distinct purple (matching Trip Centre's admin-flavored accent
+  // elsewhere in the dashboard) rather than the same teal as Dashboard,
+  // so the two are visually distinguishable at a glance.
+  .buttonInner {
+    display: inline-block;
+    background: #7c3aed;
+    color: white;
+  }
+
+  &:hover .buttonInner {
+    background: #6d28d9;
+  }
+}
+
 .scroll {
   // Now a normal-flow child of .content (already centered via
   // align-items: center) instead of absolutely positioned a fixed

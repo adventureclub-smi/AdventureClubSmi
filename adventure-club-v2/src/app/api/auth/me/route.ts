@@ -15,5 +15,10 @@ export async function GET() {
   return NextResponse.json({
     loggedIn: true,
     clubRole: user.clubRole,
+    // The real admin-panel gate (see lib/admin-access.ts) is role === "admin",
+    // not clubRole — clubRole is just a display title, and plenty of real
+    // admins (Treasurer with FINANCE access, etc.) don't have the literal
+    // "Admin" club role.
+    isAdmin: user.role === "admin",
   });
 }
