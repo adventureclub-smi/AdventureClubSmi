@@ -159,7 +159,7 @@ export default function PaymentsTable({ trekId }: Props) {
   async function handleUnlockAll(type?: "SECOND") {
     const confirmUnlock = confirm(
       type === "SECOND"
-        ? "Unlock second payment for every participant who has completed their initial payment on this trek?"
+        ? "Unlock second payment for every approved participant on this trek — including anyone who hasn't finished paying Initial yet?"
         : "Unlock final payment for every participant who has completed their initial payment on this trek?"
     );
 
