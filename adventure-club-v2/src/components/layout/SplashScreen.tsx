@@ -34,10 +34,10 @@ const PARTICLES = [
   { top: 58, left: 78, delay: 1.5, dur: 2.8 },
 ];
 
-// Total lifetime, mount to fully gone, is a fixed 3s (reduced-motion gets a
-// much shorter, near-instant version instead of skipping straight to 3s of
+// Total lifetime, mount to fully gone, is a fixed 6s (reduced-motion gets a
+// much shorter, near-instant version instead of skipping straight to 6s of
 // stillness).
-const HOLD_MS = 2350;
+const HOLD_MS = 5350;
 const EXIT_MS = 650;
 const REDUCED_HOLD_MS = 650;
 const REDUCED_EXIT_MS = 350;
