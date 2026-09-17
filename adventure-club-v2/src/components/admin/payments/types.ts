@@ -33,6 +33,8 @@ export type PaymentRegistration = {
   whatsappInviteSentAt: string | null;
   whatsappGroupJoined: boolean;
 
+  hiddenFromPayments?: boolean;
+
   user: {
     fullName: string;
     clubId: string;

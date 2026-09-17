@@ -16,6 +16,7 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
   const [resubmitting, setResubmitting] = useState<"INITIAL" | "SECOND" | "FINAL" | null>(null);
   const [markingNotPaid, setMarkingNotPaid] = useState<"INITIAL" | "SECOND" | "FINAL" | null>(null);
   const [markingPaidAtOnce, setMarkingPaidAtOnce] = useState(false);
+  const [togglingHidden, setTogglingHidden] = useState(false);
   const [editingAmount, setEditingAmount] = useState<"INITIAL" | "SECOND" | "FINAL" | null>(null);
   const [amountDraft, setAmountDraft] = useState("");
   const [savingAmount, setSavingAmount] = useState(false);
@@ -144,6 +145,23 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
     }
   }
 
+  async function toggleHidden(hidden: boolean) {
+    setTogglingHidden(true);
+
+    try {
+      await fetch("/api/admin/payments/hide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ registrationId: registration.id, hidden }),
+      });
+
+      refresh();
+      onClose();
+    } finally {
+      setTogglingHidden(false);
+    }
+  }
+
   function startEditAmount(type: "INITIAL" | "SECOND" | "FINAL", currentAmount: number) {
     setEditingAmount(type);
     setAmountDraft(String(currentAmount));
@@ -226,6 +244,30 @@ export default function PaymentDrawer({ registration, onClose, refresh }: Props)
             <span>Status</span>
             <strong>{registration.status}</strong>
           </div>
+
+          {registration.hiddenFromPayments ? (
+            <button
+              className={styles.paidAtOnceAction}
+              disabled={togglingHidden}
+              onClick={() => toggleHidden(false)}
+            >
+              {togglingHidden ? "Restoring..." : "Restore to Payments"}
+            </button>
+          ) : (
+            <button
+              className={styles.didNotPayAction}
+              disabled={togglingHidden}
+              onClick={() => toggleHidden(true)}
+            >
+              {togglingHidden ? "Removing..." : "Remove from Payments"}
+            </button>
+          )}
+
+          <small className={styles.note}>
+            {registration.hiddenFromPayments
+              ? "Hidden from this Payments section — their registration is untouched and still shows normally in Registrations."
+              : "Removes them from this Payments section (list, stats, bulk unlocks) only — their registration stays exactly as-is in Registrations."}
+          </small>
         </div>
 
         {/* Reimbursement Details */}

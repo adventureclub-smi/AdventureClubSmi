@@ -521,6 +521,17 @@ model Registration {
   // without touching the person's actual account name — display-only,
   // scoped to this registration/the booking page.
   bookingNameOverride String?
+
+  // =========================
+  // Payments (admin visibility)
+  // =========================
+
+  // Hides this registration from the admin Payments section (list, stats,
+  // bulk unlocks) without touching the registration itself — it still
+  // shows normally in Registrations. For someone who registered but isn't
+  // actually going, so they stop cluttering the payments list. Reversible
+  // from the same "Removed" filter in that section.
+  hiddenFromPayments Boolean @default(false)
 }
 
 model Payment {

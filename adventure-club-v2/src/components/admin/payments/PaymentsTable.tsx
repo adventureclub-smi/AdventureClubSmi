@@ -22,7 +22,8 @@ type FilterOption =
   | "secondPending"
   | "finalPaid"
   | "finalDidNotPay"
-  | "finalPending";
+  | "finalPending"
+  | "removed";
 
 type SortOption = "nameAsc" | "nameDesc" | "orderAsc" | "orderDesc";
 
@@ -37,6 +38,7 @@ const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
   { value: "finalPaid", label: "Final: Paid" },
   { value: "finalDidNotPay", label: "Final: Didn't Pay" },
   { value: "finalPending", label: "Final: Pending" },
+  { value: "removed", label: "Removed from Payments" },
 ];
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
@@ -245,6 +247,11 @@ export default function PaymentsTable({ trekId }: Props) {
 
       if (!matchesSearch) return false;
 
+      // Removed-from-payments registrations stay out of every other view —
+      // "Removed from Payments" is the only filter that shows them.
+      if (filterBy === "removed") return !!registration.hiddenFromPayments;
+      if (registration.hiddenFromPayments) return false;
+
       switch (filterBy) {
         case "initialPaid":
           return registration.initialPaymentPaid;
@@ -286,12 +293,16 @@ export default function PaymentsTable({ trekId }: Props) {
   }, [registrations, search, filterBy, sortBy, registrationOrder]);
 
   const stats = useMemo(() => {
-    const participants = registrations.length;
-    const initialPaid = registrations.filter((r) => r.initialPaymentPaid).length;
-    const finalPaid = registrations.filter((r) => r.finalPaymentPaid).length;
-    const pending = registrations.filter((r) => !r.initialPaymentPaid).length;
+    // Removed-from-payments registrations skip every stat here too — they're
+    // meant to be out of payment tracking, not just hidden from the list.
+    const visible = registrations.filter((r) => !r.hiddenFromPayments);
 
-    const collected = registrations.reduce(
+    const participants = visible.length;
+    const initialPaid = visible.filter((r) => r.initialPaymentPaid).length;
+    const finalPaid = visible.filter((r) => r.finalPaymentPaid).length;
+    const pending = visible.filter((r) => !r.initialPaymentPaid).length;
+
+    const collected = visible.reduce(
       (sum, r) => sum + (r.initialPaymentPaid ? r.paymentAmount ?? 0 : 0),
       0
     );
@@ -425,7 +436,12 @@ export default function PaymentsTable({ trekId }: Props) {
                     <span className={styles.orderNumber}>{registrationOrder.get(registration.id)}</span>
 
                     <div>
-                      <h3>{participant}</h3>
+                      <h3>
+                        {participant}
+                        {registration.hiddenFromPayments && (
+                          <span className={styles.removedTag}>Removed</span>
+                        )}
+                      </h3>
                       <p>{clubId}</p>
                     </div>
                   </div>

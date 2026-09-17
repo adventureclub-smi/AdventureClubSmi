@@ -28,17 +28,27 @@ export async function POST(req: NextRequest) {
     // feature is for. status: "APPROVED" takes over as the eligibility
     // gate instead (matching getJourneyAction, which never offers any
     // payment action before a registration is approved).
+    // Someone removed from the Payments section (hiddenFromPayments) is
+    // meant to be out of payment tracking entirely, so a bulk unlock
+    // shouldn't reach back in and unlock anything for them. { not: true }
+    // rather than a bare `false` — hiddenFromPayments is a brand-new field,
+    // so every registration that predates it is simply missing the key in
+    // MongoDB, and an equality match against `false` would NOT match a
+    // missing field (unlike { not: true }, which correctly treats missing
+    // the same as its false default).
     const where = isSecond
       ? {
           trekId,
           status: "APPROVED" as const,
           secondPaymentUnlocked: false,
+          hiddenFromPayments: { not: true },
         }
       : {
           trekId,
           initialPaymentPaid: true,
           status: { not: "REJECTED" as const },
           finalPaymentUnlocked: false,
+          hiddenFromPayments: { not: true },
         };
 
     // Fetched before the updateMany (which only returns a count) so every
