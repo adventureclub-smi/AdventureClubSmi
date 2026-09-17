@@ -285,6 +285,20 @@ export default function PaymentsTable({ trekId }: Props) {
     { stage: "final", label: isSingleInstallment ? "Fully Paid" : "Fully Paid (Final)" },
   ];
 
+  // Same population the legend's colors are drawn from — removed-from-
+  // payments registrations don't show as any color anywhere else, so they're
+  // left out of these counts too.
+  const stageCounts = useMemo(() => {
+    const counts: Record<PaymentStage, number> = { none: 0, initial: 0, second: 0, final: 0 };
+
+    for (const registration of registrations) {
+      if (registration.hiddenFromPayments) continue;
+      counts[paymentStage(registration)]++;
+    }
+
+    return counts;
+  }, [registrations]);
+
   // registrations.some(...) alone is always false on a trek with zero
   // registrations, no matter what the trek's own status actually is — so
   // that case falls back to trekStatus, which the API now sends directly.
@@ -594,7 +608,7 @@ export default function PaymentsTable({ trekId }: Props) {
         {stageLegend.map(({ stage, label }) => (
           <span key={stage} className={styles.legendItem}>
             <span className={`${styles.legendDot} ${styles[STAGE_CLASS[stage]]}`} />
-            {label}
+            {label} ({stageCounts[stage]})
           </span>
         ))}
       </div>
