@@ -223,15 +223,17 @@
 }
 
 .adminPanelButton {
-  display: none;
+  // Shown on every screen size, unlike .dashboardButton above — desktop
+  // has Dashboard in the visible nav already, but not a way into Admin
+  // specifically, so this one earns its place there too.
+  display: inline-block;
   border-radius: 999px;
   font-weight: 600;
   font-size: 14px;
 
-  // Same reasoning as .dashboardButton above — full-width own row on
-  // phone, sized-to-content pill via the .buttonInner override below.
+  // Own full-width row on phone, same as .dashboardButton; on desktop it
+  // just takes its place as a normal pill in the button row.
   @media (max-width: 700px) {
-    display: inline-block;
     flex-basis: 100%;
     text-align: center;
   }
