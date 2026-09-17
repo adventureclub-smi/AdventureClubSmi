@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import {
   motion,
+  useInView,
   useScroll,
   useTransform,
   useMotionTemplate,
@@ -13,6 +15,11 @@ import {
 import { useLazyVideo } from "@/hooks/useLazyVideo";
 import type { FinalSectionContent } from "@/types/homepage";
 import styles from "./FinalCTA.module.scss";
+
+// Three.js touches the GPU/canvas — never render it on the server.
+const AmbientField = dynamic(() => import("@/components/three/AmbientField"), {
+  ssr: false,
+});
 
 export default function FinalCTA({
   content,
@@ -28,6 +35,18 @@ export default function FinalCTA({
   });
 
   const reducedMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Pauses the ambient field's render loop once scrolled well past this
+  // section, instead of letting it run for the rest of the page's lifetime.
+  const sceneInView = useInView(ref, { margin: "300px" });
+
+  useEffect(() => {
+    const updateMobile = () => setIsMobile(window.innerWidth < 700);
+    updateMobile();
+    window.addEventListener("resize", updateMobile);
+    return () => window.removeEventListener("resize", updateMobile);
+  }, []);
 
   const brightness = useTransform(scrollYProgress, [0, 1], [0.3, 1]);
   const filter = useMotionTemplate`brightness(${brightness})`;
@@ -63,6 +82,18 @@ export default function FinalCTA({
         className={styles.overlay}
         style={{ opacity: overlayOpacity }}
       />
+
+      <div className={styles.embers} aria-hidden="true">
+        <AmbientField
+          animate={!reducedMotion && sceneInView}
+          isMobile={isMobile}
+          density={0.7}
+          shapes={false}
+          color="#fff6da"
+          size={4}
+          opacity={0.85}
+        />
+      </div>
 
       <motion.div
         className={styles.content}

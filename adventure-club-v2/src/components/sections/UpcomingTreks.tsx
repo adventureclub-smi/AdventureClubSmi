@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { Compass } from "lucide-react";
 import FeaturedTrekCard from "./FeaturedTrekCard";
 import TrekTile from "./TrekTile";
@@ -10,6 +11,11 @@ import type { MyRegistrationSummary } from "@/data/treks";
 import type { TrekSummary, UpcomingTreksConfig } from "@/types/homepage";
 import styles from "./UpcomingTreks.module.scss";
 
+// Three.js touches the GPU/canvas — never render it on the server.
+const AmbientField = dynamic(() => import("@/components/three/AmbientField"), {
+  ssr: false,
+});
+
 export default function UpcomingTreks({
   treks,
   config,
@@ -17,8 +23,22 @@ export default function UpcomingTreks({
   treks: TrekSummary[];
   config: UpcomingTreksConfig;
 }) {
+  const sectionRef = useRef<HTMLElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
   const revealStyle = useScrollReveal(revealRef);
+  const reducedMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Pauses the ambient field's render loop once scrolled well past this
+  // section, instead of letting it run for the rest of the page's lifetime.
+  const sceneInView = useInView(sectionRef, { margin: "300px" });
+
+  useEffect(() => {
+    const updateMobile = () => setIsMobile(window.innerWidth < 700);
+    updateMobile();
+    window.addEventListener("resize", updateMobile);
+    return () => window.removeEventListener("resize", updateMobile);
+  }, []);
 
   // Fetched client-side rather than passed down from the server page — the
   // page itself is cached (ISR) since trek/gallery/etc. content is the same
@@ -59,7 +79,16 @@ export default function UpcomingTreks({
     : null;
 
   return (
-    <section className={styles.section} id="treks">
+    <section className={styles.section} id="treks" ref={sectionRef}>
+      <div className={styles.scene} aria-hidden="true">
+        <AmbientField
+          animate={!reducedMotion && sceneInView}
+          isMobile={isMobile}
+          density={0.6}
+          shapes={false}
+        />
+      </div>
+
       <motion.div
         className={styles.container}
         ref={revealRef}
