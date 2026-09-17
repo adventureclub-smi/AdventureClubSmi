@@ -269,6 +269,11 @@
   border-color: #00a073 !important;
 }
 
+.alwaysOpenDeadline {
+  grid-column: 1 / -1;
+  border-style: dashed;
+}
+
 /* TEXTAREA */
 
 .card textarea {

@@ -58,6 +58,13 @@ export default function RegistrationDrawer({
     setStatus(registration.status);
     setRemarks(registration.remarks || "");
     setGroupJoined(registration.whatsappGroupJoined);
+    // No deadline set at all only ever means one of two things: never
+    // approved yet (about to pick a real one), or explicitly kept Always
+    // Open — either way, reflecting that here means re-saving without
+    // touching this picker doesn't silently reintroduce a deadline. A real
+    // deadline can't be reverse-engineered back to a day count, so that
+    // case just keeps the default.
+    setDeadline(registration.initialPaymentDeadline ? "3" : "0");
   }, [registration]);
 
  async function saveChanges() {
@@ -391,7 +398,8 @@ export default function RegistrationDrawer({
           <p className={styles.cardDescription}>
             Select how many days the participant has
             to complete the initial payment after
-            approval.
+            approval, or keep it always open so they
+            never get auto-timed-out for missing it.
           </p>
 
           <div className={styles.deadlineGrid}>
@@ -441,6 +449,16 @@ export default function RegistrationDrawer({
               onClick={() => setDeadline("7")}
             >
               7 Days
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.alwaysOpenDeadline} ${
+                deadline === "0" ? styles.activeDeadline : ""
+              }`}
+              onClick={() => setDeadline("0")}
+            >
+              Always Open
             </button>
           </div>
         </div>
