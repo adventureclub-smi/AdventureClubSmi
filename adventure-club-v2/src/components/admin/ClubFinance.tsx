@@ -52,6 +52,8 @@ export default function ClubFinance() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [addingNewAccount, setAddingNewAccount] = useState(false);
+  const [newAccountName, setNewAccountName] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -93,9 +95,12 @@ export default function ClubFinance() {
     };
   }, []);
 
+  const showNewAccountInput = addingNewAccount || accounts.length === 0;
+  const resolvedAccountName = showNewAccountInput ? newAccountName.trim() : accountName;
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!title || !amount || !accountName) return;
+    if (!title || !amount || !resolvedAccountName) return;
 
     setSaving(true);
 
@@ -107,7 +112,7 @@ export default function ClubFinance() {
           type,
           title,
           amount: Number(amount),
-          accountName,
+          accountName: resolvedAccountName,
           notes,
         }),
       });
@@ -116,6 +121,9 @@ export default function ClubFinance() {
         setTitle("");
         setAmount("");
         setNotes("");
+        setAccountName(resolvedAccountName);
+        setAddingNewAccount(false);
+        setNewAccountName("");
         load();
       }
     } finally {
@@ -246,19 +254,51 @@ export default function ClubFinance() {
             required
           />
 
-          <input
-            list="club-accounts"
-            placeholder="Account (e.g. Supraj's account)"
-            value={accountName}
-            onChange={(e) => setAccountName(e.target.value)}
-            required
-          />
-
-          <datalist id="club-accounts">
-            {accounts.map((account) => (
-              <option key={account.accountName} value={account.accountName} />
-            ))}
-          </datalist>
+          {showNewAccountInput ? (
+            <div className={styles.accountFieldGroup}>
+              <input
+                placeholder="New account name (e.g. Supraj's account)"
+                value={newAccountName}
+                onChange={(e) => setNewAccountName(e.target.value)}
+                required
+                autoFocus={accounts.length > 0}
+              />
+              {accounts.length > 0 && (
+                <button
+                  type="button"
+                  className={styles.linkButton}
+                  onClick={() => {
+                    setAddingNewAccount(false);
+                    setNewAccountName("");
+                  }}
+                >
+                  Use existing
+                </button>
+              )}
+            </div>
+          ) : (
+            <select
+              value={accountName}
+              onChange={(e) => {
+                if (e.target.value === "__new__") {
+                  setAddingNewAccount(true);
+                } else {
+                  setAccountName(e.target.value);
+                }
+              }}
+              required
+            >
+              <option value="" disabled>
+                Select account
+              </option>
+              {accounts.map((account) => (
+                <option key={account.accountName} value={account.accountName}>
+                  {account.accountName}
+                </option>
+              ))}
+              <option value="__new__">+ Add new account</option>
+            </select>
+          )}
 
           <input
             placeholder="Notes (optional)"

@@ -154,7 +154,8 @@
   margin-bottom: 18px;
   align-items: center;
 
-  input {
+  input,
+  select {
     flex: 1;
     min-width: 140px;
     background: var(--color-charcoal);
@@ -164,6 +165,36 @@
     color: var(--color-text);
     font-size: 13px;
   }
+
+  select {
+    appearance: auto;
+  }
+
+  select option {
+    background: var(--color-charcoal);
+    color: var(--color-text);
+  }
+}
+
+.accountFieldGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.linkButton {
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: underline;
 }
 
 .submitButton {
