@@ -3,3 +3,14 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
 }
+
+// Same responsive breakpoints as the student dashboard's own stats grid
+// (components/dashboard/Stats.module.scss) — auto-fill/minmax(200px) never
+// actually reaches 2 columns on a phone-width screen once the sidebar and
+// padding are accounted for, so every card ends up full-width, one per row.
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
