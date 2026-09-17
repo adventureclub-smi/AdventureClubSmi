@@ -1,7 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, CheckCircle2, XCircle, Lock, Clock, Unlock, FlagTriangleRight, MessageCircle } from "lucide-react";
+import {
+  Search,
+  CheckCircle2,
+  XCircle,
+  Lock,
+  Clock,
+  Unlock,
+  FlagTriangleRight,
+  MessageCircle,
+  Download,
+  LayoutGrid,
+  Table2,
+} from "lucide-react";
 import styles from "./PaymentsTable.module.scss";
 import PaymentDrawer from "./PaymentDrawer";
 import type { PaymentRegistration } from "./types";
@@ -48,6 +60,42 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "orderDesc", label: "Registration # (High–Low)" },
 ];
 
+// Single source of truth for a payment leg's text label — used by the
+// table view and the Excel export below, so neither can drift out of
+// sync with what the card view already shows for the same registration.
+function paymentStatusText(
+  registration: Registration,
+  type: "initial" | "second" | "final"
+): string {
+  if (type === "initial") {
+    if (registration.initialPaymentPaid) return "Paid";
+    if (registration.initialPaymentDidNotPay) return "Didn't Pay";
+    return "Pending";
+  }
+
+  if (type === "second") {
+    const second = registration.payments?.find((p) => p.type === "SECOND");
+    if (registration.secondPaymentPaid) return "Paid";
+    if (registration.secondPaymentDidNotPay) return "Didn't Pay";
+    if (second?.status === "PENDING") return "Waiting Verification";
+    if (registration.secondPaymentUnlocked) return "Unlocked";
+    return "Locked";
+  }
+
+  const final = registration.payments?.find((p) => p.type === "FINAL");
+  if (registration.finalPaymentPaid) {
+    return registration.finalPaymentPaidAtOnce ? "Paid At Once" : "Paid";
+  }
+  if (registration.finalPaymentDidNotPay) return "Didn't Pay";
+  if (final?.status === "PENDING") return "Waiting Verification";
+  if (registration.finalPaymentUnlocked) return "Unlocked";
+  return "Locked";
+}
+
+function csvCell(value: string): string {
+  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+}
+
 export default function PaymentsTable({ trekId }: Props) {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [trekStatus, setTrekStatus] = useState<string | null>(null);
@@ -55,6 +103,7 @@ export default function PaymentsTable({ trekId }: Props) {
   const [search, setSearch] = useState("");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
   const [sortBy, setSortBy] = useState<SortOption>("nameAsc");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [selected, setSelected] = useState<Registration | null>(null);
   const [unlockingAll, setUnlockingAll] = useState(false);
   const [unlockStatus, setUnlockStatus] = useState("");
@@ -292,6 +341,62 @@ export default function PaymentsTable({ trekId }: Props) {
     });
   }, [registrations, search, filterBy, sortBy, registrationOrder]);
 
+  // Exports exactly what's currently on screen — same search/filter/sort as
+  // the cards or table above it, so "everyone shown" and "everyone in the
+  // file" always match. A .csv (not a real .xlsx) since Excel opens it
+  // natively either way, with no extra library needed.
+  function exportToExcel() {
+    const headers = [
+      "#",
+      "Name",
+      "Club ID",
+      "Phone",
+      isSingleInstallment ? "Full Payment" : "Initial Payment",
+      ...(hasSecondInstallment ? ["Second Payment"] : []),
+      ...(!isSingleInstallment ? ["Final Payment"] : []),
+      "Amount",
+      "Method",
+      "Bond Form",
+      "WhatsApp Invite",
+      "WhatsApp Group",
+    ];
+
+    const rows = filtered.map((registration) => {
+      const name =
+        (registration.user?.fullName ?? registration.guestName ?? "Unknown Participant") +
+        (registration.hiddenFromPayments ? " (Removed)" : "");
+
+      return [
+        String(registrationOrder.get(registration.id) ?? ""),
+        name,
+        registration.user?.clubId ?? "-",
+        registration.user?.phoneNumber ?? "-",
+        paymentStatusText(registration, "initial"),
+        ...(hasSecondInstallment ? [paymentStatusText(registration, "second")] : []),
+        ...(!isSingleInstallment ? [paymentStatusText(registration, "final")] : []),
+        String(registration.paymentAmount ?? 0),
+        registration.paymentMethod ?? "Not Recorded",
+        registration.bondFormSubmitted ? "Submitted" : "Pending",
+        registration.whatsappInviteSentAt ? "Sent" : "Not Sent",
+        registration.whatsappGroupJoined ? "In Group" : "Not in Group",
+      ];
+    });
+
+    // Leading ﻿ (UTF-8 BOM) so Excel doesn't mangle names with
+    // accented/non-ASCII characters when it opens the file.
+    const csv =
+      "﻿" +
+      [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `payments-${trekId}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   const stats = useMemo(() => {
     // Removed-from-payments registrations skip every stat here too — they're
     // meant to be out of payment tracking, not just hidden from the list.
@@ -349,6 +454,27 @@ export default function PaymentsTable({ trekId }: Props) {
         </select>
 
         <span className={styles.resultCount}>{filtered.length} shown</span>
+
+        <div className={styles.viewToggle}>
+          <button
+            type="button"
+            className={viewMode === "cards" ? styles.viewActive : ""}
+            onClick={() => setViewMode("cards")}
+          >
+            <LayoutGrid size={14} /> Cards
+          </button>
+          <button
+            type="button"
+            className={viewMode === "table" ? styles.viewActive : ""}
+            onClick={() => setViewMode("table")}
+          >
+            <Table2 size={14} /> Table
+          </button>
+        </div>
+
+        <button type="button" className={styles.exportButton} onClick={exportToExcel}>
+          <Download size={14} /> Export to Excel
+        </button>
       </div>
 
       <div className={styles.stats}>
@@ -418,6 +544,58 @@ export default function PaymentsTable({ trekId }: Props) {
         {completeStatus && <p className={styles.unlockStatus}>{completeStatus}</p>}
       </div>
 
+      {viewMode === "table" ? (
+        filtered.length === 0 ? (
+          <div className={styles.empty}>No participants found.</div>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Club ID</th>
+                  <th>{isSingleInstallment ? "Full" : "Initial"}</th>
+                  {hasSecondInstallment && <th>Second</th>}
+                  {!isSingleInstallment && <th>Final</th>}
+                  <th>Amount</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((registration) => (
+                  <tr key={registration.id} onClick={() => setSelected(registration)}>
+                    <td>{registrationOrder.get(registration.id)}</td>
+                    <td>
+                      {registration.user?.fullName ?? registration.guestName ?? "Unknown Participant"}
+                      {registration.hiddenFromPayments && (
+                        <span className={styles.removedTag}>Removed</span>
+                      )}
+                    </td>
+                    <td>{registration.user?.clubId ?? "-"}</td>
+                    <td>{paymentStatusText(registration, "initial")}</td>
+                    {hasSecondInstallment && <td>{paymentStatusText(registration, "second")}</td>}
+                    {!isSingleInstallment && <td>{paymentStatusText(registration, "final")}</td>}
+                    <td>₹{registration.paymentAmount ?? 0}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className={styles.manage}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected(registration);
+                        }}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : (
       <div className={styles.cards}>
         {filtered.length === 0 ? (
           <div className={styles.empty}>No participants found.</div>
@@ -627,6 +805,7 @@ export default function PaymentsTable({ trekId }: Props) {
           })
         )}
       </div>
+      )}
 
       {selected && (
         <PaymentDrawer

@@ -81,6 +81,99 @@
   white-space: nowrap;
 }
 
+.viewToggle {
+  display: flex;
+  border: 1px solid rgba(245, 245, 245, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    background: var(--color-charcoal);
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  button + button {
+    border-left: 1px solid rgba(245, 245, 245, 0.12);
+  }
+}
+
+.viewActive {
+  background: var(--color-accent) !important;
+  color: var(--color-midnight) !important;
+}
+
+.exportButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 245, 245, 0.12);
+  background: var(--color-charcoal);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.exportButton:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Table view */
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  border-radius: 14px;
+  margin-bottom: 24px;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead {
+    background: var(--color-charcoal);
+  }
+
+  th {
+    text-align: left;
+    padding: 12px 14px;
+    color: var(--color-text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 14px;
+    color: var(--color-text);
+    border-top: 1px solid rgba(245, 245, 245, 0.06);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    cursor: pointer;
+  }
+
+  tbody tr:hover {
+    background: rgba(245, 245, 245, 0.03);
+  }
+}
+
 /* Stats */
 
 .stats {
