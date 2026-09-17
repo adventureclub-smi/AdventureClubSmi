@@ -112,6 +112,10 @@ export default function RegistrationsTable({
 
   const [sendingReminder, setSendingReminder] = useState(false);
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeadline, setBulkDeadline] = useState("3");
+  const [bulkApproving, setBulkApproving] = useState(false);
+
   useEffect(() => {
     fetchRegistrations();
     fetchTrekStatus();
@@ -207,6 +211,70 @@ export default function RegistrationsTable({
     setSelectedRegistration(registration);
 
     setDrawerOpen(true);
+  }
+
+  function toggleSelected(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function selectAllWaiting() {
+    const waitingIds = registrations
+      .filter((r) => r.status === "WAITING")
+      .map((r) => r.id);
+
+    setSelectedIds(new Set(waitingIds));
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set());
+  }
+
+  async function bulkApprove() {
+    if (selectedIds.size === 0) return;
+
+    const confirmApprove = confirm(
+      `Approve ${selectedIds.size} selected registration${
+        selectedIds.size === 1 ? "" : "s"
+      }?`
+    );
+
+    if (!confirmApprove) return;
+
+    setBulkApproving(true);
+
+    try {
+      const res = await fetch("/api/registrations/bulk-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ids: Array.from(selectedIds),
+          status: "Approved",
+          paymentDays: Number(bulkDeadline),
+        }),
+      });
+
+      const data = await res.json();
+
+      alert(data.message || "Done.");
+
+      clearSelection();
+      fetchRegistrations();
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+    } finally {
+      setBulkApproving(false);
+    }
   }
 
   const filtered = useMemo(() => {
@@ -334,6 +402,64 @@ export default function RegistrationsTable({
           }
         />
 
+        <div className={styles.bulkBar}>
+          <button
+            type="button"
+            className={styles.bulkSelectAllButton}
+            onClick={selectAllWaiting}
+          >
+            Select All Waiting
+          </button>
+
+          {selectedIds.size > 0 && (
+            <>
+              <span className={styles.bulkCount}>
+                {selectedIds.size} selected
+              </span>
+
+              <div className={styles.bulkDeadlineGroup}>
+                {[
+                  { value: "1", label: "1 Day" },
+                  { value: "2", label: "2 Days" },
+                  { value: "3", label: "3 Days" },
+                  { value: "7", label: "7 Days" },
+                  { value: "0", label: "Always Open" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={
+                      bulkDeadline === opt.value ? styles.bulkDeadlineActive : ""
+                    }
+                    onClick={() => setBulkDeadline(opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className={styles.bulkApproveButton}
+                onClick={bulkApprove}
+                disabled={bulkApproving}
+              >
+                {bulkApproving
+                  ? "Approving..."
+                  : `Approve ${selectedIds.size}`}
+              </button>
+
+              <button
+                type="button"
+                className={styles.bulkClearButton}
+                onClick={clearSelection}
+              >
+                Clear
+              </button>
+            </>
+          )}
+        </div>
+
         <AddParticipantModal
           trekId={trekId}
           open={showAddParticipant}
@@ -376,6 +502,14 @@ export default function RegistrationsTable({
                 }
               >
                 <div className={styles.left}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={selectedIds.has(registration.id)}
+                    onClick={(e) => toggleSelected(registration.id, e)}
+                    onChange={() => {}}
+                  />
+
                   <div className={styles.number}>
                     {index + 1}
                   </div>

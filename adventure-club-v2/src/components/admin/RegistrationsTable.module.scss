@@ -133,6 +133,123 @@
   font-size: 15px;
 }
 
+.bulkBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 30px;
+  margin-top: -16px;
+
+  background: #161616;
+  border: 1px solid #2d2d2d;
+  border-radius: 12px;
+}
+
+.bulkSelectAllButton {
+  border: none;
+  background: #222222;
+  color: #d5d5d5;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: .2s;
+}
+
+.bulkSelectAllButton:hover {
+  background: #2d2d2d;
+  color: white;
+}
+
+.bulkCount {
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.bulkDeadlineGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  background: #111111;
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+
+  button {
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    padding: 8px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: .2s;
+  }
+
+  button:hover {
+    color: white;
+  }
+}
+
+.bulkDeadlineActive {
+  background: #00a073 !important;
+  color: white !important;
+}
+
+.bulkApproveButton {
+  border: none;
+  background: #00a073;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: .2s;
+}
+
+.bulkApproveButton:hover {
+  background: #008862;
+}
+
+.bulkApproveButton:disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+
+.bulkClearButton {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: .2s;
+}
+
+.bulkClearButton:hover {
+  color: white;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: #00a073;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .search:focus {
   outline: none;
   border-color: #00a073;
@@ -299,6 +416,17 @@
   }
 
   .registrationModeGroup {
+    width: 100%;
+  }
+
+  .bulkBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bulkSelectAllButton,
+  .bulkApproveButton,
+  .bulkClearButton {
     width: 100%;
   }
 
