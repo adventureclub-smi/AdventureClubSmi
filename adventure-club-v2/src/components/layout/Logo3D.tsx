@@ -237,7 +237,11 @@ function LogoEmblem({ shapes, spin }: { shapes: TracedShape[]; spin: "full" | "s
       if (spin === "full") {
         groupRef.current.rotation.y += delta * 0.35;
       } else {
-        groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.5;
+        // A wide, asymmetric mark visibly drifts sideways as it turns —
+        // 0.5 rad was enough to noticeably shift it off-center at the far
+        // end of the swivel. This keeps it visually anchored in place
+        // while still gently "breathing" rather than sitting dead-static.
+        groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.12;
       }
       groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.4) * 0.12;
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.06;
