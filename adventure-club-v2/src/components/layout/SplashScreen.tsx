@@ -4,23 +4,12 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { supportsWebGL } from "@/lib/supports-webgl";
 import styles from "./SplashScreen.module.scss";
 
 // Same "never touch a WebGL canvas during SSR" rule the hero's
 // ConstellationField follows — the renderer needs a real <canvas> element.
-const SplashLogo3D = dynamic(() => import("./SplashLogo3D"), { ssr: false });
-
-function supportsWebGL() {
-  try {
-    const canvas = document.createElement("canvas");
-    return !!(
-      window.WebGLRenderingContext &&
-      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
-    );
-  } catch {
-    return false;
-  }
-}
+const Logo3D = dynamic(() => import("./Logo3D"), { ssr: false });
 
 const SESSION_KEY = "navira-splash-shown";
 const LETTERS = "NAVIRA".split("");
@@ -135,7 +124,7 @@ export default function SplashScreen() {
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className={styles.canvasWrap}
               >
-                <SplashLogo3D dpr={isMobile ? 1 : [1, 2]} />
+                <Logo3D dpr={isMobile ? 1 : [1, 2]} />
               </motion.div>
             ) : (
               <>

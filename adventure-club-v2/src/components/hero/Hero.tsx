@@ -16,6 +16,7 @@ import HeroOverlay from "./HeroOverlay";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useRegistrationPhase } from "@/hooks/useRegistrationPhase";
 import { useLazyVideo } from "@/hooks/useLazyVideo";
+import { supportsWebGL } from "@/lib/supports-webgl";
 import type { HeroContent } from "@/types/homepage";
 import styles from "./Hero.module.scss";
 
@@ -23,6 +24,11 @@ import styles from "./Hero.module.scss";
 const ConstellationField = dynamic(() => import("./ConstellationField"), {
   ssr: false,
 });
+
+// Same rotating traced-silhouette mark as the launch splash (see
+// components/layout/Logo3D.tsx for how it's built) — reused here rather
+// than duplicated, so both places stay visually identical automatically.
+const Logo3D = dynamic(() => import("../layout/Logo3D"), { ssr: false });
 
 function HeroCountdown({
   target,
@@ -99,6 +105,7 @@ export default function Hero({
   const reducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [webglOk, setWebglOk] = useState(true);
 
   useEffect(() => {
     const updateMobile = () => setIsMobile(window.innerWidth < 700);
@@ -106,6 +113,10 @@ export default function Hero({
     window.addEventListener("resize", updateMobile);
 
     return () => window.removeEventListener("resize", updateMobile);
+  }, []);
+
+  useEffect(() => {
+    setWebglOk(supportsWebGL());
   }, []);
 
   // "Join Adventure" only makes sense for a visitor who isn't a member yet —
@@ -194,7 +205,13 @@ export default function Hero({
           transition={{ duration: 0.8 }}
           className={styles.heroLogo}
         >
-          <Image src="/logo/logo-bluegreen.png" alt="NAVIRA" width={265} height={150} priority />
+          {!reducedMotion && webglOk ? (
+            <div className={styles.heroLogo3D}>
+              <Logo3D dpr={isMobile ? 1 : [1, 2]} spin="swivel" />
+            </div>
+          ) : (
+            <Image src="/logo/logo-bluegreen.png" alt="NAVIRA" width={265} height={150} priority />
+          )}
         </motion.div>
 
         <motion.p

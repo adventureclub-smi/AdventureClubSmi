@@ -219,7 +219,7 @@ async function traceLogoToShapes(src: string): Promise<TracedShape[]> {
   });
 }
 
-function LogoEmblem({ shapes }: { shapes: TracedShape[] }) {
+function LogoEmblem({ shapes, spin }: { shapes: TracedShape[]; spin: "full" | "swivel" }) {
   const groupRef = useRef<THREE.Group>(null);
   const ringRef = useRef<THREE.Mesh>(null);
   const satellitesRef = useRef<THREE.Group>(null);
@@ -227,9 +227,18 @@ function LogoEmblem({ shapes }: { shapes: TracedShape[] }) {
   useFrame((state, delta) => {
     if (groupRef.current) {
       // A traced silhouette (unlike a textured plane) reads correctly from
-      // every angle, so this can spin all the way around continuously
-      // instead of the swivel-in-place a flat texture would need.
-      groupRef.current.rotation.y += delta * 0.35;
+      // every angle, so a full spin never goes blank or shows something
+      // backwards the way a flat texture would. It still isn't equally
+      // *legible* from every angle though — some angles foreshorten the
+      // strokes into a less recognizable blob. Fine for the splash, which
+      // is only ever on screen for a few seconds either way; not fine for
+      // the hero, which stays up indefinitely, so that one gets a gentle
+      // bounded swivel that never leaves the good-looking range instead.
+      if (spin === "full") {
+        groupRef.current.rotation.y += delta * 0.35;
+      } else {
+        groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.5;
+      }
       groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.4) * 0.12;
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.06;
     }
@@ -307,8 +316,8 @@ function LogoEmblem({ shapes }: { shapes: TracedShape[] }) {
 }
 
 // Procedural fallback if the source image can't be traced for any reason
-// (decode failure, no usable silhouette, etc.) — keeps the splash's 3D
-// slot filled with *something* on-brand rather than an empty canvas.
+// (decode failure, no usable silhouette, etc.) — keeps this slot filled
+// with *something* on-brand rather than an empty canvas.
 function FallbackEmblem() {
   const ref = useRef<THREE.Mesh>(null);
 
@@ -327,7 +336,7 @@ function FallbackEmblem() {
   );
 }
 
-function TracedLogo() {
+function TracedLogo({ spin }: { spin: "full" | "swivel" }) {
   const [shapes, setShapes] = useState<TracedShape[] | null | "error">(null);
 
   useEffect(() => {
@@ -348,10 +357,21 @@ function TracedLogo() {
 
   if (shapes === null) return null;
   if (shapes === "error") return <FallbackEmblem />;
-  return <LogoEmblem shapes={shapes} />;
+  return <LogoEmblem shapes={shapes} spin={spin} />;
 }
 
-export default function SplashLogo3D({ dpr }: { dpr: number | [number, number] }) {
+export default function Logo3D({
+  dpr,
+  spin = "full",
+}: {
+  dpr: number | [number, number];
+  // "full": continuous spin, right for the launch splash's brief few
+  // seconds on screen. "swivel": a bounded back-and-forth that never
+  // leaves the legible range — for anywhere (like the hero) the mark
+  // stays visible indefinitely, where a full spin would eventually show
+  // every foreshortened, less-recognizable angle too.
+  spin?: "full" | "swivel";
+}) {
   return (
     <Canvas
       camera={{ position: [0, 0.15, 4.6], fov: 34 }}
@@ -364,7 +384,7 @@ export default function SplashLogo3D({ dpr }: { dpr: number | [number, number] }
       <pointLight position={[-2, -1.5, 2]} intensity={1} color="#00a073" />
 
       <Suspense fallback={null}>
-        <TracedLogo />
+        <TracedLogo spin={spin} />
       </Suspense>
     </Canvas>
   );
