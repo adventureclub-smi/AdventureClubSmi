@@ -109,6 +109,29 @@ function totalPaidAmount(registration: Registration): number {
     .reduce((sum, p) => sum + p.amount, 0);
 }
 
+type PaymentStage = "none" | "initial" | "second" | "final";
+
+// How far along the installment chain this registration has actually
+// gotten — used to color-code the row/card. finalPaymentPaid is checked
+// first rather than gated behind !isSingleInstallment: a single-installment
+// trek's one payment auto-completes finalPaymentPaid too (see
+// /api/admin/payments/verify and /offline), so this one check already
+// correctly reads as "fully paid" for every trek type without needing to
+// special-case installment count here.
+function paymentStage(registration: Registration): PaymentStage {
+  if (registration.finalPaymentPaid) return "final";
+  if (registration.secondPaymentPaid) return "second";
+  if (registration.initialPaymentPaid) return "initial";
+  return "none";
+}
+
+const STAGE_CLASS: Record<PaymentStage, string> = {
+  none: "stageNone",
+  initial: "stageInitial",
+  second: "stageSecond",
+  final: "stageFinal",
+};
+
 export default function PaymentsTable({ trekId }: Props) {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [trekStatus, setTrekStatus] = useState<string | null>(null);
@@ -250,6 +273,17 @@ export default function PaymentsTable({ trekId }: Props) {
 
   const isSingleInstallment = registrations[0]?.trek?.installments === 1;
   const hasSecondInstallment = registrations[0]?.trek?.installments === 3;
+
+  // What the legend shows, and which stages actually apply to this trek's
+  // installment structure — a single-installment trek's one payment
+  // completes everything at once, so "Paid Initial" as its own stage never
+  // happens there and would be a confusing, unused legend entry.
+  const stageLegend: { stage: PaymentStage; label: string }[] = [
+    { stage: "none", label: "Not Paid" },
+    ...(isSingleInstallment ? [] : [{ stage: "initial" as const, label: "Paid Initial" }]),
+    ...(hasSecondInstallment ? [{ stage: "second" as const, label: "Paid Second" }] : []),
+    { stage: "final", label: isSingleInstallment ? "Fully Paid" : "Fully Paid (Final)" },
+  ];
 
   // registrations.some(...) alone is always false on a trek with zero
   // registrations, no matter what the trek's own status actually is — so
@@ -556,6 +590,15 @@ export default function PaymentsTable({ trekId }: Props) {
         {completeStatus && <p className={styles.unlockStatus}>{completeStatus}</p>}
       </div>
 
+      <div className={styles.legend}>
+        {stageLegend.map(({ stage, label }) => (
+          <span key={stage} className={styles.legendItem}>
+            <span className={`${styles.legendDot} ${styles[STAGE_CLASS[stage]]}`} />
+            {label}
+          </span>
+        ))}
+      </div>
+
       {viewMode === "table" ? (
         filtered.length === 0 ? (
           <div className={styles.empty}>No participants found.</div>
@@ -576,7 +619,11 @@ export default function PaymentsTable({ trekId }: Props) {
               </thead>
               <tbody>
                 {filtered.map((registration, i) => (
-                  <tr key={registration.id} onClick={() => setSelected(registration)}>
+                  <tr
+                    key={registration.id}
+                    className={styles[STAGE_CLASS[paymentStage(registration)]]}
+                    onClick={() => setSelected(registration)}
+                  >
                     <td>{i + 1}</td>
                     <td>
                       {registration.user?.fullName ?? registration.guestName ?? "Unknown Participant"}
@@ -620,7 +667,10 @@ export default function PaymentsTable({ trekId }: Props) {
             const finalPayment = registration.payments?.find((p) => p.type === "FINAL");
 
             return (
-              <div key={registration.id} className={styles.card}>
+              <div
+                key={registration.id}
+                className={`${styles.card} ${styles[STAGE_CLASS[paymentStage(registration)]]}`}
+              >
                 <div className={styles.cardHeader}>
                   <div className={styles.nameRow}>
                     <span className={styles.orderNumber}>{i + 1}</span>
