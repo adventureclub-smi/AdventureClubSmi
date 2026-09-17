@@ -96,6 +96,19 @@ function csvCell(value: string): string {
   return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
+// registration.paymentAmount is a single shared field that every offline
+// record / proof submission overwrites unconditionally (see
+// /api/admin/payments/offline and /api/student/payment/proof) — it's
+// whichever leg was recorded most recently, not a running total. The real
+// total paid so far is the sum of every payment row that's actually PAID.
+function totalPaidAmount(registration: Registration): number {
+  if (!registration.payments) return registration.paymentAmount ?? 0;
+
+  return registration.payments
+    .filter((p) => p.status === "PAID")
+    .reduce((sum, p) => sum + p.amount, 0);
+}
+
 export default function PaymentsTable({ trekId }: Props) {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [trekStatus, setTrekStatus] = useState<string | null>(null);
@@ -376,7 +389,7 @@ export default function PaymentsTable({ trekId }: Props) {
         paymentStatusText(registration, "initial"),
         ...(hasSecondInstallment ? [paymentStatusText(registration, "second")] : []),
         ...(!isSingleInstallment ? [paymentStatusText(registration, "final")] : []),
-        String(registration.paymentAmount ?? 0),
+        String(totalPaidAmount(registration)),
         registration.paymentMethod ?? "Not Recorded",
         registration.bondFormSubmitted ? "Submitted" : "Pending",
         registration.whatsappInviteSentAt ? "Sent" : "Not Sent",
@@ -409,10 +422,7 @@ export default function PaymentsTable({ trekId }: Props) {
     const finalPaid = visible.filter((r) => r.finalPaymentPaid).length;
     const pending = visible.filter((r) => !r.initialPaymentPaid).length;
 
-    const collected = visible.reduce(
-      (sum, r) => sum + (r.initialPaymentPaid ? r.paymentAmount ?? 0 : 0),
-      0
-    );
+    const collected = visible.reduce((sum, r) => sum + totalPaidAmount(r), 0);
 
     return { participants, initialPaid, finalPaid, pending, collected };
   }, [registrations]);
@@ -578,7 +588,7 @@ export default function PaymentsTable({ trekId }: Props) {
                     <td>{paymentStatusText(registration, "initial")}</td>
                     {hasSecondInstallment && <td>{paymentStatusText(registration, "second")}</td>}
                     {!isSingleInstallment && <td>{paymentStatusText(registration, "final")}</td>}
-                    <td>₹{registration.paymentAmount ?? 0}</td>
+                    <td>₹{totalPaidAmount(registration)}</td>
                     <td>
                       <button
                         type="button"
@@ -714,7 +724,7 @@ export default function PaymentsTable({ trekId }: Props) {
 
                   <div className={styles.infoCard}>
                     <span>Amount</span>
-                    <strong>₹{registration.paymentAmount ?? 0}</strong>
+                    <strong>₹{totalPaidAmount(registration)}</strong>
                   </div>
 
                   <div className={styles.infoCard}>
