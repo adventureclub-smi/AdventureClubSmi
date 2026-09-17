@@ -4,7 +4,9 @@ import { prisma } from "@/lib/prisma";
 // (read-only summary) so the two can never disagree on what "Net" or
 // "College Fund Remaining" actually means.
 export async function computeTrekFinance(trekId: string) {
-  const [registrations, expenses, incomes, refundRegistrations] = await Promise.all([
+  const [trek, registrations, expenses, incomes, refundRegistrations] = await Promise.all([
+    prisma.trek.findUnique({ where: { id: trekId }, select: { installments: true } }),
+
     prisma.registration.findMany({
       where: { trekId, status: { notIn: ["WAITING", "REJECTED", "WAITLIST", "TIMED_OUT"] } },
       include: {
@@ -25,8 +27,11 @@ export async function computeTrekFinance(trekId: string) {
     }),
   ]);
 
+  const hasSecondInstallment = trek?.installments === 3;
+
   const participants = registrations.map((r) => {
     const initialPayment = r.payments.find((p) => p.type === "INITIAL");
+    const secondPayment = r.payments.find((p) => p.type === "SECOND");
     const finalPayment = r.payments.find((p) => p.type === "FINAL");
 
     return {
@@ -36,6 +41,8 @@ export async function computeTrekFinance(trekId: string) {
       department: r.user?.department || "-",
       initialPaymentPaid: r.initialPaymentPaid,
       initialAmount: r.initialPaymentPaid ? initialPayment?.amount ?? r.paymentAmount ?? 0 : 0,
+      secondPaymentPaid: r.secondPaymentPaid,
+      secondAmount: r.secondPaymentPaid ? secondPayment?.amount ?? 0 : 0,
       finalPaymentPaid: r.finalPaymentPaid,
       finalAmount: r.finalPaymentPaid ? finalPayment?.amount ?? 0 : 0,
     };
@@ -43,6 +50,11 @@ export async function computeTrekFinance(trekId: string) {
 
   const initialCollected = participants.reduce(
     (sum, p) => sum + (p.initialPaymentPaid ? p.initialAmount : 0),
+    0
+  );
+
+  const secondCollected = participants.reduce(
+    (sum, p) => sum + (p.secondPaymentPaid ? p.secondAmount : 0),
     0
   );
 
@@ -54,7 +66,7 @@ export async function computeTrekFinance(trekId: string) {
   const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const totalRefund = refundRegistrations.reduce((sum, r) => sum + (r.reimbursementAmount ?? 0), 0);
-  const revenueCollected = initialCollected + finalCollected;
+  const revenueCollected = initialCollected + secondCollected + finalCollected;
   const net = revenueCollected + totalIncome - totalExpenses - totalRefund;
 
   // Student-money-only profit/loss: what's left of what students paid after
@@ -69,12 +81,14 @@ export async function computeTrekFinance(trekId: string) {
   const collegeFundRemaining = totalIncome - totalRefund;
 
   return {
+    hasSecondInstallment,
     participants,
     expenses,
     incomes,
     totals: {
       revenueCollected,
       initialCollected,
+      secondCollected,
       finalCollected,
       totalIncome,
       totalExpenses,

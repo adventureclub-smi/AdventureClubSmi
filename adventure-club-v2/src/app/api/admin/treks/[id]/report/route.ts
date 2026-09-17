@@ -69,6 +69,7 @@ export async function GET(
     let attendedCount = 0;
     let notAttendedCount = 0;
     let initialPaidCount = 0;
+    let secondPaidCount = 0;
     let finalPaidCount = 0;
     const seatedStatuses = new Set(["APPROVED", "COMPLETED", "MISSED"]);
     let seatedCount = 0;
@@ -86,6 +87,7 @@ export async function GET(
         if (r.attendanceMarked) attendedCount += 1;
         else notAttendedCount += 1;
         if (r.initialPaymentPaid) initialPaidCount += 1;
+        if (r.secondPaymentPaid) secondPaidCount += 1;
         if (r.finalPaymentPaid) finalPaidCount += 1;
       }
     }
@@ -105,7 +107,9 @@ export async function GET(
         difficulty: trek.difficulty,
         price: trek.price,
         initialPayment: trek.initialPayment,
+        secondPayment: trek.secondPayment,
         finalPayment: trek.finalPayment,
+        installments: trek.installments,
         seats: trek.seats,
       },
       registrations: {
@@ -123,6 +127,8 @@ export async function GET(
         seatedCount,
         initialPaidCount,
         initialPendingCount: seatedCount - initialPaidCount,
+        secondPaidCount,
+        secondPendingCount: seatedCount - secondPaidCount,
         finalPaidCount,
         finalPendingCount: seatedCount - finalPaidCount,
         byMethod: toDistribution(byPaymentMethod),

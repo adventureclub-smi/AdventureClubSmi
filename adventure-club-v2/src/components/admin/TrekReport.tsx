@@ -20,7 +20,7 @@ import styles from "./TrekReport.module.scss";
 type Point = { label: string; value: number };
 
 type Report = {
-  trek: { title: string };
+  trek: { title: string; installments?: number };
   registrations: {
     total: number;
     byYear: Point[];
@@ -36,6 +36,8 @@ type Report = {
     seatedCount: number;
     initialPaidCount: number;
     initialPendingCount: number;
+    secondPaidCount: number;
+    secondPendingCount: number;
     finalPaidCount: number;
     finalPendingCount: number;
     byMethod: Point[];
@@ -43,6 +45,7 @@ type Report = {
   finance: {
     revenueCollected: number;
     initialCollected: number;
+    secondCollected: number;
     finalCollected: number;
     totalIncome: number;
     totalExpenses: number;
@@ -81,6 +84,7 @@ export default function TrekReport({ trekId }: { trekId: string }) {
   if (!report) return <p className={styles.hint}>Couldn&apos;t load this trek&apos;s report.</p>;
 
   const { registrations, attendance, payments, finance } = report;
+  const hasSecondInstallment = report.trek.installments === 3;
 
   const attendanceRate =
     attendance.seatedCount > 0
@@ -182,6 +186,26 @@ export default function TrekReport({ trekId }: { trekId: string }) {
             </div>
           </div>
 
+          {hasSecondInstallment && (
+            <>
+              <div className={styles.summaryCard}>
+                <IndianRupee size={18} />
+                <div>
+                  <strong>{payments.secondPaidCount}</strong>
+                  <span>Second Paid</span>
+                </div>
+              </div>
+
+              <div className={`${styles.summaryCard} ${payments.secondPendingCount > 0 ? styles.loss : ""}`}>
+                <IndianRupee size={18} />
+                <div>
+                  <strong>{payments.secondPendingCount}</strong>
+                  <span>Second Pending</span>
+                </div>
+              </div>
+            </>
+          )}
+
           <div className={styles.summaryCard}>
             <IndianRupee size={18} />
             <div>
@@ -223,6 +247,16 @@ export default function TrekReport({ trekId }: { trekId: string }) {
               <span>Initial Collected</span>
             </div>
           </div>
+
+          {hasSecondInstallment && (
+            <div className={styles.summaryCard}>
+              <IndianRupee size={18} />
+              <div>
+                <strong>₹{finance.secondCollected}</strong>
+                <span>Second Collected</span>
+              </div>
+            </div>
+          )}
 
           <div className={styles.summaryCard}>
             <IndianRupee size={18} />

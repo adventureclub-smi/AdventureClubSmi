@@ -21,15 +21,19 @@ type FilterOption =
   | "all"
   | "initialPaid"
   | "initialPending"
+  | "secondPaid"
+  | "secondPending"
   | "finalPaid"
   | "finalPending";
 
 type SortOption = "nameAsc" | "nameDesc" | "year" | "department";
 
-const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
+const FILTER_OPTIONS: { value: FilterOption; label: string; secondOnly?: boolean }[] = [
   { value: "all", label: "All Participants" },
   { value: "initialPaid", label: "Paid Initial" },
   { value: "initialPending", label: "Didn't Pay Initial" },
+  { value: "secondPaid", label: "Paid Second", secondOnly: true },
+  { value: "secondPending", label: "Didn't Pay Second", secondOnly: true },
   { value: "finalPaid", label: "Paid Final" },
   { value: "finalPending", label: "Didn't Pay Final" },
 ];
@@ -48,6 +52,8 @@ type Participant = {
   department: string;
   initialPaymentPaid: boolean;
   initialAmount: number;
+  secondPaymentPaid: boolean;
+  secondAmount: number;
   finalPaymentPaid: boolean;
   finalAmount: number;
 };
@@ -63,6 +69,7 @@ type LedgerEntry = {
 type Totals = {
   revenueCollected: number;
   initialCollected: number;
+  secondCollected: number;
   finalCollected: number;
   totalIncome: number;
   totalExpenses: number;
@@ -77,6 +84,7 @@ type Totals = {
 const emptyTotals: Totals = {
   revenueCollected: 0,
   initialCollected: 0,
+  secondCollected: 0,
   finalCollected: 0,
   totalIncome: 0,
   totalExpenses: 0,
@@ -93,6 +101,7 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
   const [expenses, setExpenses] = useState<LedgerEntry[]>([]);
   const [incomes, setIncomes] = useState<LedgerEntry[]>([]);
   const [totals, setTotals] = useState<Totals>(emptyTotals);
+  const [hasSecondInstallment, setHasSecondInstallment] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [expenseTitle, setExpenseTitle] = useState("");
@@ -117,6 +126,7 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
       setExpenses(data.expenses);
       setIncomes(data.incomes);
       setTotals(data.totals);
+      setHasSecondInstallment(!!data.hasSecondInstallment);
     } finally {
       setLoading(false);
     }
@@ -134,6 +144,7 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
         setExpenses(data.expenses);
         setIncomes(data.incomes);
         setTotals(data.totals);
+        setHasSecondInstallment(!!data.hasSecondInstallment);
       } finally {
         if (active) setLoading(false);
       }
@@ -227,6 +238,11 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
     [participants]
   );
 
+  const secondPaidCount = useMemo(
+    () => participants.filter((p) => p.secondPaymentPaid).length,
+    [participants]
+  );
+
   const finalPaidCount = useMemo(
     () => participants.filter((p) => p.finalPaymentPaid).length,
     [participants]
@@ -241,6 +257,12 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
         break;
       case "initialPending":
         list = list.filter((p) => !p.initialPaymentPaid);
+        break;
+      case "secondPaid":
+        list = list.filter((p) => p.secondPaymentPaid);
+        break;
+      case "secondPending":
+        list = list.filter((p) => !p.secondPaymentPaid);
         break;
       case "finalPaid":
         list = list.filter((p) => p.finalPaymentPaid);
@@ -288,6 +310,16 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
             <span>Initial Collected · {initialPaidCount} paid</span>
           </div>
         </div>
+
+        {hasSecondInstallment && (
+          <div className={styles.summaryCard}>
+            <IndianRupee size={18} />
+            <div>
+              <strong>₹{totals.secondCollected}</strong>
+              <span>Second Collected · {secondPaidCount} paid</span>
+            </div>
+          </div>
+        )}
 
         <div className={styles.summaryCard}>
           <IndianRupee size={18} />
@@ -354,7 +386,7 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
             <div className={styles.controlWrap}>
               <Filter size={14} />
               <select value={filterBy} onChange={(e) => setFilterBy(e.target.value as FilterOption)}>
-                {FILTER_OPTIONS.map((opt) => (
+                {FILTER_OPTIONS.filter((opt) => !opt.secondOnly || hasSecondInstallment).map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -390,6 +422,7 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
                   <th>Year</th>
                   <th>Department</th>
                   <th>Initial Payment</th>
+                  {hasSecondInstallment && <th>Second Payment</th>}
                   <th>Final Payment</th>
                 </tr>
               </thead>
@@ -409,6 +442,15 @@ export default function TrekFinance({ trekId }: { trekId: string }) {
                         <StatusBadge text="Pending" tone="waiting" />
                       )}
                     </td>
+                    {hasSecondInstallment && (
+                      <td>
+                        {p.secondPaymentPaid ? (
+                          <StatusBadge text={`Paid ₹${p.secondAmount}`} tone="success" />
+                        ) : (
+                          <StatusBadge text="Pending" tone="waiting" />
+                        )}
+                      </td>
+                    )}
                     <td>
                       {p.finalPaymentPaid ? (
                         <StatusBadge text={`Paid ₹${p.finalAmount}`} tone="success" />
