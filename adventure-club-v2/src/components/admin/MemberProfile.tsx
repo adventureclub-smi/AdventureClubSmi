@@ -519,6 +519,8 @@ export default function MemberProfile({
                 <option>Marketing Head</option>
                 <option>Marketing Team</option>
                 <option>Web & Tech Team</option>
+                <option>Finance Head</option>
+                <option>Finance Team</option>
               </select>
             </div>
 

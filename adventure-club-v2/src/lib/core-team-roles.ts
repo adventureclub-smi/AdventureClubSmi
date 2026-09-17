@@ -34,6 +34,8 @@ export const PLAIN_CORE_CLUB_ROLES = new Set([
   "Marketing Head",
   "Marketing Team",
   "Web & Tech Team",
+  "Finance Head",
+  "Finance Team",
 ]);
 
 // Default electable positions for a new election — every real position
@@ -51,6 +53,8 @@ export const ELECTABLE_POSITIONS = [
   "Marketing Head",
   "Marketing Team",
   "Web & Tech Team",
+  "Finance Head",
+  "Finance Team",
 ];
 
 // "Team" positions can have more than one person elected to them — voters
@@ -64,6 +68,7 @@ export const MULTI_SELECT_POSITIONS = new Set([
   "Visual Team",
   "Marketing Team",
   "Web & Tech Team",
+  "Finance Team",
 ]);
 
 export function clubRoleBucket(clubRole: string): "ELEVATED" | "CORE" | "NONE" {
