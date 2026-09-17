@@ -18,6 +18,7 @@ import {
   ImageIcon,
   Settings,
   Ticket,
+  PiggyBank,
   Vote,
   GraduationCap,
   LogOut,
@@ -40,6 +41,7 @@ const links = [
   { href: "/admin/registrations", label: "Registrations", icon: ClipboardList },
   { href: "/admin/recruitment", label: "Recruitment", icon: UserPlus },
   { href: "/admin/payments", label: "Payments", icon: Wallet },
+  { href: "/admin/finance", label: "Finance", icon: PiggyBank },
   { href: "/admin/attendance", label: "Attendance", icon: CheckSquare },
   { href: "/admin/certificates", label: "Certificates", icon: Award },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
@@ -74,7 +76,7 @@ const CORE_TEAM_LINK = {
 // only capability is the club-role-gated Core Team Restructure link below.
 const LINKS_BY_ACCESS: Record<AdminAccessLevel, string[] | null> = {
   FULL: null,
-  FINANCE: ["/admin/payments"],
+  FINANCE: ["/admin/payments", "/admin/finance"],
   VISUAL: ["/admin/gallery"],
   BOOKING: ["/admin/booking"],
   CORE: [],

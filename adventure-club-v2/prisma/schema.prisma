@@ -617,6 +617,33 @@ model Income {
   createdAt DateTime @default(now())
 }
 
+// Club-wide finance ledger — separate from Expense/Income above, which are
+// scoped to one trek's own budget. This is for the club's overall day-to-day
+// money: since real transactions actually happen through a core member's
+// personal UPI/bank account rather than a dedicated club account, accountName
+// records whose account a given entry moved through, so personal and club
+// money can be told apart later and each person's running balance with the
+// club is visible on its own.
+model ClubFinanceEntry {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  type String // "INCOME" | "EXPENSE"
+
+  title String
+
+  amount Int
+
+  accountName String
+
+  notes String?
+
+  recordedBy String?
+
+  date DateTime @default(now())
+
+  createdAt DateTime @default(now())
+}
+
 model Attendance {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
