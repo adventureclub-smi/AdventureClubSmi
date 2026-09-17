@@ -108,6 +108,19 @@ if (screenshot instanceof File) {
       },
     });
 
+    // offlinePaymentCreated/Verified are shared across every installment
+    // leg, reused for whichever one is currently "in flight" — that only
+    // works while payment stays sequential. Second payment can now be paid
+    // before Initial (open second payment + Initial still unpaid shows
+    // both), so a Second submission here must NOT touch those shared flags
+    // unless Initial is already paid — otherwise it would flip
+    // offlinePaymentCreated on with nothing pending for Initial, which
+    // hides the "Pay Initial Payment" action entirely in
+    // getJourneyAction (it reads !offlinePaymentCreated as "hasn't
+    // started paying").
+    const affectsSharedInFlightFlags =
+      paymentType !== PaymentType.SECOND || registration.initialPaymentPaid;
+
     await prisma.registration.update({
       where: {
         id: registrationId,
@@ -116,9 +129,9 @@ if (screenshot instanceof File) {
       data: {
         paymentPortal: true,
 
-        offlinePaymentCreated: true,
-
-        offlinePaymentVerified: false,
+        ...(affectsSharedInFlightFlags
+          ? { offlinePaymentCreated: true, offlinePaymentVerified: false }
+          : {}),
 
         paymentReference:
           transactionId,

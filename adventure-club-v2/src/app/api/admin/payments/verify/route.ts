@@ -53,6 +53,16 @@ export async function POST(req: NextRequest) {
 
     const isSingleInstallment = registration?.trek.installments === 1;
 
+    // offlinePaymentVerified is shared across every installment leg and
+    // read elsewhere (e.g. the govt-permit booking list) as "this
+    // registration's booking-relevant payment is confirmed" — Second
+    // payment can now be paid and verified before Initial, so verifying it
+    // here must NOT flip that shared flag on unless Initial is already
+    // paid, or someone who hasn't actually paid Initial would wrongly show
+    // up as booking-eligible everywhere that flag is checked.
+    const secondVerificationAffectsSharedFlag =
+      paymentType !== "SECOND" || !!registration?.initialPaymentPaid;
+
     await prisma.registration.update({
       where: {
         id: registrationId,
@@ -71,7 +81,7 @@ export async function POST(req: NextRequest) {
           : paymentType === "SECOND"
           ? {
               secondPaymentPaid: verified,
-              offlinePaymentVerified: verified,
+              ...(secondVerificationAffectsSharedFlag ? { offlinePaymentVerified: verified } : {}),
               secondPaymentPaidAt: verified ? new Date() : null,
               ...(verified ? { secondPaymentDidNotPay: false } : {}),
             }

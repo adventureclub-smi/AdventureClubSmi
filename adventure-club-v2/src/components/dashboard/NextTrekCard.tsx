@@ -122,6 +122,21 @@ export default function NextTrekCard({
     registration.status !== "COMPLETED" &&
     registration.status !== "MISSED";
 
+  // getJourneyAction always leads with Initial Payment for anyone who
+  // hasn't paid it yet, even once second payment is open for the trek —
+  // otherwise whoever missed the initial window would have no way to find
+  // the second payment at all until they'd already cleared the first.
+  // Shown as its own standing action alongside the primary "Pay Initial
+  // Payment" button, same pattern as Trip Centre/WhatsApp below, so both
+  // are reachable at once instead of hiding one behind the other.
+  const showSecondPaymentAlongsideInitial =
+    !!registration &&
+    registration.trek?.installments === 3 &&
+    !registration.initialPaymentPaid &&
+    !registration.offlinePaymentVerified &&
+    !!registration.secondPaymentUnlocked &&
+    !registration.secondPaymentPaid;
+
   // The only legitimate way to get someone into a WhatsApp group is an
   // invite link they tap themselves — there's no API to add a phone number
   // directly. Shown once the initial payment is actually verified, matching
@@ -244,6 +259,15 @@ export default function NextTrekCard({
           <button className={`${styles.action} ${styles.disabled}`} disabled>
             {action.text}
           </button>
+        )}
+
+        {showSecondPaymentAlongsideInitial && (
+          <Link
+            href={`/student/payments/${registration!.id}?type=SECOND`}
+            className={`${styles.action} ${styles.secondPay}`}
+          >
+            Pay Second Payment
+          </Link>
         )}
 
         {showTripCentre && action.variant !== "tripCentre" && (
