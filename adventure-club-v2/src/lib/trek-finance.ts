@@ -101,3 +101,30 @@ export async function computeTrekFinance(trekId: string) {
     },
   };
 }
+
+// Per-trek highlight cards on the club-wide Finance page — reuses
+// computeTrekFinance (rather than re-deriving totals from raw payments) so
+// this can never drift from what each trek's own Finance tab shows.
+export async function computeAllTreksFinanceSummary() {
+  const treks = await prisma.trek.findMany({
+    where: { isHistorical: false },
+    orderBy: { date: "desc" },
+    select: { id: true, title: true },
+  });
+
+  const summaries = await Promise.all(
+    treks.map(async (trek) => {
+      const { totals } = await computeTrekFinance(trek.id);
+
+      return {
+        trekId: trek.id,
+        title: trek.title,
+        income: totals.revenueCollected + totals.totalIncome,
+        expenses: totals.totalExpenses,
+        net: totals.net,
+      };
+    })
+  );
+
+  return summaries;
+}

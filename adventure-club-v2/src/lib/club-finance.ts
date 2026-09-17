@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { computeAllTreksFinanceSummary } from "@/lib/trek-finance";
 
 export async function computeClubFinance() {
-  const entries = await prisma.clubFinanceEntry.findMany({
-    orderBy: { date: "desc" },
-  });
+  const [entries, treks] = await Promise.all([
+    prisma.clubFinanceEntry.findMany({ orderBy: { date: "desc" } }),
+    computeAllTreksFinanceSummary(),
+  ]);
 
   let totalIncome = 0;
   let totalExpenses = 0;
@@ -43,6 +45,7 @@ export async function computeClubFinance() {
   return {
     entries,
     accounts,
+    treks,
     totals: {
       totalIncome,
       totalExpenses,

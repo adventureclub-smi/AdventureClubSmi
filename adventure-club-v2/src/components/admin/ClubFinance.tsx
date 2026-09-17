@@ -9,6 +9,7 @@ import {
   Trash2,
   Users,
   Filter,
+  Mountain,
 } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
@@ -34,6 +35,14 @@ type Account = {
   net: number;
 };
 
+type TrekSummary = {
+  trekId: string;
+  title: string;
+  income: number;
+  expenses: number;
+  net: number;
+};
+
 type Totals = {
   totalIncome: number;
   totalExpenses: number;
@@ -45,6 +54,7 @@ const emptyTotals: Totals = { totalIncome: 0, totalExpenses: 0, balance: 0 };
 export default function ClubFinance() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [treks, setTreks] = useState<TrekSummary[]>([]);
   const [totals, setTotals] = useState<Totals>(emptyTotals);
   const [loading, setLoading] = useState(true);
 
@@ -66,6 +76,7 @@ export default function ClubFinance() {
       const data = await res.json();
       setEntries(data.entries);
       setAccounts(data.accounts);
+      setTreks(data.treks);
       setTotals(data.totals);
     } finally {
       setLoading(false);
@@ -82,6 +93,7 @@ export default function ClubFinance() {
         const data = await res.json();
         setEntries(data.entries);
         setAccounts(data.accounts);
+        setTreks(data.treks);
         setTotals(data.totals);
       } finally {
         if (active) setLoading(false);
@@ -159,64 +171,6 @@ export default function ClubFinance() {
         Club-wide income and expenses, tracked per personal account so club money and
         personal money never get mixed up.
       </p>
-
-      <div className={styles.summary}>
-        <div className={styles.summaryCard}>
-          <Wallet size={18} />
-          <div>
-            <strong>₹{totals.balance}</strong>
-            <span>Club Balance Remaining</span>
-          </div>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <TrendingUp size={18} />
-          <div>
-            <strong>₹{totals.totalIncome}</strong>
-            <span>Total Income</span>
-          </div>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <TrendingDown size={18} />
-          <div>
-            <strong>₹{totals.totalExpenses}</strong>
-            <span>Total Expenses</span>
-          </div>
-        </div>
-      </div>
-
-      <section className={styles.section}>
-        <h3>
-          <Users size={16} /> By Account
-        </h3>
-
-        {accounts.length === 0 ? (
-          <div className={styles.empty}>No accounts recorded yet.</div>
-        ) : (
-          <div className={styles.accountGrid}>
-            {accounts.map((account) => (
-              <div key={account.accountName} className={styles.accountCard}>
-                <strong>{account.accountName}</strong>
-                <div className={styles.accountRow}>
-                  <span>In</span>
-                  <span className={styles.incomeAmount}>+₹{account.income}</span>
-                </div>
-                <div className={styles.accountRow}>
-                  <span>Out</span>
-                  <span className={styles.expenseAmount}>-₹{account.expenses}</span>
-                </div>
-                <div className={styles.accountNet}>
-                  Club money currently with this account:{" "}
-                  <strong className={account.net < 0 ? styles.loss : ""}>
-                    ₹{account.net}
-                  </strong>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       <section className={styles.section}>
         <h3>Record a Transaction</h3>
@@ -310,6 +264,94 @@ export default function ClubFinance() {
             <Plus size={15} /> {saving ? "Adding..." : "Add Entry"}
           </button>
         </form>
+      </section>
+
+      <div className={styles.summary}>
+        <div className={styles.summaryCard}>
+          <Wallet size={18} />
+          <div>
+            <strong>₹{totals.balance}</strong>
+            <span>Club Balance Remaining</span>
+          </div>
+        </div>
+
+        <div className={styles.summaryCard}>
+          <TrendingUp size={18} />
+          <div>
+            <strong>₹{totals.totalIncome}</strong>
+            <span>Total Income</span>
+          </div>
+        </div>
+
+        <div className={styles.summaryCard}>
+          <TrendingDown size={18} />
+          <div>
+            <strong>₹{totals.totalExpenses}</strong>
+            <span>Total Expenses</span>
+          </div>
+        </div>
+      </div>
+
+      <section className={styles.section}>
+        <h3>
+          <Users size={16} /> By Account
+        </h3>
+
+        {accounts.length === 0 ? (
+          <div className={styles.empty}>No accounts recorded yet.</div>
+        ) : (
+          <div className={styles.accountGrid}>
+            {accounts.map((account) => (
+              <div key={account.accountName} className={styles.accountCard}>
+                <strong>{account.accountName}</strong>
+                <div className={styles.accountRow}>
+                  <span>In</span>
+                  <span className={styles.incomeAmount}>+₹{account.income}</span>
+                </div>
+                <div className={styles.accountRow}>
+                  <span>Out</span>
+                  <span className={styles.expenseAmount}>-₹{account.expenses}</span>
+                </div>
+                <div className={styles.accountNet}>
+                  Club money currently with this account:{" "}
+                  <strong className={account.net < 0 ? styles.loss : ""}>
+                    ₹{account.net}
+                  </strong>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <h3>
+          <Mountain size={16} /> By Trek
+        </h3>
+
+        {treks.length === 0 ? (
+          <div className={styles.empty}>No treks yet.</div>
+        ) : (
+          <div className={styles.accountGrid}>
+            {treks.map((trek) => (
+              <div key={trek.trekId} className={styles.accountCard}>
+                <strong>{trek.title}</strong>
+                <div className={styles.accountRow}>
+                  <span>Income</span>
+                  <span className={styles.incomeAmount}>+₹{trek.income}</span>
+                </div>
+                <div className={styles.accountRow}>
+                  <span>Expenses</span>
+                  <span className={styles.expenseAmount}>-₹{trek.expenses}</span>
+                </div>
+                <div className={styles.accountNet}>
+                  Money left:{" "}
+                  <strong className={trek.net < 0 ? styles.loss : ""}>₹{trek.net}</strong>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className={styles.section}>
