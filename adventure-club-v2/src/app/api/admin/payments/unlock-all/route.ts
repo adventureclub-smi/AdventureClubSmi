@@ -21,11 +21,17 @@ export async function POST(req: NextRequest) {
     // predates the second-payment leg and never sends it.
     const isSecond = type === "SECOND";
 
+    // Second payment can now be shown (and paid) even before Initial is
+    // paid — see NextTrekCard's showSecondPaymentAlongsideInitial — so
+    // "unlock for everyone" must not skip anyone still owing Initial, or
+    // this bulk action silently does nothing for exactly the people that
+    // feature is for. status: "APPROVED" takes over as the eligibility
+    // gate instead (matching getJourneyAction, which never offers any
+    // payment action before a registration is approved).
     const where = isSecond
       ? {
           trekId,
-          initialPaymentPaid: true,
-          status: { not: "REJECTED" as const },
+          status: "APPROVED" as const,
           secondPaymentUnlocked: false,
         }
       : {
