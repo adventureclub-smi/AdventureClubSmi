@@ -30,6 +30,7 @@ type Trek = {
   initialPayment: number;
   whatsappGroupLink?: string | null;
   restrictedYears?: string[];
+  type?: string;
 };
 
 type Props = {
@@ -153,6 +154,8 @@ export default function NextTrekCard({
   const isYearRestricted =
     !registration && !isYearEligible(userYear, trek.restrictedYears);
 
+  const isWorkshop = trek.type === "WORKSHOP";
+
   const badge = isYearRestricted
     ? { text: "Not Open For Your Year", tone: "danger" as const }
     : getJourneyBadge(registration, effectiveRegistrationState);
@@ -180,7 +183,7 @@ export default function NextTrekCard({
       <div className={styles.detailsSection}>
         <div className={styles.header}>
           <div>
-            <small>FEATURED TREK</small>
+            <small>{isWorkshop ? "FEATURED SESSION" : "FEATURED TREK"}</small>
             <h2>{trek.title}</h2>
 
             <p>
@@ -196,30 +199,34 @@ export default function NextTrekCard({
               })}
             </p>
 
-            <small className={styles.transportNote}>
-              Transportation from MAHE Gate 3 and forest permit included.
-            </small>
+            {!isWorkshop && (
+              <small className={styles.transportNote}>
+                Transportation from MAHE Gate 3 and forest permit included.
+              </small>
+            )}
           </div>
 
           {badge.text && <StatusBadge text={badge.text} tone={badge.tone} />}
         </div>
 
-        <div className={styles.infoGrid}>
-          <div>
-            <span>Difficulty</span>
-            <strong>{trek.difficulty}</strong>
-          </div>
+        {!isWorkshop && (
+          <div className={styles.infoGrid}>
+            <div>
+              <span>Difficulty</span>
+              <strong>{trek.difficulty}</strong>
+            </div>
 
-          <div>
-            <span>Total Cost</span>
-            <strong>₹{trek.price}</strong>
-          </div>
+            <div>
+              <span>Total Cost</span>
+              <strong>₹{trek.price}</strong>
+            </div>
 
-          <div>
-            <span>Initial</span>
-            <strong>₹{trek.initialPayment}</strong>
+            <div>
+              <span>Initial</span>
+              <strong>₹{trek.initialPayment}</strong>
+            </div>
           </div>
-        </div>
+        )}
 
         <div
           className={`${styles.countdownBlock} ${

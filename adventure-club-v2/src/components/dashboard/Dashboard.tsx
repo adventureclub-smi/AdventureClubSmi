@@ -46,6 +46,7 @@ type NextTrekEntry = {
     initialPayment: number;
     coverImage?: string;
     restrictedYears?: string[];
+    type?: string;
   };
 
   registration: RegistrationLike | null;
