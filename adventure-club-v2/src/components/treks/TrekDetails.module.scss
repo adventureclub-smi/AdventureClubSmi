@@ -305,18 +305,27 @@
 .guestLink {
   width: 100%;
   margin-top: 12px;
-  text-align: center;
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: underline;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(245, 245, 245, 0.06);
+  border: 1px solid rgba(245, 245, 245, 0.16);
+  border-radius: 14px;
+  padding: 16px;
+
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 700;
+
   cursor: pointer;
-  transition: .2s;
+  transition: .25s;
 }
 
 .guestLink:hover {
+  background: rgba(245, 245, 245, 0.1);
+  border-color: var(--color-accent);
   color: var(--color-accent);
 }
 

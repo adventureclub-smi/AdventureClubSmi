@@ -415,7 +415,7 @@ export default function TrekDetails({
                         className={styles.guestLink}
                         onClick={() => setShowGuestForm(true)}
                       >
-                        Or continue as guest
+                        Continue as Guest
                       </button>
                       <p className={styles.note}>
                         A NAVIRA account is the fastest way to register, but you
