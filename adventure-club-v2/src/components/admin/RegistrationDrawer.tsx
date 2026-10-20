@@ -27,7 +27,15 @@ type Registration = {
 
     upiId?: string | null;
     upiPhone?: string | null;
-  };
+  } | null;
+
+  isGuest: boolean;
+  guestName: string | null;
+  guestRollNo: string | null;
+  guestInstitution: string | null;
+  guestDepartment: string | null;
+  guestYear: string | null;
+  guestPhoneNumber: string | null;
 };
 
 type Props = {
@@ -250,11 +258,14 @@ export default function RegistrationDrawer({
             </p>
 
             <h2>
-              {registration.user.fullName}
+              {registration.user?.fullName ?? registration.guestName}
+              {registration.isGuest && (
+                <span className={styles.guestTag}>Guest</span>
+              )}
             </h2>
 
             <span className={styles.clubId}>
-              {registration.user.clubId}
+              {registration.user?.clubId ?? registration.guestRollNo}
             </span>
           </div>
 
@@ -355,22 +366,22 @@ export default function RegistrationDrawer({
 
   <div className={styles.item}>
   <span>Institution</span>
-  <strong>{registration.user?.institution}</strong>
+  <strong>{registration.user?.institution ?? registration.guestInstitution}</strong>
 </div>
 
 <div className={styles.item}>
   <span>Department</span>
-  <strong>{registration.user?.department}</strong>
+  <strong>{registration.user?.department ?? registration.guestDepartment}</strong>
 </div>
 
 <div className={styles.item}>
   <span>Year</span>
-  <strong>{registration.user?.year}</strong>
+  <strong>{registration.user?.year ?? registration.guestYear}</strong>
 </div>
 
 <div className={styles.item}>
   <span>Phone Number</span>
-  <strong>{registration.user?.phoneNumber}</strong>
+  <strong>{registration.user?.phoneNumber ?? registration.guestPhoneNumber}</strong>
 </div>
 
 <div className={styles.divider}></div>
@@ -608,7 +619,7 @@ export default function RegistrationDrawer({
             </p>
 
             <p className={styles.phoneHint}>
-              Phone: {registration.user.phoneNumber}
+              Phone: {registration.user?.phoneNumber ?? registration.guestPhoneNumber}
             </p>
 
             <button

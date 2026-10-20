@@ -1,0 +1,142 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.accountNudge {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  background: rgba(0, 160, 115, 0.08);
+  border: 1px solid rgba(0, 160, 115, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+
+  a {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.inputGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 48px;
+
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: 0.2s ease;
+}
+
+.inputGroup:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0, 160, 115, 0.12);
+}
+
+.icon {
+  margin-left: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.inputGroup input,
+.inputGroup select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin-left: 10px;
+  margin-right: 12px;
+
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 13.5px;
+
+  appearance: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inputGroup input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.inputGroup select option {
+  background-color: var(--color-charcoal);
+  color: var(--color-text);
+}
+
+.inputGroup select option:disabled {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: 13px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cancelButton {
+  flex: 1;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 245, 245, 0.12);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.cancelButton:hover {
+  color: var(--color-text);
+  border-color: rgba(245, 245, 245, 0.3);
+}
+
+.submitButton {
+  flex: 2;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-accent);
+  color: var(--color-midnight);
+  font-weight: 700;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

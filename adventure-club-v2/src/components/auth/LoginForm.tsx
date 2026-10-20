@@ -54,11 +54,16 @@ export default function LoginForm() {
 
       alert("Login successful!");
 
-      // Only ever honor an internal /dashboard path — anything else (a bare
-      // "/", a scheme-relative "//evil.com", an external URL) falls back to
-      // the normal role-based destination instead of trusting a query param.
+      // Only ever honor an internal /dashboard or /treks path — anything else
+      // (a bare "/", a scheme-relative "//evil.com", an external URL) falls
+      // back to the normal role-based destination instead of trusting a
+      // query param. /treks is here so "Continue with NAVIRA Account" on a
+      // workshop page can return you to that same page after logging in.
       const redirect = searchParams.get("redirect");
-      const safeRedirect = redirect?.startsWith("/dashboard") ? redirect : null;
+      const safeRedirect =
+        redirect?.startsWith("/dashboard") || redirect?.startsWith("/treks/")
+          ? redirect
+          : null;
 
       router.push(safeRedirect || (data.user?.clubRole === "Admin" ? "/admin" : "/dashboard"));
       router.refresh();

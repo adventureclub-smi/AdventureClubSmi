@@ -10,6 +10,7 @@ import { CalendarDays, Mountain, MapPin, Clock, Wallet } from "lucide-react";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./TrekDetails.module.scss";
 import PaymentCountdown from "./PaymentCountdown";
+import GuestRegistrationForm from "./GuestRegistrationForm";
 import {
   getJourneyAction,
   registrationStateForViewer,
@@ -88,6 +89,8 @@ export default function TrekDetails({
   const [status, setStatus] = useState<string | null>(null);
   const [notified, setNotified] = useState(notifyRequested);
   const [notifyLoading, setNotifyLoading] = useState(false);
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [guestRegistered, setGuestRegistered] = useState(false);
 
   // Any clubRole other than Member/Registered Member/Participant/Pending —
   // matches the admin's "Open for Core Members" toggle.
@@ -359,7 +362,21 @@ export default function TrekDetails({
             </>
           )}
 
-          {!user && registrationState === "OPEN" && (
+          {!user && registrationState === "OPEN" && guestRegistered && (
+            <>
+              <div className={styles.badgeRow}>
+                <StatusBadge text="Registered as Guest" tone="waiting" />
+              </div>
+              <p className={styles.note}>
+                Your registration has been submitted and is awaiting NAVIRA&apos;s
+                review. Since you registered as a guest, you won&apos;t see status
+                updates here — <Link href="/signup">create a free account</Link>{" "}
+                any time to track this and future registrations in one place.
+              </p>
+            </>
+          )}
+
+          {!user && registrationState === "OPEN" && !guestRegistered && (
             <>
               {trek.registrationClosesAt && (
                 <PaymentCountdown
@@ -371,10 +388,45 @@ export default function TrekDetails({
                 />
               )}
 
-              <Link href="/login" className={styles.registerButton}>
-                Login to Register
-              </Link>
-              <p className={styles.note}>Login to continue your registration.</p>
+              {isWorkshop && showGuestForm ? (
+                <GuestRegistrationForm
+                  trekId={trek.id}
+                  onSuccess={() => {
+                    setGuestRegistered(true);
+                    setShowGuestForm(false);
+                  }}
+                  onCancel={() => setShowGuestForm(false)}
+                />
+              ) : (
+                <>
+                  <Link
+                    href={`/login?redirect=/treks/${trek.id}`}
+                    className={styles.registerButton}
+                  >
+                    Continue with NAVIRA Account
+                  </Link>
+
+                  {isWorkshop ? (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.guestLink}
+                        onClick={() => setShowGuestForm(true)}
+                      >
+                        Or continue as guest
+                      </button>
+                      <p className={styles.note}>
+                        A NAVIRA account is the fastest way to register, but you
+                        can also sign up as a guest without creating one.
+                      </p>
+                    </>
+                  ) : (
+                    <p className={styles.note}>
+                      Login to continue your registration.
+                    </p>
+                  )}
+                </>
+              )}
             </>
           )}
 

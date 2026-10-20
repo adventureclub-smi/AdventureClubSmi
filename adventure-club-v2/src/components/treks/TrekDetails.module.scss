@@ -302,6 +302,24 @@
   cursor: not-allowed;
 }
 
+.guestLink {
+  width: 100%;
+  margin-top: 12px;
+  text-align: center;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.guestLink:hover {
+  color: var(--color-accent);
+}
+
 .note {
   margin-top: 18px;
 

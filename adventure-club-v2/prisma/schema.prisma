@@ -372,8 +372,10 @@ model Registration {
   isGuest Boolean @default(false)
 
   guestName        String?
+  guestRollNo      String?
   guestInstitution String?
   guestDepartment  String?
+  guestCourse      String?
   guestYear        String?
   guestPhoneNumber String?
 

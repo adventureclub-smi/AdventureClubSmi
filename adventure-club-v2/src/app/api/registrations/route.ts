@@ -7,6 +7,7 @@ import { registrationStateForViewer } from "@/lib/registration-journey";
 import { isCoreTeamRole } from "@/lib/core-team-roles";
 import { timeOutOverdueRegistrationsIfDue } from "@/lib/notification-emails";
 import { isYearEligible } from "@/lib/year-eligibility";
+import { createRegistrationWithNumber } from "@/lib/registration-number";
 
 export async function GET(req: Request) {
   const admin = await requireAdmin();
@@ -184,44 +185,10 @@ export async function POST(req: Request) {
       );
     }
 
-    let registration = null;
-
-    // registrationNumber is derived from the highest number already in use
-    // this year (not a raw count, which "rewinds" once any registration is
-    // deleted and would then collide with an existing, unrelated record).
-    // Retry a few times in the rare case of a concurrent collision.
-    for (let attempt = 0; attempt < 3 && !registration; attempt++) {
-      const year = new Date().getFullYear();
-      const prefix = `REG${year}-`;
-
-      const last = await prisma.registration.findFirst({
-        where: { registrationNumber: { startsWith: prefix } },
-        orderBy: { registrationNumber: "desc" },
-      });
-
-      const lastSeq = last
-        ? parseInt(last.registrationNumber.slice(prefix.length), 10) || 0
-        : 0;
-
-      const registrationNumber = `${prefix}${String(lastSeq + 1).padStart(4, "0")}`;
-
-      try {
-        registration = await prisma.registration.create({
-          data: {
-            registrationNumber,
-            trekId,
-            userId: user.id,
-          },
-        });
-      } catch (err) {
-        const isDuplicateNumber =
-          err instanceof Error &&
-          "code" in err &&
-          (err as { code?: string }).code === "P2002";
-
-        if (!isDuplicateNumber || attempt === 2) throw err;
-      }
-    }
+    const registration = await createRegistrationWithNumber({
+      trekId,
+      userId: user.id,
+    });
 
     return NextResponse.json({
       message: "Registration successful!",

@@ -78,7 +78,15 @@ type Registration = {
 
     upiId?: string | null;
     upiPhone?: string | null;
-  };
+  } | null;
+
+  isGuest: boolean;
+  guestName: string | null;
+  guestRollNo: string | null;
+  guestInstitution: string | null;
+  guestDepartment: string | null;
+  guestYear: string | null;
+  guestPhoneNumber: string | null;
 };
 
 export default function RegistrationsTable({
@@ -281,24 +289,24 @@ export default function RegistrationsTable({
     return registrations.filter((registration) => {
       const value = search.toLowerCase();
 
+      const name = registration.user?.fullName ?? registration.guestName ?? "";
+      const clubId = registration.user?.clubId ?? registration.guestRollNo ?? "";
+      const phone = registration.user?.phoneNumber ?? registration.guestPhoneNumber ?? "";
+
       return (
-        registration.user.fullName
-          .toLowerCase()
-          .includes(value) ||
-        registration.user.clubId
-          .toLowerCase()
-          .includes(value) ||
-        registration.user.phoneNumber.includes(value)
+        name.toLowerCase().includes(value) ||
+        clubId.toLowerCase().includes(value) ||
+        phone.includes(value)
       );
     });
   }, [registrations, search]);
 
   const smiStudents = filtered.filter((r) =>
-    isSmiInstitution(r.user.institution)
+    isSmiInstitution(r.user?.institution ?? r.guestInstitution ?? "")
   );
 
   const otherStudents = filtered.filter(
-    (r) => !isSmiInstitution(r.user.institution)
+    (r) => !isSmiInstitution(r.user?.institution ?? r.guestInstitution ?? "")
   );
 
   if (loading) {
@@ -516,39 +524,19 @@ export default function RegistrationsTable({
 
                   <div>
                     <h3>
-                      {
-                        registration.user
-                          .fullName
-                      }
+                      {registration.user?.fullName ?? registration.guestName}
+                      {registration.isGuest && (
+                        <span className={styles.guestTag}>Guest</span>
+                      )}
                     </h3>
 
-                    <p>
-                      {
-                        registration.user
-                          .clubId
-                      }
-                    </p>
+                    <p>{registration.user?.clubId ?? registration.guestRollNo}</p>
 
-                    <p>
-                      {
-                        registration.user
-                          .department
-                      }
-                    </p>
+                    <p>{registration.user?.department ?? registration.guestDepartment}</p>
 
-                    <p>
-                      {
-                        registration.user
-                          .year
-                      }
-                    </p>
+                    <p>{registration.user?.year ?? registration.guestYear}</p>
 
-                    <p>
-                      {
-                        registration.user
-                          .phoneNumber
-                      }
-                    </p>
+                    <p>{registration.user?.phoneNumber ?? registration.guestPhoneNumber}</p>
 
                     <p className={styles.registeredAt}>
                       Registered: {formatRegisteredAt(registration.createdAt)}
@@ -628,39 +616,19 @@ export default function RegistrationsTable({
 
                     <div>
                       <h3>
-                        {
-                          registration.user
-                            .fullName
-                        }
+                        {registration.user?.fullName ?? registration.guestName}
+                        {registration.isGuest && (
+                          <span className={styles.guestTag}>Guest</span>
+                        )}
                       </h3>
 
-                      <p>
-                        {
-                          registration.user
-                            .clubId
-                        }
-                      </p>
+                      <p>{registration.user?.clubId ?? registration.guestRollNo}</p>
 
-                      <p>
-                        {
-                          registration.user
-                            .institution
-                        }
-                      </p>
+                      <p>{registration.user?.institution ?? registration.guestInstitution}</p>
 
-                      <p>
-                        {
-                          registration.user
-                            .department
-                        }
-                      </p>
+                      <p>{registration.user?.department ?? registration.guestDepartment}</p>
 
-                      <p>
-                        {
-                          registration.user
-                            .phoneNumber
-                        }
-                      </p>
+                      <p>{registration.user?.phoneNumber ?? registration.guestPhoneNumber}</p>
 
                       <p className={styles.registeredAt}>
                         Registered: {formatRegisteredAt(registration.createdAt)}
