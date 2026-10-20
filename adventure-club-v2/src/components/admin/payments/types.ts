@@ -40,11 +40,17 @@ export type PaymentRegistration = {
     clubId: string;
     email?: string;
     phoneNumber?: string;
+    year?: string;
+    course?: string | null;
     upiId?: string | null;
     upiPhone?: string | null;
   } | null;
 
   guestName: string | null;
+  guestRollNo?: string | null;
+  guestYear?: string | null;
+  guestCourse?: string | null;
+  guestPhoneNumber?: string | null;
 
   payments?: PaymentRecord[];
 

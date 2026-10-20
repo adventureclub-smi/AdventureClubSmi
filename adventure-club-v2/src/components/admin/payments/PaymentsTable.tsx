@@ -410,9 +410,12 @@ export default function PaymentsTable({ trekId }: Props) {
   // natively either way, with no extra library needed.
   function exportToExcel() {
     const headers = [
+      "Club ID",
       "#",
       "Name",
-      "Club ID",
+      "Roll Number",
+      "Year",
+      "Course",
       "Phone",
       isSingleInstallment ? "Full Payment" : "Initial Payment",
       ...(hasSecondInstallment ? ["Second Payment"] : []),
@@ -430,10 +433,13 @@ export default function PaymentsTable({ trekId }: Props) {
         (registration.hiddenFromPayments ? " (Removed)" : "");
 
       return [
+        registration.user?.clubId ?? "-",
         String(i + 1),
         name,
-        registration.user?.clubId ?? "-",
-        registration.user?.phoneNumber ?? "-",
+        registration.user ? "-" : registration.guestRollNo ?? "-",
+        registration.user?.year ?? registration.guestYear ?? "-",
+        registration.user?.course ?? registration.guestCourse ?? "-",
+        registration.user?.phoneNumber ?? registration.guestPhoneNumber ?? "-",
         paymentStatusText(registration, "initial"),
         ...(hasSecondInstallment ? [paymentStatusText(registration, "second")] : []),
         ...(!isSingleInstallment ? [paymentStatusText(registration, "final")] : []),

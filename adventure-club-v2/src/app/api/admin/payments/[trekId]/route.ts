@@ -46,6 +46,8 @@ export async function GET(
     clubId: true,
     email: true,
     phoneNumber: true,
+    year: true,
+    course: true,
     upiId: true,
     upiPhone: true,
   },
