@@ -226,7 +226,7 @@ export default function TrekDetails({
             <span>{isWorkshop ? "Session Fee" : "Total Trek Fee"}</span>
           </div>
 
-          {!isFree && (
+          {!isFree && !isWorkshop && (
             <div className={styles.payments}>
               {trek.installments === 1 ? (
                 <div>
