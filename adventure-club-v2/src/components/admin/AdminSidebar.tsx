@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Mountain,
+  Tent,
   Users,
   ClipboardList,
   Wallet,
@@ -37,6 +38,7 @@ const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard", label: "Student Dashboard", icon: GraduationCap },
   { href: "/admin/treks", label: "Treks", icon: Mountain },
+  { href: "/admin/workshops", label: "Workshops", icon: Tent },
   { href: "/admin/members", label: "Students", icon: Users },
   { href: "/admin/registrations", label: "Registrations", icon: ClipboardList },
   { href: "/admin/recruitment", label: "Recruitment", icon: UserPlus },
@@ -113,8 +115,16 @@ export default function AdminSidebar({
       return (
         pathname.startsWith("/admin/treks") ||
         pathname.startsWith("/admin/create-trek") ||
-        pathname.startsWith("/admin/create-workshop") ||
+        pathname.startsWith("/admin/create-historical-trek") ||
         pathname.startsWith("/admin/edit-trek")
+      );
+    }
+
+    if (href === "/admin/workshops") {
+      return (
+        pathname.startsWith("/admin/workshops") ||
+        pathname.startsWith("/admin/create-workshop") ||
+        pathname.startsWith("/admin/edit-workshop")
       );
     }
 

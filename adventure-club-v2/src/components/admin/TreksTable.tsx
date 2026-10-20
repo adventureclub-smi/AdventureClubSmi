@@ -40,7 +40,13 @@ const emptyFinanceSummary: FinanceSummary = {
   grandTotal: 0,
 };
 
-export default function TreksTable() {
+export default function TreksTable({
+  mode = "treks",
+}: {
+  mode?: "treks" | "workshops";
+}) {
+  const isWorkshopsMode = mode === "workshops";
+
   const [treks, setTreks] = useState<Trek[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
@@ -56,7 +62,13 @@ export default function TreksTable() {
       const url = tab === "current" ? "/api/treks" : `/api/treks?season=${encodeURIComponent(tab)}`;
       const res = await fetch(url);
       const data = await res.json();
-      setTreks(Array.isArray(data) ? data : []);
+      const list: Trek[] = Array.isArray(data) ? data : [];
+
+      setTreks(
+        list.filter((trek) =>
+          isWorkshopsMode ? trek.type === "WORKSHOP" : trek.type !== "WORKSHOP"
+        )
+      );
     } catch (error) {
       console.error("Failed to fetch treks:", error);
       setTreks([]);
@@ -143,7 +155,8 @@ export default function TreksTable() {
   }
 
   async function deleteTrek(id: string) {
-    const confirmDelete = confirm("Are you sure you want to delete this trek?");
+    const label = isWorkshopsMode ? "workshop" : "trek";
+    const confirmDelete = confirm(`Are you sure you want to delete this ${label}?`);
     if (!confirmDelete) return;
 
     try {
@@ -151,11 +164,11 @@ export default function TreksTable() {
       const data = await res.json();
 
       if (!res.ok) {
-        setStatus(data.message || "Failed to delete trek.");
+        setStatus(data.message || `Failed to delete ${label}.`);
         return;
       }
 
-      setStatus("Trek deleted.");
+      setStatus(`${isWorkshopsMode ? "Workshop" : "Trek"} deleted.`);
       fetchTreks(activeTab);
     } catch (error) {
       console.error(error);
@@ -166,19 +179,20 @@ export default function TreksTable() {
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Treks"
-        breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Treks" }]}
+        title={isWorkshopsMode ? "Workshops" : "Treks"}
+        breadcrumb={[
+          { label: "Admin", href: "/admin" },
+          { label: isWorkshopsMode ? "Workshops" : "Treks" },
+        ]}
         quickActions={
-          activeTab === "current" ? (
-            <div className={styles.quickActionsGroup}>
-              <Link href="/admin/create-trek" className={styles.createButton}>
-                <Plus size={16} /> Create Trek
-              </Link>
-
-              <Link href="/admin/create-workshop" className={styles.createButton}>
-                <Plus size={16} /> Create Workshop
-              </Link>
-            </div>
+          isWorkshopsMode ? (
+            <Link href="/admin/create-workshop" className={styles.createButton}>
+              <Plus size={16} /> Create Workshop
+            </Link>
+          ) : activeTab === "current" ? (
+            <Link href="/admin/create-trek" className={styles.createButton}>
+              <Plus size={16} /> Create Trek
+            </Link>
           ) : (
             <Link href="/admin/create-historical-trek" className={styles.createButton}>
               <Plus size={16} /> Add Historical Trek
@@ -187,26 +201,28 @@ export default function TreksTable() {
         }
       />
 
-      <div className={styles.tabs}>
-        <button
-          className={activeTab === "current" ? styles.tabActive : styles.tab}
-          onClick={() => switchTab("current")}
-        >
-          Current
-        </button>
-
-        {HISTORICAL_SEASONS.map((season) => (
+      {!isWorkshopsMode && (
+        <div className={styles.tabs}>
           <button
-            key={season}
-            className={activeTab === season ? styles.tabActive : styles.tab}
-            onClick={() => switchTab(season)}
+            className={activeTab === "current" ? styles.tabActive : styles.tab}
+            onClick={() => switchTab("current")}
           >
-            <Archive size={13} /> {season} Archive
+            Current
           </button>
-        ))}
-      </div>
 
-      {activeTab !== "current" && (
+          {HISTORICAL_SEASONS.map((season) => (
+            <button
+              key={season}
+              className={activeTab === season ? styles.tabActive : styles.tab}
+              onClick={() => switchTab(season)}
+            >
+              <Archive size={13} /> {season} Archive
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!isWorkshopsMode && activeTab !== "current" && (
         <div className={styles.financeSummary}>
           {financeSummaryLoading ? (
             <p className={styles.hint}>Loading finance summary...</p>
@@ -243,10 +259,12 @@ export default function TreksTable() {
       {status && <p className={styles.status}>{status}</p>}
 
       {loading ? (
-        <p className={styles.hint}>Loading treks...</p>
+        <p className={styles.hint}>Loading {isWorkshopsMode ? "workshops" : "treks"}...</p>
       ) : treks.length === 0 ? (
         <div className={styles.empty}>
-          {activeTab === "current"
+          {isWorkshopsMode
+            ? "No workshops available yet."
+            : activeTab === "current"
             ? "No treks available yet."
             : `No treks archived for ${activeTab} yet.`}
         </div>
@@ -269,7 +287,7 @@ export default function TreksTable() {
                   </span>
                 )}
 
-                {trek.type === "WORKSHOP" && (
+                {trek.type === "WORKSHOP" && !isWorkshopsMode && (
                   <span className={styles.archivedBadge}>Workshop</span>
                 )}
 
@@ -318,10 +336,17 @@ export default function TreksTable() {
                   )}
 
                   <Link href={`/admin/treks/${trek.id}`} className={styles.manage}>
-                    Manage Trek
+                    {trek.type === "WORKSHOP" ? "Manage Workshop" : "Manage Trek"}
                   </Link>
 
-                  <Link href={`/admin/edit-trek/${trek.id}`} className={styles.edit}>
+                  <Link
+                    href={
+                      trek.type === "WORKSHOP"
+                        ? `/admin/edit-workshop/${trek.id}`
+                        : `/admin/edit-trek/${trek.id}`
+                    }
+                    className={styles.edit}
+                  >
                     <Pencil size={14} />
                   </Link>
 

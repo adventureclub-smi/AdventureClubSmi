@@ -62,7 +62,9 @@ export default async function TrekLayout({
         title={trek.title}
         breadcrumb={[
           { label: "Admin", href: "/admin" },
-          { label: "Treks", href: "/admin/treks" },
+          trek.type === "WORKSHOP"
+            ? { label: "Workshops", href: "/admin/workshops" }
+            : { label: "Treks", href: "/admin/treks" },
           { label: trek.title },
         ]}
       />
@@ -71,9 +73,11 @@ export default async function TrekLayout({
         <span>
           <CalendarDays size={14} /> {new Date(trek.date).toLocaleDateString()}
         </span>
-        <span>
-          <Mountain size={14} /> {trek.difficulty}
-        </span>
+        {trek.type !== "WORKSHOP" && (
+          <span>
+            <Mountain size={14} /> {trek.difficulty}
+          </span>
+        )}
         <span>
           <Wallet size={14} /> ₹{trek.price}
         </span>

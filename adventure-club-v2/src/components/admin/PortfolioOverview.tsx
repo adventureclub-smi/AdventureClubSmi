@@ -17,6 +17,7 @@ type Trek = {
   campNights: number;
   countsAsPeak: boolean;
   isHistorical?: boolean;
+  type?: string;
 };
 
 export default function PortfolioOverview() {
@@ -40,8 +41,13 @@ export default function PortfolioOverview() {
 
         if (!active || responses.some((res) => !res.ok)) return;
 
-        const allTreks = (await Promise.all(responses.map((res) => res.json()))).flat();
-        setTreks(allTreks);
+        const allTreks: Trek[] = (await Promise.all(responses.map((res) => res.json()))).flat();
+
+        // Portfolio Automation (distance/altitude/camp nights/"counts as
+        // peak") is a trekking-achievement concept — workshops never carry
+        // any of it (always created with countsAsPeak: false), so they're
+        // just noise here, same as they no longer belong in the Treks list.
+        setTreks(allTreks.filter((trek) => trek.type !== "WORKSHOP"));
       } finally {
         if (active) setLoading(false);
       }

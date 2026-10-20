@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImagePlus, X } from "lucide-react";
 
@@ -40,17 +40,81 @@ const emptyForm: FormState = {
   testVisibleToUserIds: [],
 };
 
-export default function CreateWorkshopForm() {
+// `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
+// expects the value expressed in the browser's LOCAL time — same fix as
+// CreateTrekForm's identical helpers.
+function pad(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function toDateInput(value?: string | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function toDateTimeInput(value?: string | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
+export default function CreateWorkshopForm({ workshopId }: { workshopId?: string }) {
   const router = useRouter();
+  const isEdit = !!workshopId;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(false);
+  const [loadingWorkshop, setLoadingWorkshop] = useState(isEdit);
   const [status, setStatus] = useState("");
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
 
   const [form, setForm] = useState<FormState>(emptyForm);
+
+  useEffect(() => {
+    if (!workshopId) return;
+
+    let active = true;
+
+    async function load() {
+      try {
+        const res = await fetch(`/api/treks/${workshopId}`);
+        if (!res.ok || !active) return;
+
+        const workshop = await res.json();
+
+        setForm({
+          title: workshop.title || "",
+          place: workshop.destination || "",
+          time: workshop.time || "",
+          duration: workshop.duration || "",
+          date: toDateInput(workshop.date),
+          seats: String(workshop.seats ?? ""),
+          description: workshop.description || "",
+          registrationOpensAt: toDateTimeInput(workshop.registrationOpensAt),
+          registrationClosesAt: toDateTimeInput(workshop.registrationClosesAt),
+          isFree: (workshop.price ?? 0) === 0,
+          price: workshop.price ? String(workshop.price) : "",
+          isTest: workshop.isTest ?? false,
+          testVisibleToUserIds: workshop.testVisibleToUserIds ?? [],
+        });
+
+        if (workshop.coverImage) setPreview(workshop.coverImage);
+      } finally {
+        if (active) setLoadingWorkshop(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [workshopId]);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -90,7 +154,7 @@ export default function CreateWorkshopForm() {
     setLoading(true);
     setStatus("");
 
-    let coverImage = "";
+    let coverImage = preview.startsWith("blob:") ? "" : preview;
 
     if (selectedImage) {
       const imageData = new FormData();
@@ -134,8 +198,8 @@ export default function CreateWorkshopForm() {
       testVisibleToUserIds: form.isTest ? form.testVisibleToUserIds : [],
     };
 
-    const res = await fetch("/api/workshops", {
-      method: "POST",
+    const res = await fetch(isEdit ? `/api/workshops/${workshopId}` : "/api/workshops", {
+      method: isEdit ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
@@ -149,18 +213,26 @@ export default function CreateWorkshopForm() {
       return;
     }
 
-    router.push("/admin/treks");
+    router.push("/admin/workshops");
     router.refresh();
+  }
+
+  if (isEdit && loadingWorkshop) {
+    return (
+      <div className={styles.container}>
+        <p>Loading workshop...</p>
+      </div>
+    );
   }
 
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Create New Workshop"
+        title={isEdit ? "Edit Workshop" : "Create New Workshop"}
         breadcrumb={[
           { label: "Admin", href: "/admin" },
-          { label: "Treks", href: "/admin/treks" },
-          { label: "Create Workshop" },
+          { label: "Workshops", href: "/admin/workshops" },
+          { label: isEdit ? "Edit" : "Create Workshop" },
         ]}
       />
 
@@ -391,7 +463,13 @@ export default function CreateWorkshopForm() {
         {status && <p className={styles.status}>{status}</p>}
 
         <button type="submit" disabled={loading}>
-          {loading ? "Creating Workshop..." : "Create Workshop"}
+          {loading
+            ? isEdit
+              ? "Saving..."
+              : "Creating Workshop..."
+            : isEdit
+            ? "Save Changes"
+            : "Create Workshop"}
         </button>
       </form>
     </div>
