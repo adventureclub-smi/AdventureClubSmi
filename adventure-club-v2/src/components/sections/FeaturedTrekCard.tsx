@@ -110,7 +110,7 @@ export default function FeaturedTrekCard({
 
         <div className={styles.badges}>
           <span className={styles.badge}>
-            {trek.type === "WORKSHOP" ? "Workshop" : trek.difficulty}
+            {trek.type === "WORKSHOP" ? "Session" : trek.difficulty}
           </span>
           <span className={styles.badge}>{trek.seats} seats</span>
 

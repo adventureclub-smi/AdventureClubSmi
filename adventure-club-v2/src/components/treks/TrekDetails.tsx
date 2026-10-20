@@ -195,9 +195,11 @@ export default function TrekDetails({
             <h1>{trek.title}</h1>
             <span>{new Date(trek.date).toLocaleDateString("en-IN")}</span>
 
-            <small className={styles.transportNote}>
-              Transportation from MAHE Gate 3 and forest permit included.
-            </small>
+            {!isWorkshop && (
+              <small className={styles.transportNote}>
+                Transportation from MAHE Gate 3 and forest permit included.
+              </small>
+            )}
           </motion.div>
         </div>
       </section>
@@ -209,7 +211,7 @@ export default function TrekDetails({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2>{isWorkshop ? "About This Workshop" : "About Expedition"}</h2>
+          <h2>{isWorkshop ? "About This Session" : "About Expedition"}</h2>
           <p>{trek.description}</p>
         </motion.div>
 
@@ -221,7 +223,7 @@ export default function TrekDetails({
         >
           <div className={styles.price}>
             <h2>{isFree ? "Free" : `₹${trek.price}`}</h2>
-            <span>{isWorkshop ? "Workshop Fee" : "Total Trek Fee"}</span>
+            <span>{isWorkshop ? "Session Fee" : "Total Trek Fee"}</span>
           </div>
 
           {!isFree && (
