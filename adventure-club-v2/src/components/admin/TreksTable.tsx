@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark, Rocket } from "lucide-react";
+import QRCode from "qrcode";
+import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark, Rocket, QrCode } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
@@ -43,6 +44,7 @@ export default function TreksTable() {
   const [treks, setTreks] = useState<Trek[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
+  const [generatingQrId, setGeneratingQrId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("current");
   const [financeSummary, setFinanceSummary] = useState<FinanceSummary>(emptyFinanceSummary);
   const [financeSummaryLoading, setFinanceSummaryLoading] = useState(false);
@@ -112,6 +114,31 @@ export default function TreksTable() {
     } catch (error) {
       console.error(error);
       setStatus("Something went wrong.");
+    }
+  }
+
+  async function downloadQr(id: string, title: string) {
+    setGeneratingQrId(id);
+
+    try {
+      const url = `${window.location.origin}/treks/${id}`;
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 800,
+        margin: 2,
+        color: { dark: "#0d0d0d", light: "#ffffff" },
+      });
+
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `navira-${slug || "trek"}-qr.png`;
+      link.click();
+    } finally {
+      setGeneratingQrId(null);
     }
   }
 
@@ -304,6 +331,16 @@ export default function TreksTable() {
                     iconOnly
                     className={styles.copy}
                   />
+
+                  <button
+                    className={styles.copy}
+                    title={`Download QR code for ${trek.title}`}
+                    aria-label={`Download QR code for ${trek.title}`}
+                    disabled={generatingQrId === trek.id}
+                    onClick={() => downloadQr(trek.id, trek.title)}
+                  >
+                    <QrCode size={14} />
+                  </button>
 
                   <button className={styles.delete} onClick={() => deleteTrek(trek.id)}>
                     <Trash2 size={14} />
