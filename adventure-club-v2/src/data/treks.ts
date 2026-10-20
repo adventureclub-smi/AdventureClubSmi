@@ -52,6 +52,13 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
       // that uses this filter. A one-off backfill already fixed every
       // trek that predated this field.
       isTest: false,
+
+      // Same Mongo "field must actually be stored" caveat as isTest above —
+      // see the comment on Trek.isDraft in schema.prisma. Drafts are hidden
+      // from every homepage/public-listing query unconditionally, same as
+      // isTest; core team previews a draft via its direct /treks/[id] link
+      // instead (see that page's own allowed-check), not through here.
+      isDraft: false,
     },
     orderBy: { date: "asc" },
   });
@@ -103,6 +110,13 @@ export async function getTrekMapPins(): Promise<TrekMapPin[]> {
       // that uses this filter. A one-off backfill already fixed every
       // trek that predated this field.
       isTest: false,
+
+      // Same Mongo "field must actually be stored" caveat as isTest above —
+      // see the comment on Trek.isDraft in schema.prisma. Drafts are hidden
+      // from every homepage/public-listing query unconditionally, same as
+      // isTest; core team previews a draft via its direct /treks/[id] link
+      // instead (see that page's own allowed-check), not through here.
+      isDraft: false,
     },
     orderBy: { date: "asc" },
   });
@@ -139,6 +153,13 @@ export async function getUpcomingTrekRoutes(): Promise<UpcomingTrekRoute[]> {
       // that uses this filter. A one-off backfill already fixed every
       // trek that predated this field.
       isTest: false,
+
+      // Same Mongo "field must actually be stored" caveat as isTest above —
+      // see the comment on Trek.isDraft in schema.prisma. Drafts are hidden
+      // from every homepage/public-listing query unconditionally, same as
+      // isTest; core team previews a draft via its direct /treks/[id] link
+      // instead (see that page's own allowed-check), not through here.
+      isDraft: false,
       waypoints: { some: {} },
     },
     orderBy: { date: "asc" },

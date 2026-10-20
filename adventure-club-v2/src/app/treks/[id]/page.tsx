@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TrekDetails from "@/components/treks/TrekDetails";
 import { getCurrentUser } from "@/lib/current-user";
+import { isCoreTeamRole } from "@/lib/core-team-roles";
 import { getHomepageContent } from "@/data/homepage-content";
 import { notifyRegistrationOpenedIfDue } from "@/lib/notification-emails";
 import { optimizeImage } from "@/lib/media-optimize";
@@ -32,13 +33,20 @@ export default async function TrekPage({
   }
 
   // A test trek only exists for admins (previewing it) and the specific
-  // students whitelisted on it — everyone else gets the same "not found" as
-  // a trek that never existed, even if they have the direct link.
-  if (trek.isTest) {
-    const allowed =
-      user?.role === "admin" || (user && trek.testVisibleToUserIds.includes(user.id));
+  // students whitelisted on it. A draft trek/workshop (see the comment on
+  // Trek.isDraft in schema.prisma) exists for admins and any core team
+  // member instead — everyone else gets the same "not found" as a trek that
+  // never existed, even with the direct link, for either case.
+  if (trek.isTest || trek.isDraft) {
+    const isAdmin = user?.role === "admin";
 
-    if (!allowed) {
+    const allowedForTest =
+      !trek.isTest || isAdmin || (user && trek.testVisibleToUserIds.includes(user.id));
+
+    const allowedForDraft =
+      !trek.isDraft || isAdmin || (!!user && isCoreTeamRole(user.clubRole));
+
+    if (!allowedForTest || !allowedForDraft) {
       notFound();
     }
   }

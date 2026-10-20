@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse, after } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { getCurrentUser } from "@/lib/current-user";
-import { notifyTrekCreated } from "@/lib/notification-emails";
+import { isCoreTeamRole } from "@/lib/core-team-roles";
 import { parseIstDateTimeLocal } from "@/lib/ist-time";
 import { optimizeImage } from "@/lib/media-optimize";
 
@@ -162,27 +162,23 @@ export async function POST(req: Request) {
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
 
         // -------------------------
+        // Draft Mode
+        // -------------------------
+
+        // Always true on creation — never a client-chosen option. Only
+        // "Go Live" (src/app/api/admin/treks/go-live) flips this, which is
+        // also what sends the "New Trek Announced" email — see the comment
+        // on Trek.isDraft in schema.prisma for why creation itself no longer
+        // sends it.
+        isDraft: true,
+
+        // -------------------------
         // Registration Eligibility
         // -------------------------
 
         restrictedYears: Array.isArray(restrictedYears) ? restrictedYears : [],
       },
     });
-
-    // Runs after the response is sent — a large member list could take
-    // longer than a serverless function's response window allows, and the
-    // admin doesn't need to wait for the email blast to see "Trek created."
-    // Test treks are a private dry-run, so they never trigger a club-wide
-    // announcement email.
-    if (!trek.isTest) {
-      after(async () => {
-        try {
-          await notifyTrekCreated(trek);
-        } catch (emailError) {
-          console.error("Failed to send trek-created emails:", emailError);
-        }
-      });
-    }
 
     return NextResponse.json(
       {
@@ -221,6 +217,13 @@ export async function GET(req: NextRequest) {
     const user = await getCurrentUser();
     const isAdmin = user?.role === "admin";
 
+    // Draft treks/workshops are visible here to admins and core team alike
+    // (see the comment on Trek.isDraft in schema.prisma) — unlike isTest,
+    // which only ever bypasses for admins/whitelisted users, this is a
+    // deliberately wider "heads and core team" audience so they can preview
+    // a trek and grab its link/QR before Go Live.
+    const isCoreTeamMember = !!user && isCoreTeamRole(user.clubRole);
+
     // Historical/archived treks are opt-in only (?season=2025-26) — every
     // existing consumer of this route (public trek browsing, admin trek
     // list, announcement/portfolio pickers) should keep seeing only current
@@ -233,6 +236,7 @@ export async function GET(req: NextRequest) {
         // the document, so anything writing a Trek outside the app's own
         // create/edit routes must set isTest itself.
         ...(isAdmin ? {} : { isTest: false }),
+        ...(isAdmin || isCoreTeamMember ? {} : { isDraft: false }),
       },
       orderBy: {
         createdAt: "desc",

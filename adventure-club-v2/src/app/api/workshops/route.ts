@@ -1,7 +1,6 @@
-import { NextResponse, after } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { notifyWorkshopCreated } from "@/lib/notification-emails";
 import { parseIstDateTimeLocal } from "@/lib/ist-time";
 
 export async function POST(req: Request) {
@@ -91,20 +90,14 @@ export async function POST(req: Request) {
 
         isTest: Boolean(isTest),
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
+
+        // Always true on creation — never a client-chosen option. Only
+        // "Go Live" (src/app/api/admin/treks/go-live) flips this, which is
+        // also what sends the "New Workshop Announced" email — see the
+        // comment on Trek.isDraft in schema.prisma.
+        isDraft: true,
       },
     });
-
-    // Test workshops are a private dry-run, so they never trigger a
-    // club-wide announcement email.
-    if (!workshop.isTest) {
-      after(async () => {
-        try {
-          await notifyWorkshopCreated(workshop);
-        } catch (emailError) {
-          console.error("Failed to send workshop-created emails:", emailError);
-        }
-      });
-    }
 
     return NextResponse.json(
       { message: "Workshop created successfully!", trek: workshop },

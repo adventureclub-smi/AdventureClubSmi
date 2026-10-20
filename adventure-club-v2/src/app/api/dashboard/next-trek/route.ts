@@ -32,6 +32,11 @@ export async function GET() {
     const isCoreTeamMember = !!requester && isCoreTeamRole(requester.clubRole);
     const userYear = requester?.year ?? null;
 
+    // See the comment on Trek.isDraft in schema.prisma — core team previews
+    // a draft here too, same audience as the "Open for Core Members" check
+    // above, so it shows up on their own dashboard right after creation.
+    const isDraftFilter = isCoreTeamMember ? {} : { isDraft: false };
+
     // 1) Every trek the admin hasn't marked "Completed" yet shows here —
     // registered or not. Two treks can be live at once (one the student
     // registered for, one they haven't gotten to yet), and neither should
@@ -48,6 +53,7 @@ export async function GET() {
         // See the comment on this filter in src/data/treks.ts — every trek
         // must actually have isTest stored for this to match it.
         OR: [{ isTest: false }, { testVisibleToUserIds: { has: payload.id } }],
+        ...isDraftFilter,
       },
       orderBy: { date: "asc" },
     });
@@ -133,6 +139,7 @@ export async function GET() {
         // See the comment on this filter in src/data/treks.ts — every trek
         // must actually have isTest stored for this to match it.
         OR: [{ isTest: false }, { testVisibleToUserIds: { has: payload.id } }],
+        ...isDraftFilter,
       },
       orderBy: {
         date: "asc",

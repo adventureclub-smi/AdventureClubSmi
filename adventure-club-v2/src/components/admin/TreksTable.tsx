@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark } from "lucide-react";
+import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark, Rocket } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
@@ -24,6 +24,7 @@ type Trek = {
   season?: string | null;
   type?: string;
   isTest?: boolean;
+  isDraft?: boolean;
 };
 
 type FinanceSummary = {
@@ -87,6 +88,30 @@ export default function TreksTable() {
 
     if (tab !== "current") {
       fetchFinanceSummary(tab);
+    }
+  }
+
+  async function goLive(id: string, title: string) {
+    const confirmGoLive = confirm(
+      `Make "${title}" live? Every member gets the "New Trek/Workshop Announced" email immediately — only do this once the QR code/poster are ready.`
+    );
+    if (!confirmGoLive) return;
+
+    try {
+      const res = await fetch("/api/admin/treks/go-live", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trekId: id }),
+      });
+
+      const data = await res.json();
+
+      setStatus(data.message || (res.ok ? "Done." : "Failed to go live."));
+
+      if (res.ok) fetchTreks(activeTab);
+    } catch (error) {
+      console.error(error);
+      setStatus("Something went wrong.");
     }
   }
 
@@ -224,6 +249,10 @@ export default function TreksTable() {
                 {trek.isTest && (
                   <span className={styles.testBadge}>TEST</span>
                 )}
+
+                {trek.isDraft && (
+                  <span className={styles.draftBadge}>DRAFT</span>
+                )}
               </div>
 
               <div className={styles.content}>
@@ -252,6 +281,15 @@ export default function TreksTable() {
                 <p className={styles.description}>{trek.description}</p>
 
                 <div className={styles.buttons}>
+                  {trek.isDraft && (
+                    <button
+                      className={styles.goLive}
+                      onClick={() => goLive(trek.id, trek.title)}
+                    >
+                      <Rocket size={14} /> Go Live
+                    </button>
+                  )}
+
                   <Link href={`/admin/treks/${trek.id}`} className={styles.manage}>
                     Manage Trek
                   </Link>

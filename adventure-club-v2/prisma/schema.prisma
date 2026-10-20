@@ -317,6 +317,22 @@ model Trek {
 
   testVisibleToUserIds String[] @default([])
 
+  // ===== Draft Mode =====
+  // Every trek/workshop starts here (set unconditionally by the create
+  // routes, never a client-chosen option) so there's a window to get the QR
+  // code/poster ready before announcing it — hidden from the homepage, the
+  // public /treks listing, and every regular member's dashboard, but still
+  // visible to admins and core team (isCoreTeamRole) so they can preview the
+  // page and grab its link/QR. "Go Live" (src/app/api/admin/treks/go-live)
+  // is the only thing that flips this to false — that's also the moment the
+  // "New Trek/Workshop Announced" email actually goes out, not creation.
+  //
+  // Same Mongo caveat as isTest above: every trek document must actually
+  // store this field for the `isDraft: false` filter to match it. A one-off
+  // backfill set it on every pre-existing trek when this field was added.
+
+  isDraft Boolean @default(false)
+
   // ===== Registration Eligibility =====
   // Empty = open to every year, same "empty means unrestricted" convention
   // as testVisibleToUserIds above. Values are the canonical strings from

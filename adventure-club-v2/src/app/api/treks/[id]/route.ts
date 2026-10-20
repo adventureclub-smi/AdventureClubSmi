@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { getCurrentUser } from "@/lib/current-user";
+import { isCoreTeamRole } from "@/lib/core-team-roles";
 import { parseIstDateTimeLocal } from "@/lib/ist-time";
 
 type RouteContext = {
@@ -29,14 +30,21 @@ export async function GET(
     }
 
     // Test treks are only visible to admins (editing them) or the specific
-    // students whitelisted on them — everyone else gets the same 404 as a
-    // trek that doesn't exist, even with a direct link/ID.
-    if (trek.isTest) {
+    // students whitelisted on them. Draft treks/workshops (see the comment
+    // on Trek.isDraft in schema.prisma) are visible to admins and any core
+    // team member instead — everyone else gets the same 404 as a trek that
+    // doesn't exist, even with a direct link/ID, for either case.
+    if (trek.isTest || trek.isDraft) {
       const user = await getCurrentUser();
-      const allowed =
-        user?.role === "admin" || (user && trek.testVisibleToUserIds.includes(user.id));
+      const isAdmin = user?.role === "admin";
 
-      if (!allowed) {
+      const allowedForTest =
+        !trek.isTest || isAdmin || (user && trek.testVisibleToUserIds.includes(user.id));
+
+      const allowedForDraft =
+        !trek.isDraft || isAdmin || (!!user && isCoreTeamRole(user.clubRole));
+
+      if (!allowedForTest || !allowedForDraft) {
         return NextResponse.json(
           { message: "Trek not found." },
           { status: 404 }
