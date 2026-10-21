@@ -117,6 +117,15 @@ model User {
   // connection to the account itself.
   avatarUrl String?
 
+  // Free-text intro shown on this member's directory profile card.
+  bio String?
+
+  // Whether trek stats (completed treks, points, highest peak, etc.) show
+  // on this member's directory profile card for other members. Off by
+  // default — a member opts in before their activity numbers are visible
+  // to anyone but themselves; name/photo/role/bio stay visible either way.
+  statsPublic Boolean @default(false)
+
   emergencyContactName String?
 
   emergencyContactRelation String?

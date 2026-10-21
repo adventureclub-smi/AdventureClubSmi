@@ -27,6 +27,8 @@ const SMI_PROGRAMS = [...SMI_UNDERGRAD_PROGRAMS, ...SMI_POSTGRAD_PROGRAMS, "PhD"
 type UserProfile = {
   fullName: string;
   avatarUrl: string;
+  bio: string;
+  statsPublic: boolean;
   email: string;
   emailLocked: boolean;
   phoneNumber: string;
@@ -49,6 +51,8 @@ type UserProfile = {
 const emptyProfile: UserProfile = {
   fullName: "",
   avatarUrl: "",
+  bio: "",
+  statsPublic: false,
   email: "",
   emailLocked: true,
   phoneNumber: "",
@@ -105,6 +109,8 @@ export default function Profile() {
           ...emptyProfile,
           ...data,
           avatarUrl: data.avatarUrl || "",
+          bio: data.bio || "",
+          statsPublic: !!data.statsPublic,
           dateOfBirth: data.dateOfBirth ? data.dateOfBirth.slice(0, 10) : "",
           upiId: data.upiId || "",
           upiPhone: data.upiPhone || "",
@@ -242,7 +248,9 @@ export default function Profile() {
     }
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) {
     setUser({ ...user, [e.target.name]: e.target.value });
   }
 
@@ -596,6 +604,43 @@ export default function Profile() {
               />
             </div>
           </div>
+        </section>
+
+        <section className={styles.card}>
+          <h2>Member Directory</h2>
+
+          <p className={styles.note}>
+            Shown to other logged-in members when they find you in the
+            directory search. Your name, photo, club role, and year are
+            always visible to them — your trek stats stay hidden unless you
+            choose to make them public below.
+          </p>
+
+          <div className={styles.fields}>
+            <div className={styles.fieldWide}>
+              <label>Bio</label>
+              <textarea
+                name="bio"
+                value={user.bio}
+                onChange={handleChange}
+                placeholder="Say a bit about yourself..."
+                maxLength={280}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <label className={styles.privacyToggle}>
+            <input
+              type="checkbox"
+              checked={user.statsPublic}
+              onChange={(e) => setUser({ ...user, statsPublic: e.target.checked })}
+            />
+            <span>
+              <strong>{user.statsPublic ? "Public" : "Private"}</strong> — make my trek
+              count, portfolio points, and highest peak visible to other members
+            </span>
+          </label>
         </section>
 
         <section className={styles.card}>

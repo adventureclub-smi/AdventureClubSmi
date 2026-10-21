@@ -114,6 +114,10 @@ export async function PUT(req: Request) {
 
   ...(typeof body.avatarUrl === "string" ? { avatarUrl: body.avatarUrl } : {}),
 
+  ...(typeof body.bio === "string" ? { bio: body.bio } : {}),
+
+  ...(typeof body.statsPublic === "boolean" ? { statsPublic: body.statsPublic } : {}),
+
   emergencyContactName:
     body.emergencyContactName,
 

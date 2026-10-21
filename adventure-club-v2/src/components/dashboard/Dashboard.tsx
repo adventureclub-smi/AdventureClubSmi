@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import HeroSection from "./HeroSection";
+import MemberSearchBar from "./MemberSearchBar";
 import NextTrekCard from "./NextTrekCard";
 import Stats from "./Stats";
 import QuickActionCard from "./shared/QuickActionCard";
@@ -149,6 +150,8 @@ export default function Dashboard() {
 
   return (
     <div className={styles.main}>
+      <MemberSearchBar />
+
       {hero && (
         <HeroSection
           name={hero.name}

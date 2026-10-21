@@ -27,12 +27,28 @@ export async function GET(req: NextRequest) {
         fullName: true,
         avatarUrl: true,
         clubRole: true,
+        registrations: {
+          where: { attendanceMarked: true },
+          select: { id: true },
+        },
       },
       orderBy: { fullName: "asc" },
-      take: 50,
+      take: query ? 20 : 200,
     });
 
-    return NextResponse.json(members);
+    // With no search yet, lead with the members who've actually shown up to
+    // treks (most-attended first) rather than an arbitrary alphabetical list
+    // — a typed query is a direct name lookup, so it stays alphabetical.
+    const withTrekCount = members.map(({ registrations, ...member }) => ({
+      ...member,
+      trekCount: registrations.length,
+    }));
+
+    if (!query) {
+      withTrekCount.sort((a, b) => b.trekCount - a.trekCount || a.fullName.localeCompare(b.fullName));
+    }
+
+    return NextResponse.json(query ? withTrekCount : withTrekCount.slice(0, 8));
   } catch (error) {
     console.error(error);
 
