@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Award, LogOut, Mountain, Route, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Award, Camera, LogOut, Mountain, Route, Sparkles } from "lucide-react";
 
 import BackButton from "./shared/BackButton";
 import StatCard from "./shared/StatCard";
@@ -25,6 +26,7 @@ const SMI_PROGRAMS = [...SMI_UNDERGRAD_PROGRAMS, ...SMI_POSTGRAD_PROGRAMS, "PhD"
 
 type UserProfile = {
   fullName: string;
+  avatarUrl: string;
   email: string;
   emailLocked: boolean;
   phoneNumber: string;
@@ -46,6 +48,7 @@ type UserProfile = {
 
 const emptyProfile: UserProfile = {
   fullName: "",
+  avatarUrl: "",
   email: "",
   emailLocked: true,
   phoneNumber: "",
@@ -75,7 +78,9 @@ export default function Profile() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [sendingReset, setSendingReset] = useState(false);
   const [passwordStatus, setPasswordStatus] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile>(emptyProfile);
@@ -99,6 +104,7 @@ export default function Profile() {
         setUser({
           ...emptyProfile,
           ...data,
+          avatarUrl: data.avatarUrl || "",
           dateOfBirth: data.dateOfBirth ? data.dateOfBirth.slice(0, 10) : "",
           upiId: data.upiId || "",
           upiPhone: data.upiPhone || "",
@@ -131,6 +137,60 @@ export default function Profile() {
       active = false;
     };
   }, []);
+
+  // Uploads and saves in one step (no separate "Save Changes" click needed
+  // just for the photo) — the rest of the form still only saves on demand.
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setStatus("Please select an image.");
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setStatus("Maximum image size is 4MB.");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setStatus(null);
+
+    try {
+      const imageData = new FormData();
+      imageData.append("file", file);
+      imageData.append("folder", "AdventureClub/Avatars");
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: imageData,
+      });
+
+      const upload = await uploadRes.json().catch(() => null);
+
+      if (!uploadRes.ok) {
+        setStatus(upload?.message || "Failed to upload the photo.");
+        return;
+      }
+
+      const nextUser = { ...user, avatarUrl: upload.url };
+      setUser(nextUser);
+
+      const saveRes = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextUser),
+      });
+
+      setStatus(saveRes.ok ? "Profile photo updated." : "Could not save the photo.");
+    } catch {
+      setStatus("Could not save the photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   async function saveProfile() {
     setSaving(true);
@@ -243,7 +303,31 @@ export default function Profile() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className={styles.avatar}>{initials || "AC"}</div>
+        <button
+          type="button"
+          className={styles.avatar}
+          onClick={() => avatarInputRef.current?.click()}
+          disabled={uploadingAvatar}
+          aria-label="Change profile photo"
+        >
+          {user.avatarUrl ? (
+            <Image src={user.avatarUrl} alt={user.fullName} fill sizes="76px" />
+          ) : (
+            <span>{initials || "AC"}</span>
+          )}
+
+          <span className={styles.avatarOverlay}>
+            <Camera size={18} />
+          </span>
+        </button>
+
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleAvatarChange}
+        />
 
         <div className={styles.identity}>
           <h1>{user.fullName || "NAVIRA Member"}</h1>

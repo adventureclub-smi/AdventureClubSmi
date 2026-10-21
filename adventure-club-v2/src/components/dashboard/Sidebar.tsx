@@ -14,6 +14,7 @@ import {
   Mail,
   ShieldCheck,
   LogOut,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +39,7 @@ const mainLinks: NavLink[] = [
     label: "My Registrations",
     icon: ClipboardList,
   },
+  { href: "/dashboard/directory", label: "Member Directory", icon: Users, mobileLabel: "Directory" },
   { href: "/dashboard/announcements", label: "Announcements", icon: Bell },
   { href: "/contact", label: "Contact Us", icon: Mail },
 ];

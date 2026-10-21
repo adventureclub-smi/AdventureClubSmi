@@ -111,6 +111,12 @@ model User {
 
   collegeRollNumber String?
 
+  // Self-uploaded profile picture — shown on the member's own Profile page
+  // and in the members-only Directory. Separate from TribeMember.photoUrl,
+  // which is an admin-curated photo for the public /tribe page and has no
+  // connection to the account itself.
+  avatarUrl String?
+
   emergencyContactName String?
 
   emergencyContactRelation String?

@@ -20,8 +20,14 @@ export async function POST(req: Request) {
     const rawBuffer = Buffer.from(bytes);
     const buffer = isVideo ? await compressVideo(rawBuffer) : rawBuffer;
 
+    // Defaults to the original folder so every existing caller (trek/
+    // workshop cover images, etc.) keeps behaving exactly as before —
+    // only a caller that explicitly sends one (e.g. avatar uploads) lands
+    // anywhere else.
+    const folder = (formData.get("folder") as string) || "AdventureClub/Treks";
+
     const uploaded = await uploadBuffer(buffer, isVideo ? "video/mp4" : file.type, {
-      folder: "AdventureClub/Treks",
+      folder,
       resourceType: isVideo ? "video" : "image",
     });
 

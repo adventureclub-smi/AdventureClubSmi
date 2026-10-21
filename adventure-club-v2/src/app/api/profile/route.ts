@@ -112,6 +112,8 @@ export async function PUT(req: Request) {
   collegeRollNumber:
     body.collegeRollNumber,
 
+  ...(typeof body.avatarUrl === "string" ? { avatarUrl: body.avatarUrl } : {}),
+
   emergencyContactName:
     body.emergencyContactName,
 
