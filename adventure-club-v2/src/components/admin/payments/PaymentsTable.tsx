@@ -96,6 +96,16 @@ function csvCell(value: string): string {
   return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
+// Roll numbers and phone numbers are long digit-only strings — Excel's CSV
+// importer auto-detects any such cell as a number and switches it to
+// scientific notation (e.g. "251530130002" -> "2.52E+11"), silently
+// mangling the actual value. Wrapping it as ="12345" forces Excel to
+// evaluate it as a formula producing literal text instead of a number,
+// the standard workaround since plain CSV has no per-cell type metadata.
+function excelTextCell(value: string): string {
+  return `="${value.replace(/"/g, '""')}"`;
+}
+
 // registration.paymentAmount is a single shared field that every offline
 // record / proof submission overwrites unconditionally (see
 // /api/admin/payments/offline and /api/student/payment/proof) — it's
@@ -436,10 +446,10 @@ export default function PaymentsTable({ trekId }: Props) {
         registration.user?.clubId ?? "-",
         String(i + 1),
         name,
-        registration.user?.collegeRollNumber ?? registration.guestRollNo ?? "-",
+        excelTextCell(registration.user?.collegeRollNumber ?? registration.guestRollNo ?? "-"),
         registration.user?.year ?? registration.guestYear ?? "-",
         registration.user?.course ?? registration.guestCourse ?? "-",
-        registration.user?.phoneNumber ?? registration.guestPhoneNumber ?? "-",
+        excelTextCell(registration.user?.phoneNumber ?? registration.guestPhoneNumber ?? "-"),
         paymentStatusText(registration, "initial"),
         ...(hasSecondInstallment ? [paymentStatusText(registration, "second")] : []),
         ...(!isSingleInstallment ? [paymentStatusText(registration, "final")] : []),
