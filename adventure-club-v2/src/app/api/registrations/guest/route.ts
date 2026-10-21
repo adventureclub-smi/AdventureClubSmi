@@ -14,6 +14,7 @@ export async function POST(req: Request) {
       trekId,
       guestName,
       guestRollNo,
+      guestEmail,
       guestPhoneNumber,
       guestInstitution,
       guestDepartment,
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
       !trekId ||
       !guestName?.trim() ||
       !guestRollNo?.trim() ||
+      !guestEmail?.trim() ||
       !guestPhoneNumber?.trim() ||
       !guestInstitution?.trim() ||
       !guestDepartment?.trim() ||
@@ -33,6 +35,13 @@ export async function POST(req: Request) {
     ) {
       return NextResponse.json(
         { message: "All fields are required." },
+        { status: 400 }
+      );
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim())) {
+      return NextResponse.json(
+        { message: "Please enter a valid email address." },
         { status: 400 }
       );
     }
@@ -94,6 +103,7 @@ export async function POST(req: Request) {
       isGuest: true,
       guestName: guestName.trim(),
       guestRollNo: guestRollNo.trim(),
+      guestEmail: guestEmail.trim(),
       guestPhoneNumber: guestPhoneNumber.trim(),
       guestInstitution: guestInstitution.trim(),
       guestDepartment: guestDepartment.trim(),

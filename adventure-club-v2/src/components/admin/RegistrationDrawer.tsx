@@ -20,6 +20,7 @@ type Registration = {
     id: string;
     clubId: string;
     fullName: string;
+    email?: string;
     institution: string;
     department: string;
     year: string;
@@ -32,6 +33,7 @@ type Registration = {
   isGuest: boolean;
   guestName: string | null;
   guestRollNo: string | null;
+  guestEmail?: string | null;
   guestInstitution: string | null;
   guestDepartment: string | null;
   guestYear: string | null;
@@ -382,6 +384,11 @@ export default function RegistrationDrawer({
 <div className={styles.item}>
   <span>Phone Number</span>
   <strong>{registration.user?.phoneNumber ?? registration.guestPhoneNumber}</strong>
+</div>
+
+<div className={styles.item}>
+  <span>Email</span>
+  <strong>{registration.user?.email ?? registration.guestEmail ?? "-"}</strong>
 </div>
 
 <div className={styles.divider}></div>

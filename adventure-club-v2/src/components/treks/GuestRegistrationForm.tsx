@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { User, Hash, Phone, GraduationCap, BookOpen } from "lucide-react";
+import { User, Mail, Hash, Phone, GraduationCap, BookOpen } from "lucide-react";
 
 import styles from "./GuestRegistrationForm.module.scss";
 import {
@@ -31,6 +31,7 @@ export default function GuestRegistrationForm({
   const [error, setError] = useState<string | null>(null);
 
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [rollNo, setRollNo] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [year, setYear] = useState("");
@@ -87,6 +88,7 @@ export default function GuestRegistrationForm({
           trekId,
           guestName: fullName,
           guestRollNo: rollNo,
+          guestEmail: email,
           guestPhoneNumber: phoneNumber,
           guestInstitution: finalInstitution,
           guestDepartment: isFaculty ? FACULTY : program,
@@ -127,6 +129,17 @@ export default function GuestRegistrationForm({
           placeholder="Full Name"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className={styles.inputGroup}>
+        <Mail size={18} className={styles.icon} />
+        <input
+          type="email"
+          placeholder="Email ID"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
       </div>

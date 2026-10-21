@@ -71,6 +71,7 @@ type Registration = {
     id: string;
     clubId: string;
     fullName: string;
+    email?: string;
     institution: string;
     department: string;
     year: string;
@@ -83,6 +84,7 @@ type Registration = {
   isGuest: boolean;
   guestName: string | null;
   guestRollNo: string | null;
+  guestEmail?: string | null;
   guestInstitution: string | null;
   guestDepartment: string | null;
   guestYear: string | null;

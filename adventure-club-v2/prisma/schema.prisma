@@ -389,6 +389,7 @@ model Registration {
 
   guestName        String?
   guestRollNo      String?
+  guestEmail       String?
   guestInstitution String?
   guestDepartment  String?
   guestCourse      String?
