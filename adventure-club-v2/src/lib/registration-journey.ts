@@ -73,7 +73,7 @@ export type RegistrationLike = {
   finalPaymentDidNotPay?: boolean;
   finalPaymentPaidAtOnce?: boolean;
   certificateIssued: boolean;
-  trek?: { tripCentrePublished?: boolean; installments?: number };
+  trek?: { tripCentrePublished?: boolean; installments?: number; type?: string; price?: number };
 };
 
 export type JourneyStep = {
@@ -119,6 +119,17 @@ export function getJourneySteps(
   const isSingleInstallment = registration?.trek?.installments === 1;
   const hasSecondInstallment = registration?.trek?.installments === 3;
 
+  // A free trek/workshop (price 0) has nothing to collect, so the payment
+  // step(s) would just sit there permanently "Pending" with nothing to ever
+  // do about it — distinct from isWorkshop below, since a free *trek* still
+  // needs this check (not every free entry is a workshop) while a *paid*
+  // workshop still genuinely has something to pay.
+  const isFree = registration?.trek?.price === 0;
+
+  // Workshops/sessions are on-campus and low-risk — no liability waiver to
+  // sign, regardless of whether this particular one charges a fee.
+  const isWorkshop = registration?.trek?.type === "WORKSHOP";
+
   const steps: Omit<JourneyStep, "current">[] = [
     {
       key: "registration",
@@ -146,24 +157,28 @@ export function getJourneySteps(
           ? "Approved"
           : "Pending",
     },
-    {
-      key: "initialPayment",
-      title: isSingleInstallment ? "Full Payment" : "Initial Payment",
-      done: !!(
-        registration?.initialPaymentPaid ||
-        registration?.offlinePaymentVerified
-      ),
-      subtitle:
-        registration?.initialPaymentPaid ||
-        registration?.offlinePaymentVerified
-          ? "Verified"
-          : registration?.offlinePaymentCreated
-          ? "Verification Pending"
-          : "Pending",
-    },
+    ...(isFree
+      ? []
+      : [
+          {
+            key: "initialPayment" as const,
+            title: isSingleInstallment ? "Full Payment" : "Initial Payment",
+            done: !!(
+              registration?.initialPaymentPaid ||
+              registration?.offlinePaymentVerified
+            ),
+            subtitle:
+              registration?.initialPaymentPaid ||
+              registration?.offlinePaymentVerified
+                ? "Verified"
+                : registration?.offlinePaymentCreated
+                ? "Verification Pending"
+                : "Pending",
+          },
+        ]),
     // Only for a 3-installment trek — sits between Initial and the rest of
     // the journey, mirroring how Final Payment is spliced in/out below.
-    ...(hasSecondInstallment
+    ...(hasSecondInstallment && !isFree
       ? [
           {
             key: "secondPayment" as const,
@@ -177,12 +192,16 @@ export function getJourneySteps(
           },
         ]
       : []),
-    {
-      key: "bondForm",
-      title: "Bond Form",
-      done: !!registration?.bondFormSubmitted,
-      subtitle: registration?.bondFormSubmitted ? "Submitted" : "Pending",
-    },
+    ...(isWorkshop
+      ? []
+      : [
+          {
+            key: "bondForm" as const,
+            title: "Bond Form",
+            done: !!registration?.bondFormSubmitted,
+            subtitle: registration?.bondFormSubmitted ? "Submitted" : "Pending",
+          },
+        ]),
     {
       key: "tripCentre",
       title: "Trip Centre",
@@ -194,7 +213,7 @@ export function getJourneySteps(
     // A single-installment trek has no separate final payment — the one
     // payment above already covers it, so this step would just be a
     // redundant "done" duplicate of "Full Payment".
-    ...(isSingleInstallment
+    ...(isSingleInstallment || isFree
       ? []
       : [
           {
