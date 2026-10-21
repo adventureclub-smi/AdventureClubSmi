@@ -159,7 +159,7 @@ export default function NextTrekCard({
   const badge = isYearRestricted
     ? { text: "Not Open For Your Year", tone: "danger" as const }
     : getJourneyBadge(registration, effectiveRegistrationState);
-  const steps = getJourneySteps(registration, effectiveRegistrationState);
+  const steps = getJourneySteps(registration, effectiveRegistrationState, trek);
   const action = getJourneyAction(trek.id, registration, effectiveRegistrationState);
 
   return (

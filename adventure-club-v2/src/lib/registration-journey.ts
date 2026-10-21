@@ -114,8 +114,17 @@ export type JourneyAction = {
 
 export function getJourneySteps(
   registration: RegistrationLike | null,
-  registrationState?: RegistrationState
+  registrationState?: RegistrationState,
+  // Falls back to the trek itself (NextTrekCard already has it from the
+  // dashboard's "upcoming treks" list) when there's no registration yet —
+  // without this, a student viewing a free workshop's journey *before*
+  // registering sees the full paid-trek roadmap (Bond Form, Initial/Final
+  // Payment) because registration?.trek is the only other place isFree/
+  // isWorkshop below could otherwise read type/price from.
+  fallbackTrek?: { type?: string; price?: number }
 ): JourneyStep[] {
+  const trekInfo = registration?.trek ?? fallbackTrek;
+
   const isSingleInstallment = registration?.trek?.installments === 1;
   const hasSecondInstallment = registration?.trek?.installments === 3;
 
@@ -124,11 +133,11 @@ export function getJourneySteps(
   // do about it — distinct from isWorkshop below, since a free *trek* still
   // needs this check (not every free entry is a workshop) while a *paid*
   // workshop still genuinely has something to pay.
-  const isFree = registration?.trek?.price === 0;
+  const isFree = trekInfo?.price === 0;
 
   // Workshops/sessions are on-campus and low-risk — no liability waiver to
   // sign, regardless of whether this particular one charges a fee.
-  const isWorkshop = registration?.trek?.type === "WORKSHOP";
+  const isWorkshop = trekInfo?.type === "WORKSHOP";
 
   const steps: Omit<JourneyStep, "current">[] = [
     {
