@@ -48,6 +48,7 @@ export async function GET(
     phoneNumber: true,
     year: true,
     course: true,
+    collegeRollNumber: true,
     upiId: true,
     upiPhone: true,
   },

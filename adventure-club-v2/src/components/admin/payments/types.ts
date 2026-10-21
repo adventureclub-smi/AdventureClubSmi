@@ -42,6 +42,7 @@ export type PaymentRegistration = {
     phoneNumber?: string;
     year?: string;
     course?: string | null;
+    collegeRollNumber?: string | null;
     upiId?: string | null;
     upiPhone?: string | null;
   } | null;

@@ -436,7 +436,7 @@ export default function PaymentsTable({ trekId }: Props) {
         registration.user?.clubId ?? "-",
         String(i + 1),
         name,
-        registration.user ? "-" : registration.guestRollNo ?? "-",
+        registration.user?.collegeRollNumber ?? registration.guestRollNo ?? "-",
         registration.user?.year ?? registration.guestYear ?? "-",
         registration.user?.course ?? registration.guestCourse ?? "-",
         registration.user?.phoneNumber ?? registration.guestPhoneNumber ?? "-",
