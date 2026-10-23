@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, CheckCircle2, XCircle, MessageCircle } from "lucide-react";
+import { Search, CheckCircle2, XCircle, MessageCircle, Copy, Check } from "lucide-react";
 import styles from "./WhatsappTab.module.scss";
 
 type WhatsappRegistration = {
@@ -36,6 +36,7 @@ export default function WhatsappTab({ trekId }: { trekId: string }) {
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function fetchRegistrations() {
     try {
@@ -77,6 +78,16 @@ export default function WhatsappTab({ trekId }: { trekId: string }) {
       alert("Something went wrong.");
     } finally {
       setSendingId(null);
+    }
+  }
+
+  async function copyPhone(registrationId: string, phone: string) {
+    try {
+      await navigator.clipboard.writeText(phone);
+      setCopiedId(registrationId);
+      setTimeout(() => setCopiedId((current) => (current === registrationId ? null : current)), 1500);
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -204,11 +215,37 @@ export default function WhatsappTab({ trekId }: { trekId: string }) {
             const phone = registration.user?.phoneNumber ?? registration.guestPhoneNumber;
 
             return (
-              <div key={registration.id} className={styles.card}>
+              <div
+                key={registration.id}
+                className={registration.isGuest ? `${styles.card} ${styles.guestCard}` : styles.card}
+              >
                 <div>
-                  <h3>{participant}</h3>
+                  <div className={styles.nameRow}>
+                    <h3>{participant}</h3>
+                    {registration.isGuest && <span className={styles.guestBadge}>Guest</span>}
+                  </div>
                   <p>{clubId}</p>
-                  {phone && <p className={styles.phoneHint}>{phone}</p>}
+                  {phone && (
+                    <div className={styles.phoneRow}>
+                      <p className={styles.phoneHint}>{phone}</p>
+                      <button
+                        type="button"
+                        className={styles.copyButton}
+                        onClick={() => copyPhone(registration.id, phone)}
+                        aria-label="Copy phone number"
+                      >
+                        {copiedId === registration.id ? (
+                          <>
+                            <Check size={12} /> Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={12} /> Copy
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.status}>
