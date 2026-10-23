@@ -1,0 +1,14 @@
+import WhatsappTab from "@/components/admin/whatsapp/WhatsappTab";
+import { requireAdminAccess } from "@/lib/admin-access";
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  await requireAdminAccess(["FULL"]);
+
+  const { id } = await params;
+
+  return <WhatsappTab trekId={id} />;
+}

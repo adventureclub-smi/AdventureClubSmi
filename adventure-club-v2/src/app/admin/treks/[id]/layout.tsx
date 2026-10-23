@@ -40,12 +40,23 @@ export default async function TrekLayout({
   const accessLevel = user ? getAdminAccessLevel(user) : "NONE";
   const allowedTabs = TABS_BY_ACCESS[accessLevel];
 
+  // Free treks/workshops auto-verify "payment" on approval (nothing to
+  // actually collect) and skip the liability waiver entirely — Payments and
+  // Bond Forms would just be permanently empty tabs. WhatsApp group
+  // logistics takes their place instead, since that's the one thing admins
+  // still need to do by hand for a free entry.
+  const isFreeEntry = trek.price === 0;
+
   const tabs = [
     { title: "Overview", href: `/admin/treks/${id}` },
     { title: "Registrations", href: `/admin/treks/${id}/registrations` },
     { title: "Notify List", href: `/admin/treks/${id}/notify-list` },
-    { title: "Payments", href: `/admin/treks/${id}/payments` },
-    { title: "Bond Forms", href: `/admin/treks/${id}/bond-forms` },
+    ...(isFreeEntry
+      ? [{ title: "WhatsApp", href: `/admin/treks/${id}/whatsapp` }]
+      : [
+          { title: "Payments", href: `/admin/treks/${id}/payments` },
+          { title: "Bond Forms", href: `/admin/treks/${id}/bond-forms` },
+        ]),
     { title: "Attendance", href: `/admin/treks/${id}/attendance` },
     { title: "Trip Centre", href: `/admin/treks/${id}/trip-centre` },
     { title: "Certificates", href: `/admin/treks/${id}/certificates` },
