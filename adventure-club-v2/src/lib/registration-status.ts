@@ -67,6 +67,12 @@ export async function updateRegistrationStatus(
             finalPaymentUnlocked: true,
             finalPaymentPaid: true,
             finalPaymentPaidAt: new Date(),
+            // The WhatsApp invite normally goes out from the payment-verify
+            // route, which a free entry never passes through — the approval
+            // email below carries the group link instead, so this just
+            // keeps the admin payments table's "Invite Sent" column honest
+            // rather than permanently showing "Not Sent" for a free entry.
+            whatsappInviteSentAt: new Date(),
           }
         : {}),
     },

@@ -288,6 +288,31 @@ export async function notifyRegistrationStatus(registration: RegistrationWithUse
   const url = `${getSiteUrl()}/treks/${trek.id}`;
 
   if (registration.status === "APPROVED") {
+    // Free treks/workshops have nothing to pay — updateRegistrationStatus()
+    // already auto-verifies the payment flags on approval, so there's no
+    // later "payment verified" moment left to send the usual WhatsApp-invite
+    // email from. This folds that into the approval email itself instead of
+    // a "pay now" nudge that would point at a confusing ₹0 payment page.
+    if (trek.price === 0) {
+      await sendEmail({
+        to: user.email,
+        subject: `Registration approved: ${trek.title}`,
+        html: emailShell(`
+          <h2 style="color:#008862;">You're approved! 🎉</h2>
+          <p>Hi ${firstName(user.fullName)}, your registration for <strong>${trek.title}</strong> has been approved. See you there!</p>
+          ${
+            trek.whatsappGroupLink
+              ? `<p>Join the WhatsApp group for updates, logistics, and everything else leading up to it.</p>${emailButton(
+                  trek.whatsappGroupLink,
+                  "Join WhatsApp Group"
+                )}`
+              : ""
+          }
+        `),
+      });
+      return;
+    }
+
     const deadline = registration.initialPaymentDeadline
       ? new Date(registration.initialPaymentDeadline).toLocaleString("en-IN")
       : null;
