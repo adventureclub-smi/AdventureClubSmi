@@ -28,17 +28,33 @@ import {
   MessageCircle,
   Mail,
   UserPlus,
+  ChevronDown,
+  type LucideIcon,
 } from "lucide-react";
 
 import type { AdminAccessLevel } from "@/lib/admin-access";
 import { isCoreTeamRole } from "@/lib/core-team-roles";
 import styles from "./AdminSidebar.module.scss";
 
-const links = [
+type NavLink = { href: string; label: string; icon: LucideIcon };
+type NavGroup = { label: string; icon: LucideIcon; children: NavLink[] };
+type NavItem = NavLink | NavGroup;
+
+function isGroup(item: NavItem): item is NavGroup {
+  return "children" in item;
+}
+
+const links: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard", label: "Student Dashboard", icon: GraduationCap },
-  { href: "/admin/treks", label: "Treks", icon: Mountain },
-  { href: "/admin/workshops", label: "Workshops", icon: Tent },
+  {
+    label: "Treks & Workshops",
+    icon: Mountain,
+    children: [
+      { href: "/admin/treks", label: "Treks", icon: Mountain },
+      { href: "/admin/workshops", label: "Workshops/Sessions", icon: Tent },
+    ],
+  },
   { href: "/admin/members", label: "Students", icon: Users },
   { href: "/admin/registrations", label: "Registrations", icon: ClipboardList },
   { href: "/admin/recruitment", label: "Recruitment", icon: UserPlus },
@@ -95,10 +111,15 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   const allowedHrefs = LINKS_BY_ACCESS[accessLevel];
   const tierLinks = allowedHrefs
-    ? links.filter((link) => allowedHrefs.includes(link.href))
+    ? links.filter((link) =>
+        isGroup(link)
+          ? link.children.some((child) => allowedHrefs.includes(child.href))
+          : allowedHrefs.includes(link.href)
+      )
     : links;
 
   const visibleLinks = tierLinks;
@@ -131,31 +152,79 @@ export default function AdminSidebar({
     return pathname.startsWith(href);
   }
 
+  function isGroupActive(group: NavGroup) {
+    return group.children.some((child) => isActive(child.href));
+  }
+
+  function isGroupExpanded(group: NavGroup) {
+    const override = expandedGroups[group.label];
+    return override !== undefined ? override : isGroupActive(group);
+  }
+
+  function toggleGroup(group: NavGroup) {
+    setExpandedGroups((prev) => ({ ...prev, [group.label]: !isGroupExpanded(group) }));
+  }
+
   const nav = (
     <nav className={styles.nav}>
-      {visibleLinks.map((link) => {
+      {visibleLinks.map((item) => {
+        if (isGroup(item)) {
+          const expanded = isGroupExpanded(item);
+
+          return (
+            <div key={item.label} className={styles.navGroup}>
+              <button
+                type="button"
+                className={isGroupActive(item) ? styles.groupActive : ""}
+                onClick={() => toggleGroup(item)}
+                aria-expanded={expanded}
+              >
+                <item.icon size={19} />
+                {item.label}
+                <ChevronDown size={16} className={expanded ? styles.chevronOpen : ""} />
+              </button>
+
+              {expanded && (
+                <div className={styles.navGroupChildren}>
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className={isActive(child.href) ? styles.active : ""}
+                      onClick={() => setOpen(false)}
+                    >
+                      <child.icon size={17} />
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+
         // Every other link stays inside the admin panel — this one jumps
         // out to the regular member-facing dashboard, a different enough
         // action (and destination) that it shouldn't blend in as just
         // another admin section.
-        const isSwitchView = link.href === "/dashboard";
+        const isSwitchView = item.href === "/dashboard";
 
         const classes = [
           isSwitchView ? styles.switchView : "",
-          isActive(link.href) ? styles.active : "",
+          isActive(item.href) ? styles.active : "",
         ]
           .filter(Boolean)
           .join(" ");
 
         return (
           <Link
-            key={link.href}
-            href={link.href}
+            key={item.href}
+            href={item.href}
             className={classes}
             onClick={() => setOpen(false)}
           >
-            <link.icon size={19} />
-            {link.label}
+            <item.icon size={19} />
+            {item.label}
           </Link>
         );
       })}

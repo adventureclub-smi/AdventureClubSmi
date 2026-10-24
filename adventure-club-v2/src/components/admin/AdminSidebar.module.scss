@@ -67,6 +67,72 @@
   font-weight: 700;
 }
 
+.navGroup {
+  display: flex;
+  flex-direction: column;
+
+  > button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: 0.2s;
+    text-align: left;
+
+    svg:last-child {
+      margin-left: auto;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+  }
+
+  > button:hover {
+    background: rgba(0, 160, 115, 0.1);
+    color: var(--color-text);
+  }
+}
+
+.groupActive {
+  color: var(--color-accent) !important;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.navGroupChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 2px 14px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(245, 245, 245, 0.1);
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: var(--color-text-muted);
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 13.5px;
+    transition: 0.2s;
+  }
+
+  a:hover {
+    background: rgba(0, 160, 115, 0.1);
+    color: var(--color-text);
+  }
+}
+
 // Leaves the admin panel entirely for the regular member-facing dashboard —
 // a different kind of action than every other (in-panel) link, so it reads
 // as its own thing rather than blending into the rest of the nav list.
