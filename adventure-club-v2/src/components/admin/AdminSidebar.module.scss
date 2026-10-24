@@ -67,6 +67,27 @@
   font-weight: 700;
 }
 
+// Leaves the admin panel entirely for the regular member-facing dashboard —
+// a different kind of action than every other (in-panel) link, so it reads
+// as its own thing rather than blending into the rest of the nav list.
+.switchView {
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #60a5fa !important;
+  margin-bottom: 10px;
+}
+
+.switchView:hover {
+  background: rgba(37, 99, 235, 0.18) !important;
+  color: #93c5fd !important;
+}
+
+.switchView.active {
+  background: #2563eb !important;
+  border-color: #2563eb;
+  color: white !important;
+}
+
 .logout {
   margin-top: 20px;
   display: flex;

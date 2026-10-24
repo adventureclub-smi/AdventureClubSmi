@@ -133,17 +133,32 @@ export default function AdminSidebar({
 
   const nav = (
     <nav className={styles.nav}>
-      {visibleLinks.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className={isActive(link.href) ? styles.active : ""}
-          onClick={() => setOpen(false)}
-        >
-          <link.icon size={19} />
-          {link.label}
-        </Link>
-      ))}
+      {visibleLinks.map((link) => {
+        // Every other link stays inside the admin panel — this one jumps
+        // out to the regular member-facing dashboard, a different enough
+        // action (and destination) that it shouldn't blend in as just
+        // another admin section.
+        const isSwitchView = link.href === "/dashboard";
+
+        const classes = [
+          isSwitchView ? styles.switchView : "",
+          isActive(link.href) ? styles.active : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={classes}
+            onClick={() => setOpen(false)}
+          >
+            <link.icon size={19} />
+            {link.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 
