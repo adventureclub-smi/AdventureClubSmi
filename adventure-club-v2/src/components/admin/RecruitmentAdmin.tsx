@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { Download, Mail, Plus, QrCode, Save, Trash2, X } from "lucide-react";
+import { Download, Mail, Plus, QrCode, Save, Sparkles, Trash2, X } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
@@ -13,13 +13,33 @@ import styles from "./RecruitmentAdmin.module.scss";
 
 const RECRUITMENT_PATH = "/dashboard/recruitment";
 
+type Cycle = {
+  id: string;
+  season: string;
+  isCurrent: boolean;
+  applicationCount: number;
+};
+
 type Settings = {
+  id?: string;
+  season: string | null;
   opensAt: string | null;
   closesAt: string | null;
   interviewDayOptions: string[];
   isTest: boolean;
   testVisibleToUserIds: string[];
+  isCurrent?: boolean;
 };
+
+// "2026-27" -> "2027-28" — just a starting suggestion for the "start new
+// cycle" prompt, not enforced; an admin can type anything over it.
+function suggestNextSeason(season: string | null): string {
+  const match = season?.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return "";
+
+  const startYear = Number(match[1]) + 1;
+  return `${startYear}-${String((startYear + 1) % 100).padStart(2, "0")}`;
+}
 
 type Applicant = {
   fullName: string;
@@ -51,7 +71,12 @@ type Application = {
 const toDateTimeLocal = formatIstDateTimeLocal;
 
 export default function RecruitmentAdmin() {
+  const [cycles, setCycles] = useState<Cycle[]>([]);
+  const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
+  const [startingCycle, setStartingCycle] = useState(false);
+
   const [settings, setSettings] = useState<Settings>({
+    season: null,
     opensAt: null,
     closesAt: null,
     interviewDayOptions: [],
@@ -72,31 +97,92 @@ export default function RecruitmentAdmin() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [generatingQr, setGeneratingQr] = useState(false);
 
+  const selectedCycle = cycles.find((c) => c.id === selectedCycleId) ?? cycles.find((c) => c.isCurrent);
+  const isViewingCurrent = !selectedCycle || selectedCycle.isCurrent;
+
+  async function loadCycles() {
+    const res = await fetch("/api/admin/recruitment/cycles");
+    if (res.ok) setCycles(await res.json());
+  }
+
+  async function loadForCycle(cycleId: string | null) {
+    setLoading(true);
+
+    try {
+      const settingsUrl = cycleId
+        ? `/api/admin/recruitment/settings?id=${cycleId}`
+        : "/api/admin/recruitment/settings";
+      const applicationsUrl = cycleId
+        ? `/api/admin/recruitment?settingsId=${cycleId}`
+        : "/api/admin/recruitment";
+
+      const [settingsRes, applicationsRes] = await Promise.all([
+        fetch(settingsUrl),
+        fetch(applicationsUrl),
+      ]);
+
+      if (settingsRes.ok) setSettings(await settingsRes.json());
+      if (applicationsRes.ok) setApplications(await applicationsRes.json());
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     let active = true;
 
-    async function load() {
-      try {
-        const [settingsRes, applicationsRes] = await Promise.all([
-          fetch("/api/admin/recruitment/settings"),
-          fetch("/api/admin/recruitment"),
-        ]);
-
-        if (!active) return;
-
-        if (settingsRes.ok) setSettings(await settingsRes.json());
-        if (applicationsRes.ok) setApplications(await applicationsRes.json());
-      } finally {
-        if (active) setLoading(false);
-      }
+    async function init() {
+      await loadCycles();
+      if (active) await loadForCycle(null);
     }
 
-    load();
+    init();
 
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function selectCycle(cycleId: string) {
+    const cycle = cycles.find((c) => c.id === cycleId);
+    setSelectedCycleId(cycleId);
+    setExpandedId(null);
+    loadForCycle(cycle?.isCurrent ? null : cycleId);
+  }
+
+  async function startNewCycle() {
+    const suggestion = suggestNextSeason(selectedCycle?.season ?? null);
+    const season = prompt(
+      "Season label for the new recruitment cycle (e.g. \"2027-28\"). The current cycle's applications and settings stay archived, exactly as they are.",
+      suggestion
+    );
+
+    if (!season?.trim()) return;
+
+    setStartingCycle(true);
+
+    try {
+      const res = await fetch("/api/admin/recruitment/cycles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ season: season.trim() }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        alert(data?.message || "Failed to start a new cycle.");
+        return;
+      }
+
+      await loadCycles();
+      setSelectedCycleId(data.id);
+      await loadForCycle(null);
+    } finally {
+      setStartingCycle(false);
+    }
+  }
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this application? This can't be undone.")) return;
@@ -229,27 +315,67 @@ export default function RecruitmentAdmin() {
       <PageHeader title="Recruitment" breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Recruitment" }]} />
 
       <div className={styles.settingsCard}>
-        <h3>Share</h3>
+        <div className={styles.cycleHeader}>
+          <div>
+            <h3>Recruitment Cycle</h3>
 
-        <div className={styles.shareRow}>
-          <CopyLinkButton path={RECRUITMENT_PATH} label="Copy Recruitment Link" />
+            <select
+              className={styles.cycleSelect}
+              value={selectedCycle?.id ?? ""}
+              onChange={(e) => selectCycle(e.target.value)}
+            >
+              {cycles.map((cycle) => (
+                <option key={cycle.id} value={cycle.id}>
+                  {cycle.season} {cycle.isCurrent ? "(current)" : `— ${cycle.applicationCount} applications`}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <button type="button" className={styles.saveButton} onClick={generateQr} disabled={generatingQr}>
-            <QrCode size={15} /> {generatingQr ? "Generating..." : "Generate QR Code"}
-          </button>
+          {isViewingCurrent && (
+            <button
+              type="button"
+              className={styles.saveButton}
+              onClick={startNewCycle}
+              disabled={startingCycle}
+            >
+              <Sparkles size={15} /> {startingCycle ? "Starting..." : "Start New Recruitment Year"}
+            </button>
+          )}
         </div>
 
-        {qrDataUrl && (
-          <div className={styles.qrPreview}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrDataUrl} alt="QR code linking to the recruitment page" />
-
-            <button type="button" className={styles.saveButton} onClick={downloadQr}>
-              <Download size={15} /> Download QR Code
-            </button>
-          </div>
+        {!isViewingCurrent && (
+          <p className={styles.archiveNotice}>
+            Viewing a past cycle — settings are read-only. Decisions on applications below can still be
+            changed.
+          </p>
         )}
       </div>
+
+      {isViewingCurrent && (
+        <div className={styles.settingsCard}>
+          <h3>Share</h3>
+
+          <div className={styles.shareRow}>
+            <CopyLinkButton path={RECRUITMENT_PATH} label="Copy Recruitment Link" />
+
+            <button type="button" className={styles.saveButton} onClick={generateQr} disabled={generatingQr}>
+              <QrCode size={15} /> {generatingQr ? "Generating..." : "Generate QR Code"}
+            </button>
+          </div>
+
+          {qrDataUrl && (
+            <div className={styles.qrPreview}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrDataUrl} alt="QR code linking to the recruitment page" />
+
+              <button type="button" className={styles.saveButton} onClick={downloadQr}>
+                <Download size={15} /> Download QR Code
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className={styles.settingsCard}>
         <h3>Application Window</h3>
@@ -260,6 +386,7 @@ export default function RecruitmentAdmin() {
             <input
               type="datetime-local"
               value={toDateTimeLocal(settings.opensAt)}
+              disabled={!isViewingCurrent}
               onChange={(e) =>
                 setSettings((prev) => ({ ...prev, opensAt: e.target.value || null }))
               }
@@ -271,6 +398,7 @@ export default function RecruitmentAdmin() {
             <input
               type="datetime-local"
               value={toDateTimeLocal(settings.closesAt)}
+              disabled={!isViewingCurrent}
               onChange={(e) =>
                 setSettings((prev) => ({ ...prev, closesAt: e.target.value || null }))
               }
@@ -284,57 +412,65 @@ export default function RecruitmentAdmin() {
           {settings.interviewDayOptions.map((day) => (
             <span key={day} className={styles.dayPill}>
               {day}
-              <button type="button" onClick={() => removeDayOption(day)}>
-                <X size={13} />
-              </button>
+              {isViewingCurrent && (
+                <button type="button" onClick={() => removeDayOption(day)}>
+                  <X size={13} />
+                </button>
+              )}
             </span>
           ))}
         </div>
 
-        <div className={styles.addDayRow}>
-          <input
-            type="text"
-            placeholder="e.g. Monday, 31st October"
-            value={newDay}
-            onChange={(e) => setNewDay(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addDayOption();
-              }
-            }}
-          />
-          <button type="button" onClick={addDayOption}>
-            <Plus size={15} /> Add
-          </button>
-        </div>
-
-        <h3>Test Mode</h3>
-
-        <label className={styles.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={settings.isTest}
-            onChange={(e) => setSettings((prev) => ({ ...prev, isTest: e.target.checked }))}
-          />
-          Only show the banner/form to specific students (rehearse before going live)
-        </label>
-
-        {settings.isTest && (
-          <TestVisibilityPicker
-            selectedIds={settings.testVisibleToUserIds}
-            onChange={(ids) => setSettings((prev) => ({ ...prev, testVisibleToUserIds: ids }))}
-          />
+        {isViewingCurrent && (
+          <div className={styles.addDayRow}>
+            <input
+              type="text"
+              placeholder="e.g. Monday, 31st October"
+              value={newDay}
+              onChange={(e) => setNewDay(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addDayOption();
+                }
+              }}
+            />
+            <button type="button" onClick={addDayOption}>
+              <Plus size={15} /> Add
+            </button>
+          </div>
         )}
 
-        <button
-          type="button"
-          className={styles.saveButton}
-          onClick={saveSettings}
-          disabled={savingSettings}
-        >
-          <Save size={15} /> {savingSettings ? "Saving..." : "Save Settings"}
-        </button>
+        {isViewingCurrent && (
+          <>
+            <h3>Test Mode</h3>
+
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={settings.isTest}
+                onChange={(e) => setSettings((prev) => ({ ...prev, isTest: e.target.checked }))}
+              />
+              Only show the banner/form to specific students (rehearse before going live)
+            </label>
+
+            {settings.isTest && (
+              <TestVisibilityPicker
+                selectedIds={settings.testVisibleToUserIds}
+                onChange={(ids) => setSettings((prev) => ({ ...prev, testVisibleToUserIds: ids }))}
+              />
+            )}
+
+            <button
+              type="button"
+              className={styles.saveButton}
+              onClick={saveSettings}
+              disabled={savingSettings}
+            >
+              <Save size={15} /> {savingSettings ? "Saving..." : "Save Settings"}
+            </button>
+          </>
+        )}
       </div>
 
       <div className={styles.tableCard}>

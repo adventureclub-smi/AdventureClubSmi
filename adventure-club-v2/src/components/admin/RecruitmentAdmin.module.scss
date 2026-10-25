@@ -44,6 +44,11 @@
     padding: 8px 12px;
     color: var(--color-text);
   }
+
+  input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 .dayPills {
@@ -146,6 +151,39 @@
 
 .saveButton:disabled {
   opacity: 0.6;
+}
+
+.cycleHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .saveButton {
+    margin-top: 0;
+  }
+}
+
+.cycleSelect {
+  margin-top: 8px;
+  background: rgba(245, 245, 245, 0.04);
+  border: 1px solid rgba(245, 245, 245, 0.1);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.archiveNotice {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  color: #eab308;
+  font-size: 13px;
 }
 
 .empty {

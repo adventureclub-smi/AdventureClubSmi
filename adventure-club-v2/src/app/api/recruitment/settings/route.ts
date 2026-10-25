@@ -13,7 +13,7 @@ export async function GET() {
   const token = cookieStore.get("token")?.value;
   const payload = token ? verifyToken(token) : null;
 
-  const settings = await prisma.recruitmentSettings.findFirst();
+  const settings = await prisma.recruitmentSettings.findFirst({ where: { isCurrent: true } });
 
   const isOpen = isRecruitmentOpenFor(settings, payload);
 

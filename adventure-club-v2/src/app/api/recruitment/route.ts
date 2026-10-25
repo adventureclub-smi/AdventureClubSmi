@@ -30,8 +30,14 @@ export async function GET() {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  const settings = await prisma.recruitmentSettings.findFirst({ where: { isCurrent: true } });
+
+  if (!settings) {
+    return NextResponse.json(null);
+  }
+
   const application = await prisma.recruitmentApplication.findUnique({
-    where: { userId: user.id },
+    where: { userId_settingsId: { userId: user.id, settingsId: settings.id } },
   });
 
   return NextResponse.json(application);
@@ -53,11 +59,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const settings = await prisma.recruitmentSettings.findFirst();
+  const settings = await prisma.recruitmentSettings.findFirst({ where: { isCurrent: true } });
   const isOpen = isRecruitmentOpenFor(settings, user);
 
+  if (!settings) {
+    return NextResponse.json({ message: "Recruitment applications aren't open right now." }, { status: 400 });
+  }
+
   const existing = await prisma.recruitmentApplication.findUnique({
-    where: { userId: user.id },
+    where: { userId_settingsId: { userId: user.id, settingsId: settings.id } },
   });
 
   // Editing an already-submitted application is allowed right up until the
@@ -121,9 +131,10 @@ export async function POST(req: NextRequest) {
   }
 
   const application = await prisma.recruitmentApplication.upsert({
-    where: { userId: user.id },
+    where: { userId_settingsId: { userId: user.id, settingsId: settings.id } },
     create: {
       userId: user.id,
+      settingsId: settings.id,
       portfolioText: portfolioText?.trim() || null,
       portfolioLink: portfolioLink?.trim() || null,
       portfolioFileUrl: portfolioFileUrl || null,
@@ -151,15 +162,23 @@ export async function DELETE() {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  const settings = await prisma.recruitmentSettings.findFirst({ where: { isCurrent: true } });
+
+  if (!settings) {
+    return NextResponse.json({ message: "No application to withdraw." }, { status: 404 });
+  }
+
   const existing = await prisma.recruitmentApplication.findUnique({
-    where: { userId: user.id },
+    where: { userId_settingsId: { userId: user.id, settingsId: settings.id } },
   });
 
   if (!existing) {
     return NextResponse.json({ message: "No application to withdraw." }, { status: 404 });
   }
 
-  await prisma.recruitmentApplication.delete({ where: { userId: user.id } });
+  await prisma.recruitmentApplication.delete({
+    where: { userId_settingsId: { userId: user.id, settingsId: settings.id } },
+  });
 
   return NextResponse.json({ message: "Application withdrawn." });
 }

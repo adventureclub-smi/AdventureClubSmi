@@ -87,7 +87,9 @@ model User {
 
   registrations Registration[]
 
-  recruitmentApplication RecruitmentApplication?
+  // One per recruitment cycle they've applied to — see RecruitmentSettings
+  // below for why this is no longer a single optional relation.
+  recruitmentApplications RecruitmentApplication[]
 
   contactSubmissions ContactSubmission[]
 
@@ -719,12 +721,19 @@ model Gallery {
 
 // ===== Recruitment =====
 
-// A single admin-managed row (there is always exactly one, same
-// singleton-row convention as GalleryHeroSettings below — this stack has no
-// dedicated one-row-table mechanism, so "the row" is found by just taking
-// the first one, same as elsewhere).
+// One row per recruitment cycle (e.g. "2026-27") rather than a true
+// singleton — exactly one row has isCurrent: true at a time (the live
+// cycle, shown on the public form and edited from the admin panel); every
+// other row is a past cycle kept around as a read-only archive, same
+// "current + archive" split as Trek.isHistorical. "The current row" is
+// found with findFirst({ where: { isCurrent: true } }) wherever today's
+// code used to just take the first (and only) row.
 model RecruitmentSettings {
   id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Free-text cycle label an admin types once when starting it (e.g.
+  // "2026-27") — same admin-typed convention as Trek.season.
+  season String @default("2026-27")
 
   opensAt DateTime?
 
@@ -742,14 +751,26 @@ model RecruitmentSettings {
 
   testVisibleToUserIds String[] @default([])
 
+  isCurrent Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
   updatedAt DateTime @updatedAt
+
+  applications RecruitmentApplication[]
 }
 
 model RecruitmentApplication {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @unique @db.ObjectId
+  userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
+
+  // Which cycle this application belongs to — lets the same student apply
+  // again in a later year instead of being locked out forever after their
+  // first-ever application, which is what a bare userId @unique meant.
+  settingsId String              @db.ObjectId
+  settings   RecruitmentSettings @relation(fields: [settingsId], references: [id])
 
   // Portfolio/work experience — any combination of these three is fine,
   // except applicants ranking Visual Media or Marketing need at least one
@@ -779,6 +800,8 @@ model RecruitmentApplication {
   // out — lets the admin panel show whether an applicant's already been
   // notified, distinct from just having a decision recorded.
   decisionEmailSentAt DateTime?
+
+  @@unique([userId, settingsId])
 }
 
 model Song {
