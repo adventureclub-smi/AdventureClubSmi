@@ -12,6 +12,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Hash,
 } from "lucide-react";
 
 import styles from "./SignupForm.module.scss";
@@ -40,6 +41,7 @@ export default function SignupForm() {
     lastName: "",
     email: "",
     phoneNumber: "",
+    collegeRollNumber: "",
     year: "",
     password: "",
     confirmPassword: "",
@@ -119,6 +121,7 @@ export default function SignupForm() {
           course: finalCourse,
           year: formData.year,
           password: formData.password,
+          collegeRollNumber: formData.collegeRollNumber.trim(),
         }),
       });
 
@@ -197,6 +200,23 @@ export default function SignupForm() {
             name="phoneNumber"
             placeholder="Phone Number"
             value={formData.phoneNumber}
+            onChange={handleChange}
+            required
+          />
+        </div>
+      </div>
+
+      {/* Roll Number */}
+
+      <div className={styles.rowFull}>
+        <div className={styles.inputGroup}>
+          <Hash size={20} className={styles.icon} />
+
+          <input
+            type="text"
+            name="collegeRollNumber"
+            placeholder="College Roll Number"
+            value={formData.collegeRollNumber}
             onChange={handleChange}
             required
           />

@@ -28,7 +28,15 @@ export async function POST(req: Request) {
       course,
       year,
       password,
+      collegeRollNumber,
     } = body;
+
+    if (!collegeRollNumber || !String(collegeRollNumber).trim()) {
+      return NextResponse.json(
+        { message: "Roll number is required." },
+        { status: 400 }
+      );
+    }
 
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -97,6 +105,7 @@ export async function POST(req: Request) {
             course: course || null,
             year,
             password: hashedPassword,
+            collegeRollNumber: String(collegeRollNumber).trim(),
           },
         });
         break;
