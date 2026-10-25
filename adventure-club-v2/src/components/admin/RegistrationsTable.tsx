@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { FlagTriangleRight } from "lucide-react";
 import styles from "./RegistrationsTable.module.scss";
 import AddParticipantModal from "./AddParticipantModal";
 import RegistrationDrawer from "./RegistrationDrawer";
@@ -122,6 +123,15 @@ export default function RegistrationsTable({
 
   const [sendingReminder, setSendingReminder] = useState(false);
 
+  // Free entries (price 0 — most workshops) have nothing to pay, so they
+  // never get a Payments tab (see the trek layout's isFreeEntry gating) —
+  // "Mark Trek Completed" would otherwise have no home for them at all,
+  // since that's normally where this action lives.
+  const [trekPrice, setTrekPrice] = useState<number | null>(null);
+  const [trekStatus, setTrekStatus] = useState<string | null>(null);
+  const [completingTrek, setCompletingTrek] = useState(false);
+  const [completeStatus, setCompleteStatus] = useState("");
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeadline, setBulkDeadline] = useState("3");
   const [bulkApproving, setBulkApproving] = useState(false);
@@ -145,8 +155,46 @@ export default function RegistrationsTable({
           ? "core"
           : "auto"
       );
+
+      setTrekPrice(data.price ?? null);
+      setTrekStatus(data.status ?? null);
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  const isFreeEntry = trekPrice === 0;
+
+  const trekCompleted =
+    trekStatus === "Completed" ||
+    registrations.some((r) => r.status === "COMPLETED" || r.status === "MISSED");
+
+  async function handleCompleteTrek() {
+    const confirmComplete = confirm(
+      trekCompleted
+        ? "Undo trek completion? Every completed/missed participant on this trek reverts to Approved."
+        : "Mark this as completed? Participants marked present will show as Trip Completed, everyone else as Trip Missed. You can undo this anytime."
+    );
+
+    if (!confirmComplete) return;
+
+    setCompletingTrek(true);
+    setCompleteStatus("");
+
+    try {
+      const res = await fetch("/api/admin/payments/complete-trek", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trekId, undo: trekCompleted }),
+      });
+
+      const data = await res.json();
+
+      setCompleteStatus(data.message || "Done.");
+      fetchRegistrations();
+      fetchTrekStatus();
+    } finally {
+      setCompletingTrek(false);
     }
   }
 
@@ -392,6 +440,22 @@ export default function RegistrationsTable({
               {sendingReminder ? "Sending..." : "Send Payment Reminder"}
             </button>
 
+            {isFreeEntry && (
+              <button
+                type="button"
+                className={trekCompleted ? styles.undoCompleteButton : styles.completeTrekButton}
+                onClick={handleCompleteTrek}
+                disabled={completingTrek}
+              >
+                <FlagTriangleRight size={15} />
+                {completingTrek
+                  ? "Working..."
+                  : trekCompleted
+                  ? "Undo Trek Completion"
+                  : "Mark Trek Completed"}
+              </button>
+            )}
+
             <button
               className={styles.addButton}
               onClick={() =>
@@ -401,6 +465,8 @@ export default function RegistrationsTable({
               + Add Participant
             </button>
           </div>
+
+          {completeStatus && <p className={styles.completeStatus}>{completeStatus}</p>}
         </div>
 
         <input
