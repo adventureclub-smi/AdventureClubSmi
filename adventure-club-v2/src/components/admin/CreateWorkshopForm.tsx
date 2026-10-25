@@ -22,6 +22,7 @@ type FormState = {
   price: string;
   isTest: boolean;
   testVisibleToUserIds: string[];
+  reimbursementOffered: boolean;
 };
 
 const emptyForm: FormState = {
@@ -38,6 +39,7 @@ const emptyForm: FormState = {
   price: "",
   isTest: false,
   testVisibleToUserIds: [],
+  reimbursementOffered: false,
 };
 
 // `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
@@ -101,6 +103,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
           price: workshop.price ? String(workshop.price) : "",
           isTest: workshop.isTest ?? false,
           testVisibleToUserIds: workshop.testVisibleToUserIds ?? [],
+          reimbursementOffered: workshop.reimbursementOffered ?? false,
         });
 
         if (workshop.coverImage) setPreview(workshop.coverImage);
@@ -196,6 +199,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
       price: form.isFree ? 0 : Number(form.price),
       isTest: form.isTest,
       testVisibleToUserIds: form.isTest ? form.testVisibleToUserIds : [],
+      reimbursementOffered: form.reimbursementOffered,
     };
 
     const res = await fetch(isEdit ? `/api/workshops/${workshopId}` : "/api/workshops", {
@@ -430,6 +434,26 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
               onChange={handleChange}
               required
             />
+          </label>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>College Reimbursement</div>
+          <p className={styles.sectionHint}>
+            Most workshops don&apos;t get reimbursed by the college — leave
+            this off and participants won&apos;t see any reimbursement
+            status at all. Turn it on if this one does; the expected amount
+            range can be set later from the Refunds tab.
+          </p>
+
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="reimbursementOffered"
+              checked={form.reimbursementOffered}
+              onChange={handleChange}
+            />
+            This workshop offers college reimbursement
           </label>
         </div>
 

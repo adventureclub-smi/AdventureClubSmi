@@ -15,6 +15,7 @@ export type RefundRegistration = {
 };
 
 export type RefundTrekSettings = {
+  reimbursementOffered: boolean;
   expectedReimbursementMin: number | null;
   expectedReimbursementMax: number | null;
 };

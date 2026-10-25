@@ -37,6 +37,7 @@ export async function PUT(
       price,
       isTest,
       testVisibleToUserIds,
+      reimbursementOffered,
     } = body;
 
     if (
@@ -79,6 +80,8 @@ export async function PUT(
 
         isTest: Boolean(isTest),
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
+
+        reimbursementOffered: Boolean(reimbursementOffered),
       },
     });
 

@@ -55,6 +55,9 @@ export async function POST(req: Request) {
 
       // Registration Eligibility
       restrictedYears,
+
+      // College Reimbursement
+      reimbursementOffered,
     } = body;
 
     const installmentCount = Number(installments) === 1 ? 1 : Number(installments) === 3 ? 3 : 2;
@@ -177,6 +180,12 @@ export async function POST(req: Request) {
         // -------------------------
 
         restrictedYears: Array.isArray(restrictedYears) ? restrictedYears : [],
+
+        // -------------------------
+        // College Reimbursement
+        // -------------------------
+
+        reimbursementOffered: Boolean(reimbursementOffered),
       },
     });
 

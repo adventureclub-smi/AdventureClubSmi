@@ -274,6 +274,13 @@ model Trek {
   // College Reimbursement
   // =========================
 
+  // Set explicitly at creation (or later, from the Refunds tab) — not every
+  // trip gets college reimbursement, so this is what actually gates showing
+  // "Reimbursement Pending" to students at all. Previously inferred purely
+  // from trip-over + something-paid, which showed it for every trip
+  // regardless of whether reimbursement was ever on offer.
+  reimbursementOffered Boolean @default(false)
+
   expectedReimbursementMin Int?
 
   expectedReimbursementMax Int?

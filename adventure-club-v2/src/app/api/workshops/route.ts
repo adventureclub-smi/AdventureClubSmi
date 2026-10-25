@@ -28,6 +28,7 @@ export async function POST(req: Request) {
       registrationClosesAt,
       isTest,
       testVisibleToUserIds,
+      reimbursementOffered,
     } = body;
 
     if (
@@ -90,6 +91,8 @@ export async function POST(req: Request) {
 
         isTest: Boolean(isTest),
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
+
+        reimbursementOffered: Boolean(reimbursementOffered),
 
         // Always true on creation — never a client-chosen option. Only
         // "Go Live" (src/app/api/admin/treks/go-live) flips this, which is

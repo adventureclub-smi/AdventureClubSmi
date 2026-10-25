@@ -42,6 +42,7 @@ type Trek = {
   tripCentrePublished?: boolean;
   type?: string;
   time?: string | null;
+  reimbursementOffered?: boolean;
   expectedReimbursementMin?: number | null;
   expectedReimbursementMax?: number | null;
   restrictedYears?: string[];
@@ -257,7 +258,8 @@ export default function TrekDetails({
             </div>
           )}
 
-          {(trek.expectedReimbursementMin != null || trek.expectedReimbursementMax != null) && (
+          {trek.reimbursementOffered &&
+            (trek.expectedReimbursementMin != null || trek.expectedReimbursementMax != null) && (
             <div className={styles.reimbursementNote}>
               <Wallet size={14} />
               <span>

@@ -37,6 +37,7 @@ type FormState = {
   isTest: boolean;
   testVisibleToUserIds: string[];
   restrictedYears: string[];
+  reimbursementOffered: boolean;
 };
 
 const emptyForm: FormState = {
@@ -67,6 +68,7 @@ const emptyForm: FormState = {
   isTest: false,
   testVisibleToUserIds: [],
   restrictedYears: [],
+  reimbursementOffered: false,
 };
 
 // `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
@@ -146,6 +148,7 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           isTest: trek.isTest ?? false,
           testVisibleToUserIds: trek.testVisibleToUserIds ?? [],
           restrictedYears: trek.restrictedYears ?? [],
+          reimbursementOffered: trek.reimbursementOffered ?? false,
         });
 
         if (trek.coverImage) setPreview(trek.coverImage);
@@ -639,6 +642,26 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
               Counts as Peak
             </label>
           </div>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>College Reimbursement</div>
+          <p className={styles.sectionHint}>
+            Not every trek gets reimbursed by the college — leave this off and
+            participants won&apos;t see any reimbursement status at all. Turn
+            it on if this one does; the expected amount range can be set
+            later from the Refunds tab.
+          </p>
+
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="reimbursementOffered"
+              checked={form.reimbursementOffered}
+              onChange={handleChange}
+            />
+            This trek offers college reimbursement
+          </label>
         </div>
 
         <div className={styles.section}>

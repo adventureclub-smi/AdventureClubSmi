@@ -30,6 +30,7 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
   const [initialBulk, setInitialBulk] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
+  const [reimbursementOffered, setReimbursementOffered] = useState(false);
   const [expectedMin, setExpectedMin] = useState("");
   const [expectedMax, setExpectedMax] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
@@ -49,6 +50,7 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
 
         setRegistrations(data.registrations);
         setTrek(data.trek);
+        setReimbursementOffered(!!data.trek.reimbursementOffered);
         setExpectedMin(data.trek.expectedReimbursementMin?.toString() ?? "");
         setExpectedMax(data.trek.expectedReimbursementMax?.toString() ?? "");
         setAmounts(
@@ -150,6 +152,7 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          reimbursementOffered,
           expectedReimbursementMin: expectedMin ? parseInt(expectedMin, 10) : null,
           expectedReimbursementMax: expectedMax ? parseInt(expectedMax, 10) : null,
         }),
@@ -334,6 +337,22 @@ export default function RefundsPanel({ trekId }: { trekId: string }) {
             {doneCount} done · {receivedCount} received (of {registrations.length})
           </span>
         </div>
+
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={reimbursementOffered}
+            onChange={(e) => setReimbursementOffered(e.target.checked)}
+          />
+          This trip offers college reimbursement
+        </label>
+
+        {!reimbursementOffered && (
+          <p className={styles.sectionHint}>
+            Off — participants won&apos;t see any reimbursement status for this
+            trip, regardless of the range below.
+          </p>
+        )}
 
         <div className={styles.rangeRow}>
           <label className={styles.rangeInput}>

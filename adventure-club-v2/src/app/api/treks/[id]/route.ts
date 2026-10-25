@@ -157,6 +157,9 @@ export async function PUT(
 
         // Registration Eligibility
         restrictedYears: Array.isArray(body.restrictedYears) ? body.restrictedYears : [],
+
+        // College Reimbursement
+        reimbursementOffered: Boolean(body.reimbursementOffered),
       },
     });
 

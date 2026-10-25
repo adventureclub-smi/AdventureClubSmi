@@ -56,6 +56,7 @@ type Registration = {
     initialPayment: number;
     finalPayment: number;
     installments?: number;
+    reimbursementOffered?: boolean;
     expectedReimbursementMin: number | null;
     expectedReimbursementMax: number | null;
   };
@@ -115,7 +116,9 @@ export default function MyRegistrations() {
             // here specifically never saw the "mark as received" button.
             const tripOver = reg.status === "COMPLETED" || reg.status === "MISSED";
             const eligibleForReimbursement =
-              tripOver && (reg.finalPaymentPaid || reg.initialPaymentPaid);
+              reg.trek.reimbursementOffered &&
+              tripOver &&
+              (reg.finalPaymentPaid || reg.initialPaymentPaid);
 
             return (
               <motion.div

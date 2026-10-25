@@ -19,6 +19,7 @@ export async function GET(
     const trek = await prisma.trek.findUnique({
       where: { id: trekId },
       select: {
+        reimbursementOffered: true,
         expectedReimbursementMin: true,
         expectedReimbursementMax: true,
       },

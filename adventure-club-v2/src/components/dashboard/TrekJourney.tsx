@@ -47,6 +47,7 @@ type Registration = RegistrationLike & {
     initialPayment: number;
     finalPayment: number;
     installments?: number;
+    reimbursementOffered?: boolean;
     expectedReimbursementMin: number | null;
     expectedReimbursementMax: number | null;
   };
@@ -111,7 +112,9 @@ export default function TrekJourney({ registrationId }: { registrationId: string
 
   const tripOver = registration.status === "COMPLETED" || registration.status === "MISSED";
   const eligibleForReimbursement =
-    tripOver && (registration.finalPaymentPaid || registration.initialPaymentPaid);
+    registration.trek.reimbursementOffered &&
+    tripOver &&
+    (registration.finalPaymentPaid || registration.initialPaymentPaid);
 
   return (
     <div className={styles.container}>

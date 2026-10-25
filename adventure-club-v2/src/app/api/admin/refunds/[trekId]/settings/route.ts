@@ -17,9 +17,14 @@ export async function PATCH(
     const body = await req.json();
 
     const data: {
+      reimbursementOffered?: boolean;
       expectedReimbursementMin?: number | null;
       expectedReimbursementMax?: number | null;
     } = {};
+
+    if ("reimbursementOffered" in body) {
+      data.reimbursementOffered = Boolean(body.reimbursementOffered);
+    }
 
     if ("expectedReimbursementMin" in body) {
       data.expectedReimbursementMin = body.expectedReimbursementMin;
@@ -33,6 +38,7 @@ export async function PATCH(
       where: { id: trekId },
       data,
       select: {
+        reimbursementOffered: true,
         expectedReimbursementMin: true,
         expectedReimbursementMax: true,
       },

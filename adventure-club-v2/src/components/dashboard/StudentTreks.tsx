@@ -30,6 +30,7 @@ type YearTrek = {
   date: string;
   difficulty: string;
   coverImage?: string | null;
+  reimbursementOffered?: boolean;
   expectedReimbursementMin: number | null;
   expectedReimbursementMax: number | null;
   isHistorical: boolean;
@@ -207,7 +208,9 @@ export default function StudentTreks() {
 
                   const tripOver = reg.status === "COMPLETED" || reg.status === "MISSED";
                   const eligibleForReimbursement =
-                    tripOver && (reg.finalPaymentPaid || reg.initialPaymentPaid);
+                    entry.trek.reimbursementOffered &&
+                    tripOver &&
+                    (reg.finalPaymentPaid || reg.initialPaymentPaid);
 
                   return (
                     <motion.div
