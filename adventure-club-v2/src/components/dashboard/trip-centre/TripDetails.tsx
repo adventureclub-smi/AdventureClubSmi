@@ -32,6 +32,7 @@ type Trek = {
   title: string;
   destination: string;
   date: string;
+  type?: string;
   coverImage?: string | null;
   difficulty?: string | null;
   distance?: string | null;
@@ -142,6 +143,9 @@ export default function TripDetails({ trekId }: { trekId: string }) {
 
   if (!trek) return <div className={styles.loading}>Trip Centre unavailable.</div>;
 
+  const isWorkshop = trek.type === "WORKSHOP";
+  const eventWord = isWorkshop ? "Session" : "Trek";
+
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     trek.meetingPoint || ""
   )}`;
@@ -168,7 +172,7 @@ export default function TripDetails({ trekId }: { trekId: string }) {
           <p className={styles.eyebrow}>Trip Centre</p>
           <h1>{trek.title}</h1>
           <p>
-            Your trek briefing, packing plan, updates, contacts, and reporting
+            Your {isWorkshop ? "session" : "trek"} briefing, packing plan, updates, contacts, and reporting
             details in one place.
           </p>
 
@@ -298,7 +302,7 @@ export default function TripDetails({ trekId }: { trekId: string }) {
                 </span>
                 <div>
                   <p>Leader Message</p>
-                  <h2>Trek Lead Note</h2>
+                  <h2>{eventWord} Lead Note</h2>
                 </div>
               </div>
               <p className={styles.bodyText}>
@@ -351,7 +355,7 @@ export default function TripDetails({ trekId }: { trekId: string }) {
               </span>
               <div>
                 <p>Trip Information</p>
-                <h2>Trek Profile</h2>
+                <h2>{eventWord} Profile</h2>
               </div>
             </div>
 
@@ -385,7 +389,7 @@ export default function TripDetails({ trekId }: { trekId: string }) {
                 <Route size={21} strokeWidth={1.75} />
               </span>
               <div>
-                <p>Trek Itinerary</p>
+                <p>{eventWord} Itinerary</p>
                 <h2>Trail Timeline</h2>
               </div>
             </div>

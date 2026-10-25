@@ -31,6 +31,7 @@ const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
 export default function WhatsappTab({ trekId }: { trekId: string }) {
   const [registrations, setRegistrations] = useState<WhatsappRegistration[]>([]);
   const [groupLink, setGroupLink] = useState<string | null>(null);
+  const [isWorkshop, setIsWorkshop] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
@@ -44,6 +45,7 @@ export default function WhatsappTab({ trekId }: { trekId: string }) {
       const data = await res.json();
       setRegistrations(Array.isArray(data.registrations) ? data.registrations : []);
       setGroupLink(data.whatsappGroupLink ?? null);
+      setIsWorkshop(!!data.isWorkshop);
     } catch (error) {
       console.error(error);
     } finally {
@@ -170,7 +172,7 @@ export default function WhatsappTab({ trekId }: { trekId: string }) {
 
       {!groupLink && (
         <div className={styles.noLinkNotice}>
-          No WhatsApp group link set for this trek yet — add one in Trip
+          No WhatsApp group link set for this {isWorkshop ? "workshop" : "trek"} yet — add one in Trip
           Centre before sending invites.
         </div>
       )}

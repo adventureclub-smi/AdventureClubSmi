@@ -32,6 +32,7 @@ const FAR_FUTURE = "2099-01-01T00:00:00.000Z";
 type Trek = {
   id: string;
   title: string;
+  type?: string;
   coverImage?: string | null;
   difficulty?: string | null;
   distance?: string | null;
@@ -162,6 +163,9 @@ export default function StudentTripCentre() {
     return <div className={styles.loading}>Trip Centre unavailable.</div>;
 
   const trek = registration.trek;
+  const isWorkshop = trek.type === "WORKSHOP";
+  const eventWord = isWorkshop ? "Session" : "Trek";
+
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     trek.meetingPoint || ""
   )}`;
@@ -324,7 +328,7 @@ export default function StudentTripCentre() {
                 </span>
                 <div>
                   <p>Leader Message</p>
-                  <h2>Trek Lead Note</h2>
+                  <h2>{eventWord} Lead Note</h2>
                 </div>
               </div>
               <p className={styles.bodyText}>
@@ -377,7 +381,7 @@ export default function StudentTripCentre() {
               </span>
               <div>
                 <p>Trip Information</p>
-                <h2>Trek Profile</h2>
+                <h2>{eventWord} Profile</h2>
               </div>
             </div>
 
@@ -411,7 +415,7 @@ export default function StudentTripCentre() {
                 <Route size={21} strokeWidth={1.75} />
               </span>
               <div>
-                <p>Trek Itinerary</p>
+                <p>{eventWord} Itinerary</p>
                 <h2>Trail Timeline</h2>
               </div>
             </div>

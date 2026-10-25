@@ -48,6 +48,8 @@ export default function NextTrekCard({
   registrationOpensAt,
   userYear,
 }: Props) {
+  const isWorkshop = trek.type === "WORKSHOP";
+
   // Same phase hook the homepage countdown uses — it ticks its own 1s
   // interval, so "Registrations Open In" flips live to "Trek Starts In"
   // (and the button unlocks) the instant registration opens, with no page
@@ -58,7 +60,8 @@ export default function NextTrekCard({
   const { phase, target: phaseTarget, label: phaseLabel } = useRegistrationPhase(
     trek.date,
     registrationOpensAt,
-    !!registration
+    !!registration,
+    isWorkshop
   );
 
   // Only show the initial-payment-deadline countdown while that payment is
@@ -153,8 +156,6 @@ export default function NextTrekCard({
   // registration exists the student already cleared this check.
   const isYearRestricted =
     !registration && !isYearEligible(userYear, trek.restrictedYears);
-
-  const isWorkshop = trek.type === "WORKSHOP";
 
   const badge = isYearRestricted
     ? { text: "Not Open For Your Year", tone: "danger" as const }

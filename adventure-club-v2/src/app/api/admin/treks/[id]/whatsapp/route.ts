@@ -24,7 +24,7 @@ export async function GET(
 
     const trek = await prisma.trek.findUnique({
       where: { id },
-      select: { whatsappGroupLink: true },
+      select: { whatsappGroupLink: true, type: true },
     });
 
     if (!trek) {
@@ -53,6 +53,7 @@ export async function GET(
     return NextResponse.json({
       registrations,
       whatsappGroupLink: trek.whatsappGroupLink,
+      isWorkshop: trek.type === "WORKSHOP",
     });
   } catch (error) {
     console.error(error);

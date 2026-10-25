@@ -45,6 +45,12 @@ type Props = {
   registration: Registration | null;
   onClose: () => void;
   onRefresh: () => void;
+  // A free entry (most workshops) has nothing to pay and no deadline to
+  // chase, and its WhatsApp invite is already handled by the dedicated
+  // WhatsApp tab — the Payment Deadline/Payment Portal/WhatsApp cards below
+  // would just be confusing dead weight here, so they're hidden entirely.
+  isFreeEntry?: boolean;
+  isWorkshop?: boolean;
 };
 
 export default function RegistrationDrawer({
@@ -52,7 +58,10 @@ export default function RegistrationDrawer({
   registration,
   onClose,
   onRefresh,
+  isFreeEntry = false,
+  isWorkshop = false,
 }: Props) {
+  const eventWord = isWorkshop ? "workshop" : "trek";
   const [status, setStatus] = useState("Waiting");
   const [remarks, setRemarks] = useState("");
   const [deadline, setDeadline] = useState("3");
@@ -308,7 +317,7 @@ export default function RegistrationDrawer({
             <div>
               <strong>Approve</strong>
               <small>
-                Unlock initial payment
+                {isFreeEntry ? "Confirm their spot" : "Unlock initial payment"}
               </small>
             </div>
           </button>
@@ -353,7 +362,7 @@ export default function RegistrationDrawer({
             <div>
               <strong>Timed Out</strong>
               <small>
-                Didn&apos;t pay initial payment in time
+                {isFreeEntry ? "Registration expired" : "Didn't pay initial payment in time"}
               </small>
             </div>
           </button>
@@ -410,6 +419,7 @@ export default function RegistrationDrawer({
 
         {/* PAYMENT DEADLINE */}
 
+        {!isFreeEntry && (
         <div className={styles.card}>
           <h3>Payment Deadline</h3>
 
@@ -480,6 +490,7 @@ export default function RegistrationDrawer({
             </button>
           </div>
         </div>
+        )}
 
         {/* ADMIN NOTES */}
 
@@ -508,7 +519,7 @@ export default function RegistrationDrawer({
                 <strong>Registration Submitted</strong>
                 <p>
                   Student successfully registered for
-                  this trek.
+                  this {eventWord}.
                 </p>
               </div>
             </div>
@@ -526,14 +537,14 @@ export default function RegistrationDrawer({
               </div>
             )}
 
-            {status === "Approved" && (
+            {status === "Approved" && !isFreeEntry && (
               <div className={styles.timelineItem}>
                 <div className={styles.timelineDot} />
                 <div>
                   <strong>Initial Payment</strong>
                   <p>
                     Student can now pay the initial
-                    trek amount.
+                    amount.
                   </p>
                 </div>
               </div>
@@ -547,7 +558,7 @@ export default function RegistrationDrawer({
                   <strong>Registration Complete</strong>
                   <p>
                     Participant is officially
-                    confirmed for the trek.
+                    confirmed.
                   </p>
                 </div>
               </div>
@@ -555,6 +566,7 @@ export default function RegistrationDrawer({
           </div>
         </div>
 
+        {!isFreeEntry && (
         <div className={styles.card}>
   <h3>Payment Portal</h3>
 
@@ -588,17 +600,21 @@ export default function RegistrationDrawer({
     </>
   )}
 </div>
+        )}
 
-        {(registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
+        {/* Free entries manage WhatsApp invites/group status from the
+            dedicated WhatsApp tab instead — these two cards would just
+            duplicate that. */}
+        {!isFreeEntry && (registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
           <div className={styles.card}>
             <h3>WhatsApp Group Invite</h3>
 
             <p>
-              Sends this student the trek&apos;s WhatsApp group link by email
+              Sends this student the {eventWord}&apos;s WhatsApp group link by email
               (there&apos;s no way to add them to the group directly — they
               have to join via the link themselves). Safe to click again if
               they missed the first one, e.g. because the link wasn&apos;t
-              set on the trek yet when they were verified.
+              set on the {eventWord} yet when they were verified.
             </p>
 
             <button
@@ -611,7 +627,7 @@ export default function RegistrationDrawer({
           </div>
         )}
 
-        {(registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
+        {!isFreeEntry && (registration.initialPaymentPaid || registration.offlinePaymentVerified) && (
           <div className={styles.card}>
             <h3>WhatsApp Group Status</h3>
 
@@ -650,7 +666,7 @@ export default function RegistrationDrawer({
 
           <p>
             Deleting this registration will remove the
-            participant from the trek. This action
+            participant from the {eventWord}. This action
             cannot be undone.
           </p>
 

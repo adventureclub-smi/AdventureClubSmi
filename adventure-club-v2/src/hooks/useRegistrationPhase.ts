@@ -21,7 +21,8 @@ function computePhase(registrationOpensAt?: string | Date | null): RegistrationP
 export function useRegistrationPhase(
   trekDate: string | Date,
   registrationOpensAt?: string | Date | null,
-  hasRegistration?: boolean
+  hasRegistration?: boolean,
+  isWorkshop?: boolean
 ) {
   const [phase, setPhase] = useState<RegistrationPhase>(() =>
     computePhase(registrationOpensAt)
@@ -46,7 +47,9 @@ export function useRegistrationPhase(
       phase === "opensIn"
         ? "Registrations Open In"
         : hasRegistration
-        ? "Trek Starts In"
+        ? isWorkshop
+          ? "Session Starts In"
+          : "Trek Starts In"
         : "Next Adventure In",
   };
 }

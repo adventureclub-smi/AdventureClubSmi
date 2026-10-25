@@ -42,6 +42,8 @@ type Registration = RegistrationLike & {
     difficulty: string;
     tripCentrePublished?: boolean;
     photosLink?: string | null;
+    price?: number;
+    type?: string;
     initialPayment: number;
     finalPayment: number;
     installments?: number;
@@ -105,6 +107,7 @@ export default function TrekJourney({ registrationId }: { registrationId: string
   const action = getJourneyAction(registration.trek.id, registration);
   const paymentRows = getPaymentRows(registration);
   const steps = getJourneySteps(registration);
+  const isFree = registration.trek.price === 0;
 
   const tripOver = registration.status === "COMPLETED" || registration.status === "MISSED";
   const eligibleForReimbursement =
@@ -155,10 +158,10 @@ export default function TrekJourney({ registrationId }: { registrationId: string
       <div className={styles.grid}>
         <div className={styles.mainColumn}>
           <section className={styles.card}>
-            <h3>Payment Details</h3>
+            <h3>{isFree ? "Status" : "Payment Details"}</h3>
 
             <div className={styles.badgeRow}>
-              <StatusBadge text={payment.text} tone={payment.tone} />
+              {!isFree && <StatusBadge text={payment.text} tone={payment.tone} />}
               <StatusBadge
                 text={registration.attendanceMarked ? "Attended" : "Attendance Pending"}
                 tone={registration.attendanceMarked ? "success" : "neutral"}
@@ -169,6 +172,7 @@ export default function TrekJourney({ registrationId }: { registrationId: string
               />
             </div>
 
+            {!isFree && (
             <div className={styles.paymentDetails}>
               {paymentRows.map((row) => (
                 <div key={row.label} className={styles.paymentRow}>
@@ -195,6 +199,7 @@ export default function TrekJourney({ registrationId }: { registrationId: string
                 </div>
               ))}
             </div>
+            )}
 
             <div className={styles.actions}>
               {action.href && action.variant === "tripCentre" && (

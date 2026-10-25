@@ -245,7 +245,7 @@ export function getJourneySteps(
         ? "Present"
         : registration?.attendanceAbsent
         ? "Absent"
-        : "Pending Trek",
+        : "Pending",
     },
     {
       key: "certificate",
@@ -350,6 +350,7 @@ export function getJourneyAction(
 
   const isSingleInstallment = registration.trek?.installments === 1;
   const hasSecondInstallment = registration.trek?.installments === 3;
+  const isWorkshop = registration.trek?.type === "WORKSHOP";
 
   if (
     registration.status === "APPROVED" &&
@@ -450,11 +451,19 @@ export function getJourneyAction(
   }
 
   if (registration.finalPaymentPaid && !registration.attendanceMarked) {
-    return { text: "Waiting for Trek Day", href: null, variant: "disabled" };
+    return {
+      text: isWorkshop ? "Waiting for Session Day" : "Waiting for Trek Day",
+      href: null,
+      variant: "disabled",
+    };
   }
 
   if (registration.finalPaymentPaid && registration.attendanceMarked) {
-    return { text: "Awaiting Trek Completion", href: null, variant: "disabled" };
+    return {
+      text: isWorkshop ? "Awaiting Session Completion" : "Awaiting Trek Completion",
+      href: null,
+      variant: "disabled",
+    };
   }
 
   if (registration.certificateIssued) {
@@ -465,7 +474,11 @@ export function getJourneyAction(
     };
   }
 
-  return { text: "View Trek", href: `/dashboard/trip-centre/${trekId}`, variant: "tripCentre" };
+  return {
+    text: isWorkshop ? "View Workshop" : "View Trek",
+    href: `/dashboard/trip-centre/${trekId}`,
+    variant: "tripCentre",
+  };
 }
 
 export type PaymentInfo = {

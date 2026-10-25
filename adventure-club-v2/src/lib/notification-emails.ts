@@ -334,7 +334,7 @@ export async function notifyRegistrationStatus(registration: RegistrationWithUse
       html: emailShell(`
         <h2 style="color:#008862;">You're on the waitlist</h2>
         <p>Hi ${firstName(user.fullName)}, all seats for <strong>${trek.title}</strong> are currently full. You've been placed on the waiting list and we'll notify you if a seat opens up.</p>
-        ${emailButton(url, "View Trek")}
+        ${emailButton(url, trek.type === "WORKSHOP" ? "View Workshop" : "View Trek")}
       `),
     });
   } else if (registration.status === "REJECTED") {

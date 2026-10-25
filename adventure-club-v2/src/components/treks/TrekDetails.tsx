@@ -117,6 +117,7 @@ export default function TrekDetails({
 
   const isWorkshop = trek.type === "WORKSHOP";
   const isFree = trek.price === 0;
+  const eventWord = isWorkshop ? "workshop" : "trek";
 
   // registration.status alone only tells you "approved" — it stays
   // APPROVED all the way through paid/verified/attended/certified, so the
@@ -359,7 +360,7 @@ export default function TrekDetails({
                 <StatusBadge text="Registrations Closed" tone="danger" />
               </div>
               <p className={styles.note}>
-                Registrations for this trek are currently closed.
+                Registrations for this {eventWord} are currently closed.
               </p>
             </>
           )}
@@ -386,7 +387,7 @@ export default function TrekDetails({
                   heading="Registration Closing Soon"
                   subheading="Registration closes in"
                   expiredHeading="Registrations Closed"
-                  expiredMessage="Registrations for this trek are now closed."
+                  expiredMessage={`Registrations for this ${eventWord} are now closed.`}
                 />
               )}
 
@@ -438,7 +439,7 @@ export default function TrekDetails({
                 <StatusBadge text="Not Open For Your Year" tone="danger" />
               </div>
               <p className={styles.note}>
-                This trek is only open to {trek.restrictedYears?.join(", ")}{" "}
+                This {eventWord} is only open to {trek.restrictedYears?.join(", ")}{" "}
                 students.
               </p>
             </>
@@ -452,7 +453,7 @@ export default function TrekDetails({
                   heading="Registration Closing Soon"
                   subheading="Registration closes in"
                   expiredHeading="Registrations Closed"
-                  expiredMessage="Registrations for this trek are now closed."
+                  expiredMessage={`Registrations for this ${eventWord} are now closed.`}
                 />
               )}
 

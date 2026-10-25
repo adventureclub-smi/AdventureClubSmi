@@ -128,6 +128,7 @@ export default function RegistrationsTable({
   // "Mark Trek Completed" would otherwise have no home for them at all,
   // since that's normally where this action lives.
   const [trekPrice, setTrekPrice] = useState<number | null>(null);
+  const [trekType, setTrekType] = useState<string | null>(null);
   const [trekStatus, setTrekStatus] = useState<string | null>(null);
   const [completingTrek, setCompletingTrek] = useState(false);
   const [completeStatus, setCompleteStatus] = useState("");
@@ -157,6 +158,7 @@ export default function RegistrationsTable({
       );
 
       setTrekPrice(data.price ?? null);
+      setTrekType(data.type ?? null);
       setTrekStatus(data.status ?? null);
     } catch (error) {
       console.error(error);
@@ -164,6 +166,7 @@ export default function RegistrationsTable({
   }
 
   const isFreeEntry = trekPrice === 0;
+  const isWorkshop = trekType === "WORKSHOP";
 
   const trekCompleted =
     trekStatus === "Completed" ||
@@ -172,7 +175,9 @@ export default function RegistrationsTable({
   async function handleCompleteTrek() {
     const confirmComplete = confirm(
       trekCompleted
-        ? "Undo trek completion? Every completed/missed participant on this trek reverts to Approved."
+        ? `Undo ${isWorkshop ? "session" : "trek"} completion? Every completed/missed participant on this ${
+            isWorkshop ? "session" : "trek"
+          } reverts to Approved.`
         : "Mark this as completed? Participants marked present will show as Trip Completed, everyone else as Trip Missed. You can undo this anytime."
     );
 
@@ -431,14 +436,16 @@ export default function RegistrationsTable({
               </button>
             </div>
 
-            <button
-              className={styles.reminderButton}
-              onClick={sendPaymentReminder}
-              disabled={sendingReminder}
-              title="Emails everyone approved for this trek who hasn't paid their initial payment yet"
-            >
-              {sendingReminder ? "Sending..." : "Send Payment Reminder"}
-            </button>
+            {!isFreeEntry && (
+              <button
+                className={styles.reminderButton}
+                onClick={sendPaymentReminder}
+                disabled={sendingReminder}
+                title="Emails everyone approved for this trek who hasn't paid their initial payment yet"
+              >
+                {sendingReminder ? "Sending..." : "Send Payment Reminder"}
+              </button>
+            )}
 
             {isFreeEntry && (
               <button
@@ -451,8 +458,8 @@ export default function RegistrationsTable({
                 {completingTrek
                   ? "Working..."
                   : trekCompleted
-                  ? "Undo Trek Completion"
-                  : "Mark Trek Completed"}
+                  ? `Undo ${isWorkshop ? "Session" : "Trek"} Completion`
+                  : `Mark ${isWorkshop ? "Session" : "Trek"} Completed`}
               </button>
             )}
 
@@ -552,6 +559,8 @@ export default function RegistrationsTable({
             setDrawerOpen(false)
           }
           onRefresh={fetchRegistrations}
+          isFreeEntry={isFreeEntry}
+          isWorkshop={isWorkshop}
         />
 
                 {/* SMI Students */}
@@ -626,6 +635,7 @@ export default function RegistrationsTable({
                   </span>
 
                   {registration.status === "APPROVED" &&
+                    !isFreeEntry &&
                     (() => {
                       const paymentBadge = getPaymentBadge({ ...registration, payments: [] });
                       return (
@@ -722,6 +732,7 @@ export default function RegistrationsTable({
                     </span>
 
                     {registration.status === "APPROVED" &&
+                      !isFreeEntry &&
                       (() => {
                         const paymentBadge = getPaymentBadge({ ...registration, payments: [] });
                         return (

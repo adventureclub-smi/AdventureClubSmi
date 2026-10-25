@@ -16,6 +16,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "trekId is required." }, { status: 400 });
     }
 
+    const trekForWording = await prisma.trek.findUnique({
+      where: { id: trekId },
+      select: { type: true },
+    });
+    const noun = trekForWording?.type === "WORKSHOP" ? "Session" : "Trek";
+
     if (undo) {
       const [result] = await Promise.all([
         prisma.registration.updateMany({
@@ -37,7 +43,7 @@ export async function POST(req: NextRequest) {
       ]);
 
       return NextResponse.json({
-        message: `Trek completion undone for ${result.count} participant(s).`,
+        message: `${noun} completion undone for ${result.count} participant(s).`,
         undone: result.count,
       });
     }
@@ -82,7 +88,7 @@ export async function POST(req: NextRequest) {
     ]);
 
     return NextResponse.json({
-      message: `Trek completed — ${presentIds.length} marked completed, ${absentIds.length} marked missed.`,
+      message: `${noun} completed — ${presentIds.length} marked completed, ${absentIds.length} marked missed.`,
       completed: presentIds.length,
       missed: absentIds.length,
     });

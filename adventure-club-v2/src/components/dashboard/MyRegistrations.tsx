@@ -52,6 +52,7 @@ type Registration = {
     coverImage?: string | null;
     difficulty: string;
     tripCentrePublished?: boolean;
+    price?: number;
     initialPayment: number;
     finalPayment: number;
     installments?: number;
@@ -104,6 +105,7 @@ export default function MyRegistrations() {
             const payment = getPaymentBadge(reg);
             const action = getJourneyAction(reg.trek.id, reg);
             const paymentRows = getPaymentRows(reg);
+            const isFree = reg.trek.price === 0;
 
             // Same eligibility rule as My Treks / the trek journey page —
             // reimbursement only becomes relevant once the trip itself is
@@ -155,7 +157,7 @@ export default function MyRegistrations() {
                   </p>
 
                   <div className={styles.badgeRow}>
-                    <StatusBadge text={payment.text} tone={payment.tone} />
+                    {!isFree && <StatusBadge text={payment.text} tone={payment.tone} />}
                     <StatusBadge
                       text={reg.attendanceMarked ? "Attended" : "Attendance Pending"}
                       tone={reg.attendanceMarked ? "success" : "neutral"}
@@ -166,6 +168,7 @@ export default function MyRegistrations() {
                     />
                   </div>
 
+                  {!isFree && (
                   <div className={styles.paymentDetails}>
                     {paymentRows.map((row) => (
                       <div key={row.label} className={styles.paymentRow}>
@@ -192,6 +195,7 @@ export default function MyRegistrations() {
                       </div>
                     ))}
                   </div>
+                  )}
 
                   {eligibleForReimbursement && (
                     <div className={styles.reimbursement}>

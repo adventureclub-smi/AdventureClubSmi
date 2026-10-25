@@ -46,8 +46,9 @@ export async function POST(req: Request, { params }: RouteContext) {
     }
 
     if (!registration.trek.whatsappGroupLink) {
+      const noun = registration.trek.type === "WORKSHOP" ? "workshop" : "trek";
       return NextResponse.json(
-        { message: "This trek has no WhatsApp group link set — add one in Trip Centre first." },
+        { message: `This ${noun} has no WhatsApp group link set — add one in Trip Centre first.` },
         { status: 400 }
       );
     }
