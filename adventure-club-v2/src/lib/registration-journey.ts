@@ -68,6 +68,7 @@ export type RegistrationLike = {
   secondPaymentDidNotPay?: boolean;
   bondFormSubmitted: boolean;
   attendanceMarked: boolean;
+  attendanceAbsent?: boolean;
   finalPaymentUnlocked: boolean;
   finalPaymentPaid: boolean;
   finalPaymentDidNotPay?: boolean;
@@ -240,7 +241,11 @@ export function getJourneySteps(
       key: "attendance",
       title: "Attendance",
       done: !!registration?.attendanceMarked,
-      subtitle: registration?.attendanceMarked ? "Present" : "Pending Trek",
+      subtitle: registration?.attendanceMarked
+        ? "Present"
+        : registration?.attendanceAbsent
+        ? "Absent"
+        : "Pending Trek",
     },
     {
       key: "certificate",

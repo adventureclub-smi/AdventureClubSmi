@@ -76,7 +76,14 @@
   font-size: 13px;
 }
 
-.presentButton {
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.presentButton,
+.absentButton {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -90,11 +97,12 @@
   transition: 0.2s;
 }
 
-.presentButton:hover {
+.presentButton:hover,
+.absentButton:hover {
   background: rgba(245, 245, 245, 0.14);
 }
 
-.undoButton {
+.presentActive {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -108,12 +116,39 @@
   transition: 0.2s;
 }
 
-.undoButton:hover {
+.presentActive:hover {
   background: var(--color-accent-hover);
+}
+
+.absentActive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-danger);
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.absentActive:hover {
+  background: var(--color-danger-hover);
 }
 
 @media (max-width: 700px) {
   .searchWrap {
     width: 100%;
+  }
+
+  .actions {
+    width: 100%;
+
+    button {
+      flex: 1;
+      justify-content: center;
+    }
   }
 }

@@ -25,8 +25,32 @@ export async function PUT(
 
   const existing = await prisma.registration.findUnique({
     where: { id: registrationId },
-    select: { status: true },
+    select: { status: true, attendanceMarked: true },
   });
+
+  // Present and absent are mutually exclusive — setting one explicitly
+  // clears the other, so a registration is always in exactly one of three
+  // states: not yet checked, present, or absent.
+  const data: {
+    attendanceMarked?: boolean;
+    attendanceMarkedAt?: Date | null;
+    attendanceAbsent?: boolean;
+    status?: "COMPLETED" | "MISSED";
+  } = {};
+
+  if (typeof body.attendanceMarked === "boolean") {
+    data.attendanceMarked = body.attendanceMarked;
+    data.attendanceMarkedAt = body.attendanceMarked ? new Date() : null;
+    if (body.attendanceMarked) data.attendanceAbsent = false;
+  }
+
+  if (typeof body.attendanceAbsent === "boolean") {
+    data.attendanceAbsent = body.attendanceAbsent;
+    if (body.attendanceAbsent) {
+      data.attendanceMarked = false;
+      data.attendanceMarkedAt = null;
+    }
+  }
 
   // On a live trek, completion status only flips when the "Mark Trek
   // Completed" bulk action runs. But a historical/already-finalized trek
@@ -36,25 +60,18 @@ export async function PUT(
   const alreadyFinalized =
     existing?.status === "COMPLETED" || existing?.status === "MISSED";
 
+  if (alreadyFinalized) {
+    const resultingPresent = data.attendanceMarked ?? existing?.attendanceMarked ?? false;
+    data.status = resultingPresent ? "COMPLETED" : "MISSED";
+  }
+
   const registration =
     await prisma.registration.update({
       where: {
         id: registrationId,
       },
 
-      data: {
-        attendanceMarked:
-          body.attendanceMarked,
-
-        attendanceMarkedAt:
-          body.attendanceMarked
-            ? new Date()
-            : null,
-
-        ...(alreadyFinalized
-          ? { status: body.attendanceMarked ? "COMPLETED" : "MISSED" }
-          : {}),
-      },
+      data,
     });
 
   return NextResponse.json(

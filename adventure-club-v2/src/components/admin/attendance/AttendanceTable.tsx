@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Search } from "lucide-react";
+import { CheckCircle2, Search, XCircle } from "lucide-react";
 import styles from "./AttendanceTable.module.scss";
 
 type Student = {
   id: string;
   attendanceMarked: boolean;
+  attendanceAbsent: boolean;
   createdAt: string;
   guestName: string | null;
   guestPhoneNumber: string | null;
@@ -53,6 +54,16 @@ export default function AttendanceTable({ trekId }: { trekId: string }) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ attendanceMarked: !student.attendanceMarked }),
+    });
+
+    loadAttendance();
+  }
+
+  async function toggleAbsent(student: Student) {
+    await fetch(`/api/admin/attendance/mark/${student.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ attendanceAbsent: !student.attendanceAbsent }),
     });
 
     loadAttendance();
@@ -124,13 +135,23 @@ export default function AttendanceTable({ trekId }: { trekId: string }) {
               </p>
             </div>
 
-            <button
-              className={student.attendanceMarked ? styles.undoButton : styles.presentButton}
-              onClick={() => toggleAttendance(student)}
-            >
-              {student.attendanceMarked && <CheckCircle2 size={15} />}
-              {student.attendanceMarked ? "Present" : "Mark Present"}
-            </button>
+            <div className={styles.actions}>
+              <button
+                className={student.attendanceMarked ? styles.presentActive : styles.presentButton}
+                onClick={() => toggleAttendance(student)}
+              >
+                {student.attendanceMarked && <CheckCircle2 size={15} />}
+                {student.attendanceMarked ? "Present" : "Mark Present"}
+              </button>
+
+              <button
+                className={student.attendanceAbsent ? styles.absentActive : styles.absentButton}
+                onClick={() => toggleAbsent(student)}
+              >
+                {student.attendanceAbsent && <XCircle size={15} />}
+                {student.attendanceAbsent ? "Absent" : "Mark Absent"}
+              </button>
+            </div>
           </div>
         ))
       )}

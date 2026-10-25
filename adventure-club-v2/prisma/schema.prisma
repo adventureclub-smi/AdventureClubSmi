@@ -476,6 +476,14 @@ model Registration {
 
   attendanceMarkedAt DateTime?
 
+  // Explicitly recorded as absent (distinct from just not-yet-checked) —
+  // same "DidNotPay"-style convention as the payment flags above. Mutually
+  // exclusive with attendanceMarked: marking one true clears the other.
+  // Trek completion's own "present vs missed" split still just reads
+  // !attendanceMarked either way, so this is purely for the admin's own
+  // record of "checked and absent" vs "never got checked at all."
+  attendanceAbsent Boolean @default(false)
+
   // ===== Final Payment =====
 
   finalPaymentUnlocked Boolean @default(false)
