@@ -85,6 +85,7 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
     registrationClosedManually: trek.registrationClosedManually,
     registrationOpenForCoreOnly: trek.registrationOpenForCoreOnly,
     type: trek.type,
+    activityType: trek.activityType,
   }));
 }
 

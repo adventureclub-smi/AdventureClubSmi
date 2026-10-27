@@ -148,6 +148,7 @@ export interface TrekSummary {
   registrationClosedManually: boolean;
   registrationOpenForCoreOnly: boolean;
   type?: string;
+  activityType?: string;
 }
 
 export interface TrekMapPin {

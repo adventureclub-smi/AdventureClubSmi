@@ -74,7 +74,13 @@ export type RegistrationLike = {
   finalPaymentDidNotPay?: boolean;
   finalPaymentPaidAtOnce?: boolean;
   certificateIssued: boolean;
-  trek?: { tripCentrePublished?: boolean; installments?: number; type?: string; price?: number };
+  trek?: {
+    tripCentrePublished?: boolean;
+    installments?: number;
+    type?: string;
+    price?: number;
+    activityType?: string;
+  };
 };
 
 export type JourneyStep = {
@@ -351,6 +357,7 @@ export function getJourneyAction(
   const isSingleInstallment = registration.trek?.installments === 1;
   const hasSecondInstallment = registration.trek?.installments === 3;
   const isWorkshop = registration.trek?.type === "WORKSHOP";
+  const workshopNoun = registration.trek?.activityType === "SESSION" ? "Session" : "Workshop";
 
   if (
     registration.status === "APPROVED" &&
@@ -452,7 +459,7 @@ export function getJourneyAction(
 
   if (registration.finalPaymentPaid && !registration.attendanceMarked) {
     return {
-      text: isWorkshop ? "Waiting for Session Day" : "Waiting for Trek Day",
+      text: isWorkshop ? `Waiting for ${workshopNoun} Day` : "Waiting for Trek Day",
       href: null,
       variant: "disabled",
     };
@@ -460,7 +467,7 @@ export function getJourneyAction(
 
   if (registration.finalPaymentPaid && registration.attendanceMarked) {
     return {
-      text: isWorkshop ? "Awaiting Session Completion" : "Awaiting Trek Completion",
+      text: isWorkshop ? `Awaiting ${workshopNoun} Completion` : "Awaiting Trek Completion",
       href: null,
       variant: "disabled",
     };
@@ -475,7 +482,7 @@ export function getJourneyAction(
   }
 
   return {
-    text: isWorkshop ? "View Workshop" : "View Trek",
+    text: isWorkshop ? `View ${workshopNoun}` : "View Trek",
     href: `/dashboard/trip-centre/${trekId}`,
     variant: "tripCentre",
   };

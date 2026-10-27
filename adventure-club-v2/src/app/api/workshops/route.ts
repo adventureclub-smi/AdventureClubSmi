@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       isTest,
       testVisibleToUserIds,
       reimbursementOffered,
+      activityType,
     } = body;
 
     if (
@@ -51,6 +52,8 @@ export async function POST(req: Request) {
     const workshop = await prisma.trek.create({
       data: {
         type: "WORKSHOP",
+
+        activityType: activityType === "SESSION" ? "SESSION" : "WORKSHOP",
 
         title,
         destination: place,

@@ -129,6 +129,7 @@ export default function RegistrationsTable({
   // since that's normally where this action lives.
   const [trekPrice, setTrekPrice] = useState<number | null>(null);
   const [trekType, setTrekType] = useState<string | null>(null);
+  const [trekActivityType, setTrekActivityType] = useState<string | null>(null);
   const [trekStatus, setTrekStatus] = useState<string | null>(null);
   const [completingTrek, setCompletingTrek] = useState(false);
   const [completeStatus, setCompleteStatus] = useState("");
@@ -159,6 +160,7 @@ export default function RegistrationsTable({
 
       setTrekPrice(data.price ?? null);
       setTrekType(data.type ?? null);
+      setTrekActivityType(data.activityType ?? null);
       setTrekStatus(data.status ?? null);
     } catch (error) {
       console.error(error);
@@ -167,6 +169,8 @@ export default function RegistrationsTable({
 
   const isFreeEntry = trekPrice === 0;
   const isWorkshop = trekType === "WORKSHOP";
+  const activityNoun = isWorkshop ? (trekActivityType === "SESSION" ? "session" : "workshop") : "trek";
+  const activityNounCap = isWorkshop ? (trekActivityType === "SESSION" ? "Session" : "Workshop") : "Trek";
 
   const trekCompleted =
     trekStatus === "Completed" ||
@@ -175,9 +179,7 @@ export default function RegistrationsTable({
   async function handleCompleteTrek() {
     const confirmComplete = confirm(
       trekCompleted
-        ? `Undo ${isWorkshop ? "session" : "trek"} completion? Every completed/missed participant on this ${
-            isWorkshop ? "session" : "trek"
-          } reverts to Approved.`
+        ? `Undo ${activityNoun} completion? Every completed/missed participant on this ${activityNoun} reverts to Approved.`
         : "Mark this as completed? Participants marked present will show as Trip Completed, everyone else as Trip Missed. You can undo this anytime."
     );
 
@@ -458,8 +460,8 @@ export default function RegistrationsTable({
                 {completingTrek
                   ? "Working..."
                   : trekCompleted
-                  ? `Undo ${isWorkshop ? "Session" : "Trek"} Completion`
-                  : `Mark ${isWorkshop ? "Session" : "Trek"} Completed`}
+                  ? `Undo ${activityNounCap} Completion`
+                  : `Mark ${activityNounCap} Completed`}
               </button>
             )}
 

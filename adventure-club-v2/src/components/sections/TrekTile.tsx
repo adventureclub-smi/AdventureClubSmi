@@ -42,7 +42,11 @@ export default function TrekTile({
           <div className={styles.overlay} />
 
           <span className={styles.difficulty}>
-            {trek.type === "WORKSHOP" ? "Session" : trek.difficulty}
+            {trek.type === "WORKSHOP"
+              ? trek.activityType === "SESSION"
+                ? "Session"
+                : "Workshop"
+              : trek.difficulty}
           </span>
           <span className={styles.availability}>{trek.seats} seats</span>
 

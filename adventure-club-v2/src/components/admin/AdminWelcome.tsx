@@ -81,6 +81,11 @@ export default function AdminWelcome() {
           <Plus size={20} />
           <span>Create Workshop</span>
         </Link>
+
+        <Link href="/admin/create-session" className={styles.buttonSecondary}>
+          <Plus size={20} />
+          <span>Create Session</span>
+        </Link>
       </div>
     </motion.div>
   );

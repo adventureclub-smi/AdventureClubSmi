@@ -33,6 +33,7 @@ type Trek = {
   id: string;
   title: string;
   type?: string;
+  activityType?: string;
   coverImage?: string | null;
   difficulty?: string | null;
   distance?: string | null;
@@ -164,7 +165,7 @@ export default function StudentTripCentre() {
 
   const trek = registration.trek;
   const isWorkshop = trek.type === "WORKSHOP";
-  const eventWord = isWorkshop ? "Session" : "Trek";
+  const eventWord = isWorkshop ? (trek.activityType === "SESSION" ? "Session" : "Workshop") : "Trek";
 
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     trek.meetingPoint || ""

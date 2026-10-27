@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "qrcode";
-import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark, Rocket, QrCode } from "lucide-react";
+import { MapPin, Mountain, CalendarDays, Wallet, Users, Pencil, Trash2, Plus, Archive, TrendingUp, PiggyBank, Landmark, Rocket, QrCode, Tent } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
@@ -24,6 +24,7 @@ type Trek = {
   isHistorical?: boolean;
   season?: string | null;
   type?: string;
+  activityType?: string;
   isTest?: boolean;
   isDraft?: boolean;
 };
@@ -288,7 +289,9 @@ export default function TreksTable({
                 )}
 
                 {trek.type === "WORKSHOP" && !isWorkshopsMode && (
-                  <span className={styles.archivedBadge}>Workshop</span>
+                  <span className={styles.archivedBadge}>
+                    {trek.activityType === "SESSION" ? "Session" : "Workshop"}
+                  </span>
                 )}
 
                 {trek.isTest && (
@@ -307,10 +310,16 @@ export default function TreksTable({
                   <span>
                     <MapPin size={13} /> {trek.destination}
                   </span>
-                  {trek.type !== "WORKSHOP" && (
+                  {trek.type !== "WORKSHOP" ? (
                     <span>
                       <Mountain size={13} /> {trek.difficulty}
                     </span>
+                  ) : (
+                    isWorkshopsMode && (
+                      <span>
+                        <Tent size={13} /> {trek.activityType === "SESSION" ? "Session" : "Workshop"}
+                      </span>
+                    )
                   )}
                   <span>
                     <CalendarDays size={13} /> {new Date(trek.date).toLocaleDateString()}
@@ -336,7 +345,9 @@ export default function TreksTable({
                   )}
 
                   <Link href={`/admin/treks/${trek.id}`} className={styles.manage}>
-                    {trek.type === "WORKSHOP" ? "Manage Workshop" : "Manage Trek"}
+                    {trek.type === "WORKSHOP"
+                      ? `Manage ${trek.activityType === "SESSION" ? "Session" : "Workshop"}`
+                      : "Manage Trek"}
                   </Link>
 
                   <Link

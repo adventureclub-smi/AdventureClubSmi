@@ -33,6 +33,7 @@ type Trek = {
   destination: string;
   date: string;
   type?: string;
+  activityType?: string;
   coverImage?: string | null;
   difficulty?: string | null;
   distance?: string | null;
@@ -144,7 +145,7 @@ export default function TripDetails({ trekId }: { trekId: string }) {
   if (!trek) return <div className={styles.loading}>Trip Centre unavailable.</div>;
 
   const isWorkshop = trek.type === "WORKSHOP";
-  const eventWord = isWorkshop ? "Session" : "Trek";
+  const eventWord = isWorkshop ? (trek.activityType === "SESSION" ? "Session" : "Workshop") : "Trek";
 
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     trek.meetingPoint || ""
@@ -172,7 +173,7 @@ export default function TripDetails({ trekId }: { trekId: string }) {
           <p className={styles.eyebrow}>Trip Centre</p>
           <h1>{trek.title}</h1>
           <p>
-            Your {isWorkshop ? "session" : "trek"} briefing, packing plan, updates, contacts, and reporting
+            Your {eventWord.toLowerCase()} briefing, packing plan, updates, contacts, and reporting
             details in one place.
           </p>
 

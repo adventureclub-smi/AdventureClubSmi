@@ -26,6 +26,7 @@ import styles from "./AdminDashboard.module.scss";
 const quickActions = [
   { href: "/admin/create-trek", label: "Create Trek", icon: Mountain },
   { href: "/admin/create-workshop", label: "Create Workshop", icon: Tent },
+  { href: "/admin/create-session", label: "Create Session", icon: Tent },
   { href: "/admin/treks", label: "Launch Trip Centre", icon: Compass },
   { href: "/admin/payments", label: "Verify Payments", icon: Wallet },
   { href: "/admin/attendance", label: "Attendance", icon: CheckSquare },

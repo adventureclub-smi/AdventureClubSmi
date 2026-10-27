@@ -38,6 +38,7 @@ export async function PUT(
       isTest,
       testVisibleToUserIds,
       reimbursementOffered,
+      activityType,
     } = body;
 
     if (
@@ -60,6 +61,8 @@ export async function PUT(
     const workshop = await prisma.trek.update({
       where: { id },
       data: {
+        activityType: activityType === "SESSION" ? "SESSION" : "WORKSHOP",
+
         title,
         destination: place,
         time: time || null,

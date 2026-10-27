@@ -31,6 +31,7 @@ type Trek = {
   whatsappGroupLink?: string | null;
   restrictedYears?: string[];
   type?: string;
+  activityType?: string;
 };
 
 type Props = {
@@ -61,7 +62,7 @@ export default function NextTrekCard({
     trek.date,
     registrationOpensAt,
     !!registration,
-    isWorkshop
+    isWorkshop ? (trek.activityType === "SESSION" ? "Session" : "Workshop") : "Trek"
   );
 
   // Only show the initial-payment-deadline countdown while that payment is
@@ -184,7 +185,13 @@ export default function NextTrekCard({
       <div className={styles.detailsSection}>
         <div className={styles.header}>
           <div>
-            <small>{isWorkshop ? "FEATURED SESSION" : "FEATURED TREK"}</small>
+            <small>
+              {isWorkshop
+                ? trek.activityType === "SESSION"
+                  ? "FEATURED SESSION"
+                  : "FEATURED WORKSHOP"
+                : "FEATURED TREK"}
+            </small>
             <h2>{trek.title}</h2>
 
             <p>

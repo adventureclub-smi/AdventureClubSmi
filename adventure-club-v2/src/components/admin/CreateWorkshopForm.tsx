@@ -8,7 +8,10 @@ import PageHeader from "@/components/admin/shared/PageHeader";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
 import styles from "./CreateTrekForm.module.scss";
 
+type ActivityType = "WORKSHOP" | "SESSION";
+
 type FormState = {
+  activityType: ActivityType;
   title: string;
   place: string;
   time: string;
@@ -25,22 +28,25 @@ type FormState = {
   reimbursementOffered: boolean;
 };
 
-const emptyForm: FormState = {
-  title: "",
-  place: "",
-  time: "",
-  duration: "",
-  date: "",
-  seats: "",
-  description: "",
-  registrationOpensAt: "",
-  registrationClosesAt: "",
-  isFree: true,
-  price: "",
-  isTest: false,
-  testVisibleToUserIds: [],
-  reimbursementOffered: false,
-};
+function buildEmptyForm(defaultActivityType: ActivityType): FormState {
+  return {
+    activityType: defaultActivityType,
+    title: "",
+    place: "",
+    time: "",
+    duration: "",
+    date: "",
+    seats: "",
+    description: "",
+    registrationOpensAt: "",
+    registrationClosesAt: "",
+    isFree: true,
+    price: "",
+    isTest: false,
+    testVisibleToUserIds: [],
+    reimbursementOffered: false,
+  };
+}
 
 // `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
 // expects the value expressed in the browser's LOCAL time — same fix as
@@ -63,7 +69,13 @@ function toDateTimeInput(value?: string | null) {
   )}:${pad(d.getMinutes())}`;
 }
 
-export default function CreateWorkshopForm({ workshopId }: { workshopId?: string }) {
+export default function CreateWorkshopForm({
+  workshopId,
+  defaultActivityType = "WORKSHOP",
+}: {
+  workshopId?: string;
+  defaultActivityType?: ActivityType;
+}) {
   const router = useRouter();
   const isEdit = !!workshopId;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +87,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
 
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>(() => buildEmptyForm(defaultActivityType));
 
   useEffect(() => {
     if (!workshopId) return;
@@ -90,6 +102,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
         const workshop = await res.json();
 
         setForm({
+          activityType: workshop.activityType === "SESSION" ? "SESSION" : "WORKSHOP",
           title: workshop.title || "",
           place: workshop.destination || "",
           time: workshop.time || "",
@@ -185,6 +198,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
     }
 
     const payload = {
+      activityType: form.activityType,
       title: form.title,
       place: form.place,
       time: form.time,
@@ -229,20 +243,54 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
     );
   }
 
+  const eventWord = form.activityType === "SESSION" ? "Session" : "Workshop";
+
   return (
     <div className={styles.container}>
       <PageHeader
-        title={isEdit ? "Edit Workshop" : "Create New Workshop"}
+        title={isEdit ? `Edit ${eventWord}` : `Create New ${eventWord}`}
         breadcrumb={[
           { label: "Admin", href: "/admin" },
           { label: "Workshops", href: "/admin/workshops" },
-          { label: isEdit ? "Edit" : "Create Workshop" },
+          { label: isEdit ? "Edit" : `Create ${eventWord}` },
         ]}
       />
 
       <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Type</div>
+          <p className={styles.sectionHint}>
+            Both work exactly the same way under the hood (free entry rules,
+            WhatsApp tab, admin tabs) — this just picks which word shows up
+            for it (e.g. "Bird Watching" as a Session vs "Photography Basics"
+            as a Workshop).
+          </p>
+
+          <div className={styles.row}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="radio"
+                name="activityType"
+                checked={form.activityType === "WORKSHOP"}
+                onChange={() => setForm({ ...form, activityType: "WORKSHOP" })}
+              />
+              Workshop
+            </label>
+
+            <label className={styles.checkboxLabel}>
+              <input
+                type="radio"
+                name="activityType"
+                checked={form.activityType === "SESSION"}
+                onChange={() => setForm({ ...form, activityType: "SESSION" })}
+              />
+              Session
+            </label>
+          </div>
+        </div>
+
         <div className={styles.imageSection}>
-          <label>Workshop Cover Image (optional)</label>
+          <label>{eventWord} Cover Image (optional)</label>
 
           <input
             hidden
@@ -259,7 +307,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
             ) : (
               <>
                 <ImagePlus size={40} className={styles.uploadIcon} />
-                <h3>Upload Workshop Cover</h3>
+                <h3>Upload {eventWord} Cover</h3>
                 <p>Click to upload</p>
                 <small>JPG • PNG • WEBP</small>
               </>
@@ -285,10 +333,10 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
 
           <div className={styles.sectionGrid}>
             <label className={styles.field}>
-              <span>Workshop Name</span>
+              <span>{eventWord} Name</span>
               <input
                 name="title"
-                placeholder="e.g. Tent Pitching Basics"
+                placeholder={form.activityType === "SESSION" ? "e.g. Bird Watching" : "e.g. Tent Pitching Basics"}
                 value={form.title}
                 onChange={handleChange}
                 required
@@ -334,14 +382,14 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
           <p className={styles.sectionHint}>
             Drives the same countdowns as treks: &ldquo;Registrations Open
             In&rdquo; counting down until registration opens, then
-            &ldquo;Next Adventure In&rdquo; counting down to the workshop
+            &ldquo;Next Adventure In&rdquo; counting down to the {eventWord.toLowerCase()}
             date.
           </p>
 
           <div className={styles.sectionGrid}>
             <label className={styles.field}>
-              <span>Workshop Date</span>
-              <small>The day the workshop happens</small>
+              <span>{eventWord} Date</span>
+              <small>The day the {eventWord.toLowerCase()} happens</small>
               <input
                 type="date"
                 name="date"
@@ -425,10 +473,10 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
           <div className={styles.sectionLabel}>Description</div>
 
           <label className={styles.field}>
-            <span>Workshop Description</span>
+            <span>{eventWord} Description</span>
             <textarea
               name="description"
-              placeholder="What will students learn/do at this workshop?"
+              placeholder={`What will students learn/do at this ${eventWord.toLowerCase()}?`}
               rows={6}
               value={form.description}
               onChange={handleChange}
@@ -440,7 +488,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
         <div className={styles.section}>
           <div className={styles.sectionLabel}>College Reimbursement</div>
           <p className={styles.sectionHint}>
-            Most workshops don&apos;t get reimbursed by the college — leave
+            Most {eventWord.toLowerCase()}s don&apos;t get reimbursed by the college — leave
             this off and participants won&apos;t see any reimbursement
             status at all. Turn it on if this one does; the expected amount
             range can be set later from the Refunds tab.
@@ -453,17 +501,17 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
               checked={form.reimbursementOffered}
               onChange={handleChange}
             />
-            This workshop offers college reimbursement
+            This {eventWord.toLowerCase()} offers college reimbursement
           </label>
         </div>
 
         <div className={styles.section}>
           <div className={styles.sectionLabel}>Test Mode</div>
           <p className={styles.sectionHint}>
-            A test workshop never appears on the homepage or the public
+            A test {eventWord.toLowerCase()} never appears on the homepage or the public
             treks list, and stays invisible to every student except the ones
             you pick below — they&apos;ll see it on their own dashboard like
-            any other workshop. Admins always see it, tagged TEST.
+            any other {eventWord.toLowerCase()}. Admins always see it, tagged TEST.
           </p>
 
           <label className={styles.checkboxLabel}>
@@ -473,7 +521,7 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
               checked={form.isTest}
               onChange={handleChange}
             />
-            This is a test workshop
+            This is a test {eventWord.toLowerCase()}
           </label>
 
           {form.isTest && (
@@ -490,10 +538,10 @@ export default function CreateWorkshopForm({ workshopId }: { workshopId?: string
           {loading
             ? isEdit
               ? "Saving..."
-              : "Creating Workshop..."
+              : `Creating ${eventWord}...`
             : isEdit
             ? "Save Changes"
-            : "Create Workshop"}
+            : `Create ${eventWord}`}
         </button>
       </form>
     </div>

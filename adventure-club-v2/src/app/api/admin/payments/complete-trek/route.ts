@@ -18,9 +18,14 @@ export async function POST(req: NextRequest) {
 
     const trekForWording = await prisma.trek.findUnique({
       where: { id: trekId },
-      select: { type: true },
+      select: { type: true, activityType: true },
     });
-    const noun = trekForWording?.type === "WORKSHOP" ? "Session" : "Trek";
+    const noun =
+      trekForWording?.type === "WORKSHOP"
+        ? trekForWording.activityType === "SESSION"
+          ? "Session"
+          : "Workshop"
+        : "Trek";
 
     if (undo) {
       const [result] = await Promise.all([

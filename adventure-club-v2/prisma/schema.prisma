@@ -167,6 +167,14 @@ model Trek {
   // harmless placeholder values for a workshop row — see /api/workshops).
   type String @default("TREK")
 
+  // Only meaningful when type is "WORKSHOP" — "WORKSHOP" (default) or
+  // "SESSION". Purely a display label an admin picks at creation (e.g.
+  // "Bird Watching"/"Bouldering" as a Session vs "Photography Basics" as a
+  // Workshop) — everything else (free-entry rules, the WhatsApp tab,
+  // payment/bond-form skipping, admin tabs) stays identical between the two,
+  // since both are still type "WORKSHOP" underneath.
+  activityType String @default("WORKSHOP")
+
   title String
 
   destination String
