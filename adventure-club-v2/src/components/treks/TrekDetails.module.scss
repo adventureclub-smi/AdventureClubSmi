@@ -211,6 +211,34 @@
   text-align: center;
 }
 
+.transportIncluded,
+.transportNotIncluded {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.transportIncluded {
+  background: rgba(0, 160, 115, 0.12);
+  border: 1px solid rgba(0, 160, 115, 0.3);
+  color: var(--color-accent);
+}
+
+.transportNotIncluded {
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: #eab308;
+}
+
 .divider {
   height: 1px;
 

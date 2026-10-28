@@ -38,6 +38,7 @@ type FormState = {
   testVisibleToUserIds: string[];
   restrictedYears: string[];
   reimbursementOffered: boolean;
+  transportIncluded: boolean;
 };
 
 const emptyForm: FormState = {
@@ -69,6 +70,7 @@ const emptyForm: FormState = {
   testVisibleToUserIds: [],
   restrictedYears: [],
   reimbursementOffered: false,
+  transportIncluded: false,
 };
 
 // `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
@@ -149,6 +151,7 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           testVisibleToUserIds: trek.testVisibleToUserIds ?? [],
           restrictedYears: trek.restrictedYears ?? [],
           reimbursementOffered: trek.reimbursementOffered ?? false,
+          transportIncluded: trek.transportIncluded ?? false,
         });
 
         if (trek.coverImage) setPreview(trek.coverImage);
@@ -642,6 +645,25 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
               Counts as Peak
             </label>
           </div>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Transport</div>
+          <p className={styles.sectionHint}>
+            Shown as a highlighted badge right on the registration page,
+            before anyone signs up — students factor this into whether they
+            need to sort their own way there and back.
+          </p>
+
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="transportIncluded"
+              checked={form.transportIncluded}
+              onChange={handleChange}
+            />
+            Transport is included for this trek
+          </label>
         </div>
 
         <div className={styles.section}>

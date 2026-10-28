@@ -227,6 +227,14 @@ model Trek {
 
   price Int
 
+  // Set at creation (or later from the edit form) — shown as a highlighted
+  // badge right on the registration page, before anyone signs up, since
+  // whether they need to sort their own way there/back is a real factor in
+  // deciding to register. Distinct from transportDetails below, which is
+  // the free-text logistics an admin fills in later for Trip Centre (pickup
+  // point, timing, etc.) once the trip is actually confirmed.
+  transportIncluded Boolean @default(false)
+
   // 1 = pay the whole trek cost in one go (finalPayment stays 0, and the
   // single payment auto-completes both the initial and final payment flags
   // once verified — see the payments/verify and payments/offline routes).

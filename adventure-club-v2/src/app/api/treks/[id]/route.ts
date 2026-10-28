@@ -107,6 +107,7 @@ export async function PUT(
         trekDay: body.trekDay,
         date: new Date(body.date),
         price: Number(body.price),
+        transportIncluded: Boolean(body.transportIncluded),
         installments: installmentCount,
         initialPayment: Number(body.initialPayment),
         secondPayment: installmentCount === 3 ? Number(body.secondPayment) : 0,

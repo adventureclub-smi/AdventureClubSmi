@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, Mountain, MapPin, Clock, Wallet } from "lucide-react";
+import { CalendarDays, Mountain, MapPin, Clock, Wallet, Bus, TriangleAlert } from "lucide-react";
 
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./TrekDetails.module.scss";
@@ -45,6 +45,7 @@ type Trek = {
   reimbursementOffered?: boolean;
   expectedReimbursementMin?: number | null;
   expectedReimbursementMax?: number | null;
+  transportIncluded?: boolean;
   restrictedYears?: string[];
 };
 
@@ -226,6 +227,19 @@ export default function TrekDetails({
           <div className={styles.price}>
             <h2>{isFree ? "Free" : `₹${trek.price}`}</h2>
             <span>{isWorkshop ? "Session Fee" : "Total Trek Fee"}</span>
+          </div>
+
+          <div
+            className={
+              trek.transportIncluded ? styles.transportIncluded : styles.transportNotIncluded
+            }
+          >
+            {trek.transportIncluded ? <Bus size={16} /> : <TriangleAlert size={16} />}
+            <span>
+              {trek.transportIncluded
+                ? "Transport Included"
+                : "Transport Not Included — arrange your own"}
+            </span>
           </div>
 
           {!isFree && !isWorkshop && (

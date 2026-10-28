@@ -26,6 +26,7 @@ type FormState = {
   isTest: boolean;
   testVisibleToUserIds: string[];
   reimbursementOffered: boolean;
+  transportIncluded: boolean;
 };
 
 function buildEmptyForm(defaultActivityType: ActivityType): FormState {
@@ -45,6 +46,7 @@ function buildEmptyForm(defaultActivityType: ActivityType): FormState {
     isTest: false,
     testVisibleToUserIds: [],
     reimbursementOffered: false,
+    transportIncluded: false,
   };
 }
 
@@ -117,6 +119,7 @@ export default function CreateWorkshopForm({
           isTest: workshop.isTest ?? false,
           testVisibleToUserIds: workshop.testVisibleToUserIds ?? [],
           reimbursementOffered: workshop.reimbursementOffered ?? false,
+          transportIncluded: workshop.transportIncluded ?? false,
         });
 
         if (workshop.coverImage) setPreview(workshop.coverImage);
@@ -214,6 +217,7 @@ export default function CreateWorkshopForm({
       isTest: form.isTest,
       testVisibleToUserIds: form.isTest ? form.testVisibleToUserIds : [],
       reimbursementOffered: form.reimbursementOffered,
+      transportIncluded: form.transportIncluded,
     };
 
     const res = await fetch(isEdit ? `/api/workshops/${workshopId}` : "/api/workshops", {
@@ -482,6 +486,25 @@ export default function CreateWorkshopForm({
               onChange={handleChange}
               required
             />
+          </label>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Transport</div>
+          <p className={styles.sectionHint}>
+            Shown as a highlighted badge right on the registration page,
+            before anyone signs up — students factor this into whether they
+            need to sort their own way there and back.
+          </p>
+
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="transportIncluded"
+              checked={form.transportIncluded}
+              onChange={handleChange}
+            />
+            Transport is included for this {eventWord.toLowerCase()}
           </label>
         </div>
 

@@ -58,6 +58,9 @@ export async function POST(req: Request) {
 
       // College Reimbursement
       reimbursementOffered,
+
+      // Transport
+      transportIncluded,
     } = body;
 
     const installmentCount = Number(installments) === 1 ? 1 : Number(installments) === 3 ? 3 : 2;
@@ -186,6 +189,12 @@ export async function POST(req: Request) {
         // -------------------------
 
         reimbursementOffered: Boolean(reimbursementOffered),
+
+        // -------------------------
+        // Transport
+        // -------------------------
+
+        transportIncluded: Boolean(transportIncluded),
       },
     });
 

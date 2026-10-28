@@ -39,6 +39,7 @@ export async function PUT(
       testVisibleToUserIds,
       reimbursementOffered,
       activityType,
+      transportIncluded,
     } = body;
 
     if (
@@ -85,6 +86,8 @@ export async function PUT(
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
 
         reimbursementOffered: Boolean(reimbursementOffered),
+
+        transportIncluded: Boolean(transportIncluded),
       },
     });
 

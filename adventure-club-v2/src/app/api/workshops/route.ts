@@ -30,6 +30,7 @@ export async function POST(req: Request) {
       testVisibleToUserIds,
       reimbursementOffered,
       activityType,
+      transportIncluded,
     } = body;
 
     if (
@@ -96,6 +97,8 @@ export async function POST(req: Request) {
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],
 
         reimbursementOffered: Boolean(reimbursementOffered),
+
+        transportIncluded: Boolean(transportIncluded),
 
         // Always true on creation — never a client-chosen option. Only
         // "Go Live" (src/app/api/admin/treks/go-live) flips this, which is
