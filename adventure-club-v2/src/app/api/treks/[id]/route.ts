@@ -217,6 +217,13 @@ export async function DELETE(
       prisma.gallery.deleteMany({ where: { trekId: id } }),
       prisma.tripAnnouncement.deleteMany({ where: { trekId: id } }),
       prisma.trekNotifyRequest.deleteMany({ where: { trekId: id } }),
+
+      // Campus Events (type: "EVENT") — a no-op for every other trek type.
+      // EventMatch references EventTeam, so it has to go first.
+      prisma.eventMatch.deleteMany({ where: { trekId: id } }),
+      prisma.eventTeam.deleteMany({ where: { trekId: id } }),
+      prisma.eventRegistration.deleteMany({ where: { trekId: id } }),
+
       prisma.trek.delete({ where: { id } }),
     ]);
 

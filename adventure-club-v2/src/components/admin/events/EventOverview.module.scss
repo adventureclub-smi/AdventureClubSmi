@@ -1,0 +1,435 @@
+.container {
+  padding: 24px 29px;
+  color: var(--color-text);
+}
+
+// ===== Object header =====
+
+.objectHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--color-charcoal);
+  margin-bottom: 20px;
+}
+
+.objectMeta {
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: none;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: var(--color-danger);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  flex: none;
+
+  &:hover {
+    border-color: var(--color-danger);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ===== KPI strip: one card, divided by 1px rules, no icons, no shadow =====
+
+.kpiStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--color-charcoal);
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.kpi {
+  padding: 16px 20px;
+  border-right: 1px solid rgba(245, 245, 245, 0.06);
+
+  &:last-child {
+    border-right: none;
+  }
+
+  span {
+    display: block;
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+  }
+
+  strong {
+    font-size: 24px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.status {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #e3b341;
+  font-size: 13px;
+}
+
+.statusError {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+// ===== Underline tabs, on a full-width rule =====
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-charcoal);
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 10px 4px;
+  margin-right: 20px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+
+  &.active {
+    color: var(--color-text);
+    border-bottom-color: var(--color-accent);
+  }
+}
+
+// ===== Tables: rules and alignment, no zebra, no header band =====
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+
+  th,
+  td {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  th {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-charcoal);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(245, 245, 245, 0.05);
+  }
+
+  td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// Below 640px a data table becomes a stack of two-line rows: the header
+// disappears and each cell prints its own label before its value.
+@media (max-width: 640px) {
+  .kpiStrip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .kpi {
+    border-right: none;
+    border-bottom: 1px solid rgba(245, 245, 245, 0.06);
+
+    &:nth-child(2n) {
+      border-right: none;
+    }
+
+    &:nth-last-child(-n + 2) {
+      border-bottom: none;
+    }
+  }
+
+  .table {
+    thead {
+      display: none;
+    }
+
+    tr {
+      display: block;
+      padding: 10px 0;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 3px 0;
+
+      &::before {
+        content: attr(data-label);
+        color: var(--color-text-muted);
+        font-size: 12px;
+        flex: none;
+      }
+
+      &.num {
+        text-align: left;
+      }
+    }
+  }
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 6px;
+  background: var(--color-accent);
+  color: #0d0d0d;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-accent-hover);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.checkinHint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.checkinSearch {
+  width: 100%;
+  max-width: 420px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 245, 245, 0.14);
+  background: var(--color-charcoal);
+  color: var(--color-text);
+  font-size: 14px;
+  margin-top: 8px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+}
+
+.secondaryButton {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--color-text-muted);
+  background: none;
+  color: var(--color-text);
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-accent);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ===== Draw Teams: team rosters as peer objects =====
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.teamCard {
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--color-charcoal);
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    color: var(--color-text-muted);
+
+    li {
+      padding: 2px 0;
+    }
+  }
+}
+
+.groupLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: none;
+  margin: 20px 0 10px;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+// ===== Fixtures: rows, not boxed cards =====
+
+.matchRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(245, 245, 245, 0.05);
+}
+
+.matchTeams {
+  flex: 1;
+  min-width: 180px;
+  font-size: 14px;
+
+  .vs {
+    color: var(--color-text-muted);
+    margin: 0 6px;
+    font-size: 12px;
+  }
+}
+
+.winnerName {
+  font-weight: 600;
+}
+
+.scoreTag {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-left: 8px;
+}
+
+.resultForm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  select,
+  input {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid rgba(245, 245, 245, 0.14);
+    border-radius: 6px;
+    font-size: 13px;
+    background: var(--color-midnight);
+    color: var(--color-text);
+  }
+
+  input {
+    width: 40px;
+    text-align: center;
+  }
+}
+
+.qualifiedTag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  margin-left: 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(0, 160, 115, 0.14);
+  color: var(--color-accent);
+}
+
+.byeTag {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+// ===== Bracket: a column per round =====
+
+.bracket {
+  display: flex;
+  gap: 32px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.bracketRound {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+
+  h3 {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    margin: 0 0 4px;
+  }
+}
+
+.bracketMatch {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--color-charcoal);
+  font-size: 13px;
+
+  .bracketTeam {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+
+    &.winner {
+      font-weight: 600;
+    }
+  }
+}

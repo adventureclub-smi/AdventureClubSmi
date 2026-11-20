@@ -75,6 +75,33 @@ export async function notifyWorkshopCreated(workshop: Trek) {
   );
 }
 
+// ===== Campus Event created -> every verified (ACTIVE) member =====
+// Separate from both of the above since neither "expedition to
+// {destination}" nor the workshop fee line make sense for a free on-campus
+// team event, and it links to /events/[id] rather than /treks/[id].
+export async function notifyEventCreated(event: Trek) {
+  const members = await prisma.user.findMany({
+    where: { membershipStatus: "ACTIVE" },
+    select: { email: true, fullName: true },
+  });
+
+  const url = `${getSiteUrl()}/events/${event.id}`;
+
+  await sendBulkEmails(
+    members.map((member) => ({
+      to: member.email,
+      subject: `New Event Announced: ${event.title}`,
+      html: emailShell(`
+        <h2 style="color:#008862;">${event.title}</h2>
+        <p>Hi ${firstName(member.fullName)}, a new event at ${event.destination} has just been announced.</p>
+        <p>${formatTrekDate(event.date)}</p>
+        <p>Register individually — teams are formed at random once registration closes.</p>
+        ${emailButton(url, "View Event Details")}
+      `),
+    }))
+  );
+}
+
 // Every member's dateOfBirth is saved from a plain "YYYY-MM-DD" <input
 // type="date">, which `new Date(...)` anchors to UTC midnight — reading it
 // back with getUTCMonth()/getUTCDate() returns exactly the calendar date

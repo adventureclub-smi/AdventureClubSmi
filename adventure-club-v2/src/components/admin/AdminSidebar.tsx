@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Mountain,
   Tent,
+  Swords,
   Users,
   ClipboardList,
   Wallet,
@@ -53,6 +54,7 @@ const links: NavItem[] = [
     children: [
       { href: "/admin/treks", label: "Treks", icon: Mountain },
       { href: "/admin/workshops", label: "Workshops/Sessions", icon: Tent },
+      { href: "/admin/events", label: "Campus Events", icon: Swords },
     ],
   },
   { href: "/admin/members", label: "Students", icon: Users },
@@ -146,6 +148,14 @@ export default function AdminSidebar({
         pathname.startsWith("/admin/workshops") ||
         pathname.startsWith("/admin/create-workshop") ||
         pathname.startsWith("/admin/edit-workshop")
+      );
+    }
+
+    if (href === "/admin/events") {
+      return (
+        pathname.startsWith("/admin/events") ||
+        pathname.startsWith("/admin/create-event") ||
+        pathname.startsWith("/admin/edit-event")
       );
     }
 

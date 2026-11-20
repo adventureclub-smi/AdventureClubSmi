@@ -91,6 +91,8 @@ model User {
   // below for why this is no longer a single optional relation.
   recruitmentApplications RecruitmentApplication[]
 
+  eventRegistrations EventRegistration[]
+
   contactSubmissions ContactSubmission[]
 
   membershipStatus String @default("PENDING")
@@ -387,6 +389,157 @@ model Trek {
   // Contributor so students can drop their own photos in) — the site just
   // links out to it rather than handling uploads/storage itself.
   photosLink String?
+
+  // =========================
+  // Campus Events (Tug of War, etc.)
+  // =========================
+  // Only meaningful when type is "EVENT" — same placeholder-field convention
+  // as WORKSHOP above. An on-campus team event: students register
+  // individually (or as a buddy pair), teams are drawn at random once
+  // registration closes, and a small-group round robin feeds a knockout
+  // bracket. See src/lib/event-draw.ts and src/lib/event-bracket.ts.
+
+  eventTeamSize Int?
+
+  // How many teams advance from the group stage into the knockout bracket —
+  // 4 or 6, admin's choice per event.
+  eventQualifiersCount Int?
+
+  // Caps how many group-stage matches each team plays. Teams are split into
+  // balanced groups sized (eventMatchesPerTeamCap + 1) so a full round robin
+  // within a group never exceeds this cap — instead of one giant round robin
+  // where, say, 8 teams would mean 7 matches each.
+  eventMatchesPerTeamCap Int?
+
+  // Whether the random draw stratifies by registered gender so every team
+  // gets a proportional mix automatically, instead of leaving the mix
+  // entirely to chance.
+  eventBalanceGender Boolean @default(true)
+
+  eventTeamsDrawnAt DateTime?
+
+  // The RNG seed used for the draw, logged so the result is reproducible/
+  // auditable rather than just "trust me".
+  eventDrawSeed String?
+
+  eventRegistrations EventRegistration[]
+
+  eventTeams EventTeam[]
+
+  eventMatches EventMatch[]
+}
+
+// Individual sign-up for a type:"EVENT" Trek — deliberately separate from
+// Registration, which carries dozens of fields (payments, bond form, trip
+// centre, certificates...) that mean nothing for a free on-campus event and
+// would otherwise leak into every admin page that broadly queries
+// Registration (Payments, Finance, Certificates...).
+model EventRegistration {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Captured here, specifically for this event's team-balancing, rather
+  // than on User itself — optional, scoped to this one sign-up, never shown
+  // anywhere else. "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY".
+  gender String?
+
+  // Mutual buddy-pair request — if two students each name the other, they're
+  // dealt into the same team as a unit at draw time; a one-sided request is
+  // simply ignored. Stored as a plain id (not a relation), same convention
+  // as Registration.approvedBy above.
+  buddyRequestUserId String?
+
+  teamId String?    @db.ObjectId
+  team   EventTeam? @relation(fields: [teamId], references: [id])
+
+  // A short, easy-to-read per-event number assigned the moment someone
+  // registers ("01", "02", ...; grows past 2 digits if an event ever needs
+  // it) — shown next to their QR code so a check-in desk can type it in by
+  // hand just as easily as scanning it. Starts back at 01 for every event,
+  // unlike Registration.registrationNumber which is global for the year.
+  shortCode String
+
+  // ===== Check-in (on the event day) =====
+  // Separate from Attendance (which is Trek/Registration-specific) for the
+  // same reason EventRegistration itself is separate from Registration.
+
+  attendanceMarked Boolean @default(false)
+
+  attendanceMarkedAt DateTime?
+
+  // Free-text name of whichever admin/core member checked them in — same
+  // plain-string convention as Registration.approvedBy, not a relation.
+  attendanceMarkedBy String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([trekId, userId])
+  @@unique([trekId, shortCode])
+}
+
+model EventTeam {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  name String
+
+  // Which group this team was placed in for the group stage — only matters
+  // once there's more than one group (see Trek.eventMatchesPerTeamCap); null
+  // when the whole event fits in a single round robin.
+  groupNumber Int?
+
+  // Standing within its group once the group stage finishes, used to seed
+  // the knockout bracket (1 = top of its group). Null until computed.
+  seed Int?
+
+  createdAt DateTime @default(now())
+
+  registrations EventRegistration[]
+
+  matchesAsTeamA EventMatch[] @relation("EventMatchTeamA")
+  matchesAsTeamB EventMatch[] @relation("EventMatchTeamB")
+}
+
+model EventMatch {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  trekId String @db.ObjectId
+  trek   Trek   @relation(fields: [trekId], references: [id])
+
+  // "GROUP" | "KNOCKOUT"
+  stage String
+
+  // Only meaningful for stage "GROUP" — which group this fixture belongs to.
+  groupNumber Int?
+
+  // Only meaningful for stage "KNOCKOUT" — "QF" | "SF" | "FINAL".
+  round String?
+
+  teamAId String    @db.ObjectId
+  teamA   EventTeam @relation("EventMatchTeamA", fields: [teamAId], references: [id])
+
+  // Null means a bye — teamA advances automatically, no match is actually
+  // played (only possible in a knockout's first round, when the qualifier
+  // count isn't already a power of two). See src/lib/event-bracket.ts.
+  teamBId String?    @db.ObjectId
+  teamB   EventTeam? @relation("EventMatchTeamB", fields: [teamBId], references: [id])
+
+  teamAScore Int?
+  teamBScore Int?
+
+  winnerTeamId String?
+
+  // "SCHEDULED" | "COMPLETED"
+  status String @default("SCHEDULED")
+
+  createdAt DateTime @default(now())
 }
 
 // Admin-editable waypoints (trailhead, halfway point, summit, etc.) that

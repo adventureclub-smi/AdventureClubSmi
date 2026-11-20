@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { notifyTrekCreated, notifyWorkshopCreated } from "@/lib/notification-emails";
+import { notifyTrekCreated, notifyWorkshopCreated, notifyEventCreated } from "@/lib/notification-emails";
 
 // The only thing that flips Trek.isDraft to false (see the comment on that
 // field in schema.prisma) — and the moment the "New Trek/Workshop
@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
         try {
           if (trek.type === "WORKSHOP") {
             await notifyWorkshopCreated(trek);
+          } else if (trek.type === "EVENT") {
+            await notifyEventCreated(trek);
           } else {
             await notifyTrekCreated(trek);
           }
@@ -54,7 +56,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      message: `${trek.type === "WORKSHOP" ? "Workshop" : "Trek"} is now live!`,
+      message: `${trek.type === "WORKSHOP" ? "Workshop" : trek.type === "EVENT" ? "Event" : "Trek"} is now live!`,
       trek,
     });
   } catch (error) {
