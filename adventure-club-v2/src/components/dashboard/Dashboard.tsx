@@ -12,11 +12,13 @@ import {
   Bell,
   Images,
   MailOpen,
+  Swords,
 } from "lucide-react";
 
 import HeroSection from "./HeroSection";
 import MemberSearchBar from "./MemberSearchBar";
 import NextTrekCard from "./NextTrekCard";
+import MyEventsCard from "./MyEventsCard";
 import Stats from "./Stats";
 import QuickActionCard from "./shared/QuickActionCard";
 import RecruitmentBanner from "@/components/shared/RecruitmentBanner";
@@ -210,6 +212,8 @@ export default function Dashboard() {
         </div>
       )}
 
+      <MyEventsCard />
+
       <Stats />
 
       <section>
@@ -241,6 +245,11 @@ export default function Dashboard() {
             icon={Mountain}
             label="Upcoming Treks"
             href="/dashboard/treks"
+          />
+          <QuickActionCard
+            icon={Swords}
+            label="Campus Events"
+            href="/events"
           />
           <QuickActionCard
             icon={Bell}
