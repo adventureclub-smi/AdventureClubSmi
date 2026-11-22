@@ -37,7 +37,7 @@ export async function POST(req: Request, context: RouteContext) {
 
     const event = await prisma.trek.findUnique({ where: { id: eventId } });
 
-    if (!event || event.type !== "EVENT" || !event.eventQualifiersCount) {
+    if (!event || event.type !== "EVENT") {
       return NextResponse.json({ message: "Event not found." }, { status: 404 });
     }
 
@@ -48,6 +48,13 @@ export async function POST(req: Request, context: RouteContext) {
     });
 
     if (existingKnockout.length === 0) {
+      if (!event.eventQualifiersCount) {
+        return NextResponse.json(
+          { message: "This event has no group-stage qualifier count set." },
+          { status: 400 }
+        );
+      }
+
       const groupMatches = await prisma.eventMatch.findMany({
         where: { trekId: eventId, stage: "GROUP" },
       });
@@ -138,7 +145,16 @@ export async function POST(req: Request, context: RouteContext) {
       );
     }
 
-    const bracketSize = nextPowerOfTwo(event.eventQualifiersCount);
+    // Recover how many teams the bracket actually started with from the
+    // first round's own rows — a match row held 2 of them, a bye row held
+    // 1 — which works the same whether that round came from group-stage
+    // qualifiers (LEAGUE_KNOCKOUT) or directly from every team
+    // (DIRECT_KNOCKOUT), instead of relying on eventQualifiersCount (which
+    // DIRECT_KNOCKOUT events never set).
+    const firstRoundName = existingKnockout[0].round!;
+    const firstRoundRows = existingKnockout.filter((m) => m.round === firstRoundName);
+    const startingTeamCount = firstRoundRows.reduce((sum, m) => sum + (m.teamBId ? 2 : 1), 0);
+    const bracketSize = nextPowerOfTwo(startingTeamCount);
     const roundNames = roundNamesForBracketSize(bracketSize);
     const currentIndex = roundNames.indexOf(currentRoundName);
 

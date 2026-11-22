@@ -40,10 +40,12 @@ export async function GET(req: Request, context: RouteContext) {
       });
 
       const lower = query.toLowerCase();
+      // Guest rows have no `user` — fall back to the name/phone collected
+      // on the spot.
       const matches = registrations.filter(
         (r) =>
-          r.user.fullName.toLowerCase().includes(lower) ||
-          r.user.clubId.toLowerCase().includes(lower) ||
+          (r.user?.fullName ?? r.guestName ?? "").toLowerCase().includes(lower) ||
+          (r.user?.clubId ?? r.guestPhone ?? "").toLowerCase().includes(lower) ||
           r.shortCode.includes(lower)
       );
 
@@ -94,8 +96,10 @@ export async function POST(req: Request, context: RouteContext) {
       include: { user: { select: { fullName: true, clubId: true } } },
     });
 
+    const displayName = updated.user?.fullName ?? updated.guestName ?? "Guest";
+
     return NextResponse.json({
-      message: markPresent ? `${updated.user.fullName} marked present.` : "Check-in undone.",
+      message: markPresent ? `${displayName} marked present.` : "Check-in undone.",
       registration: updated,
     });
   } catch (error) {

@@ -54,7 +54,12 @@ export async function GET(req: Request, context: RouteContext) {
           where: { teamId: team.id },
           include: { user: { select: { fullName: true } } },
         });
-        myTeam = { id: team.id, name: team.name, members: teammates.map((t) => t.user.fullName) };
+        myTeam = {
+          id: team.id,
+          name: team.name,
+          colour: team.colour,
+          members: teammates.map((t) => t.user?.fullName ?? t.guestName ?? "Guest"),
+        };
       }
     }
 
@@ -76,6 +81,7 @@ export async function GET(req: Request, context: RouteContext) {
     return NextResponse.json({
       event,
       registeredCount,
+      loggedIn: !!user,
       isRegistered: !!myRegistration,
       myShortCode: myRegistration?.shortCode ?? null,
       myAttendanceMarked: myRegistration?.attendanceMarked ?? false,

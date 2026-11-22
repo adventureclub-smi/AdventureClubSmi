@@ -6,9 +6,10 @@ import QRCode from "qrcode";
 import { CalendarDays, MapPin, Users, CheckCircle2 } from "lucide-react";
 
 import { registrationStateFor } from "@/lib/registration-journey";
+import { colourToHex } from "@/lib/team-colours";
 import styles from "./EventDetails.module.scss";
 
-type Team = { id: string; name: string; groupNumber: number | null };
+type Team = { id: string; name: string; colour: string; groupNumber: number | null };
 
 type Match = {
   id: string;
@@ -25,8 +26,10 @@ type Match = {
 type StandingsRow = {
   teamId: string;
   teamName: string;
+  teamColour: string;
   played: number;
   won: number;
+  drawn: number;
   lost: number;
   points: number;
   qualified: boolean;
@@ -49,10 +52,11 @@ type PublicData = {
     registrationClosedManually: boolean;
   };
   registeredCount: number;
+  loggedIn: boolean;
   isRegistered: boolean;
   myShortCode: string | null;
   myAttendanceMarked: boolean;
-  myTeam: { id: string; name: string; members: string[] } | null;
+  myTeam: { id: string; name: string; colour: string; members: string[] } | null;
   teams: Team[];
   groupMatches: Match[];
   knockoutMatches: Match[];
@@ -70,14 +74,24 @@ function teamName(teams: Team[], id: string | null) {
   return teams.find((t) => t.id === id)?.name ?? "Unknown Team";
 }
 
+function teamColour(teams: Team[], id: string | null): string {
+  return teams.find((t) => t.id === id)?.colour ?? "";
+}
+
 export default function EventDetails({ eventId }: { eventId: string }) {
   const [data, setData] = useState<PublicData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [gender, setGender] = useState("");
-  const [buddyClubId, setBuddyClubId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState("");
+  const [guestMode, setGuestMode] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestCollege, setGuestCollege] = useState("");
+  const [guestConfirmation, setGuestConfirmation] = useState<{
+    shortCode: string;
+    qrDataUrl: string;
+  } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -144,7 +158,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
     const res = await fetch(`/api/events/${eventId}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gender: gender || undefined, buddyClubId: buddyClubId || undefined }),
+      body: JSON.stringify({}),
     });
 
     const json = await res.json().catch(() => null);
@@ -160,6 +174,50 @@ export default function EventDetails({ eventId }: { eventId: string }) {
     load();
   }
 
+  async function handleGuestRegister() {
+    if (!guestName.trim() || !guestPhone.trim()) {
+      setMessage({ text: "Name and phone are required.", error: true });
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        guest: { name: guestName, phone: guestPhone, college: guestCollege || undefined },
+      }),
+    });
+
+    const json = await res.json().catch(() => null);
+
+    setSubmitting(false);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to register.", error: true });
+      return;
+    }
+
+    // A guest has no account/session, so this page can never look their
+    // registration back up on a future visit — their code/QR has to be
+    // shown right here, right now, from the create response itself.
+    const shortCode = json.registration.shortCode as string;
+    const checkinUrl = `${window.location.origin}/admin/events/${eventId}/checkin?code=${shortCode}`;
+    const dataUrl = await QRCode.toDataURL(checkinUrl, {
+      width: 240,
+      margin: 2,
+      color: { dark: "#0d0d0d", light: "#ffffff" },
+    });
+
+    setGuestConfirmation({ shortCode, qrDataUrl: dataUrl });
+    setGuestName("");
+    setGuestPhone("");
+    setGuestCollege("");
+    setGuestMode(false);
+  }
+
   if (loading || !data) {
     return <div className={styles.container}>Loading...</div>;
   }
@@ -167,6 +225,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
   const {
     event,
     registeredCount,
+    loggedIn,
     isRegistered,
     myShortCode,
     myAttendanceMarked,
@@ -233,20 +292,39 @@ export default function EventDetails({ eventId }: { eventId: string }) {
         </div>
       )}
 
+      {guestConfirmation && (
+        <div className={`${styles.card} ${styles.qrCard}`}>
+          <div className={styles.qrRow}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={guestConfirmation.qrDataUrl} alt="Check-in QR code" className={styles.qrImage} />
+            <div>
+              <span className={styles.qrLabel}>Your registration number</span>
+              <div className={styles.qrCode}>{guestConfirmation.shortCode}</div>
+              <p className={styles.qrHint}>
+                Screenshot this now — as a guest, this page can&apos;t look it back up for you later.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={styles.card}>
         {myTeam ? (
           <>
-            <h3>Your Team: {myTeam.name}</h3>
+            <h3>
+              <span className={styles.swatch} style={{ background: colourToHex(myTeam.colour) }} />
+              Your Team: {myTeam.name}
+            </h3>
             <ul className={styles.teamList}>
-              {myTeam.members.map((name) => (
-                <li key={name}>{name}</li>
+              {myTeam.members.map((name, i) => (
+                <li key={`${name}-${i}`}>{name}</li>
               ))}
             </ul>
           </>
-        ) : isRegistered ? (
-          <p>You&apos;re registered! Teams will be announced once registration closes.</p>
+        ) : isRegistered || guestConfirmation ? (
+          <p>You&apos;re registered! Teams are formed physically on the day — show up and pick your chit.</p>
         ) : event.eventTeamsDrawnAt ? (
-          <p>Teams have already been drawn — registration for this event is closed.</p>
+          <p>Team allocation has already started — registration for this event is closed.</p>
         ) : registrationState !== "OPEN" ? (
           <p>
             {registrationState === "NOT_OPEN"
@@ -256,29 +334,50 @@ export default function EventDetails({ eventId }: { eventId: string }) {
         ) : (
           <>
             <h3>Register</h3>
+            <p className={styles.qrHint} style={{ marginBottom: 14 }}>
+              Come alone — no need to register with a group or find a team beforehand. Teams are
+              formed on the day by picking a chit from a bag.
+            </p>
 
-            <label className={styles.field}>
-              <span>Gender (optional — used only to balance teams fairly)</span>
-              <select value={gender} onChange={(e) => setGender(e.target.value)}>
-                <option value="">Prefer not to say</option>
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </label>
+            {loggedIn && (
+              <button className={styles.submitButton} disabled={submitting} onClick={handleRegister}>
+                {submitting ? "Registering..." : "Register"}
+              </button>
+            )}
 
-            <label className={styles.field}>
-              <span>Register with a friend (optional)</span>
-              <input
-                placeholder="Friend's Club ID"
-                value={buddyClubId}
-                onChange={(e) => setBuddyClubId(e.target.value)}
-              />
-            </label>
-
-            <button className={styles.submitButton} disabled={submitting} onClick={handleRegister}>
-              {submitting ? "Registering..." : "Register"}
-            </button>
+            {!guestMode ? (
+              <button
+                type="button"
+                className={styles.guestToggle}
+                onClick={() => setGuestMode(true)}
+              >
+                {loggedIn
+                  ? "Registering someone without a club account? Register as a guest"
+                  : "Don't have a club account? Register as a guest"}
+              </button>
+            ) : (
+              <div style={{ marginTop: loggedIn ? 16 : 0 }}>
+                <label className={styles.field}>
+                  <span>Full name</span>
+                  <input value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+                </label>
+                <label className={styles.field}>
+                  <span>Phone number</span>
+                  <input value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
+                </label>
+                <label className={styles.field}>
+                  <span>College / organisation (optional)</span>
+                  <input value={guestCollege} onChange={(e) => setGuestCollege(e.target.value)} />
+                </label>
+                <button
+                  className={styles.submitButton}
+                  disabled={submitting}
+                  onClick={handleGuestRegister}
+                >
+                  {submitting ? "Registering..." : "Register as Guest"}
+                </button>
+              </div>
+            )}
           </>
         )}
 
@@ -299,6 +398,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                   <th>{group.groupNumber ? `Group ${group.groupNumber}` : "Team"}</th>
                   <th>P</th>
                   <th>W</th>
+                  <th>D</th>
                   <th>L</th>
                   <th>Pts</th>
                 </tr>
@@ -306,9 +406,16 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               <tbody>
                 {group.rows.map((row) => (
                   <tr key={row.teamId} className={row.qualified ? styles.qualifiedRow : ""}>
-                    <td>{row.teamName}</td>
+                    <td>
+                      <span
+                        className={styles.swatch}
+                        style={{ background: colourToHex(row.teamColour) }}
+                      />
+                      {row.teamName}
+                    </td>
                     <td>{row.played}</td>
                     <td>{row.won}</td>
+                    <td>{row.drawn}</td>
                     <td>{row.lost}</td>
                     <td>{row.points}</td>
                   </tr>
@@ -325,16 +432,26 @@ export default function EventDetails({ eventId }: { eventId: string }) {
           {groupMatches.map((match) => (
             <div key={match.id} className={styles.matchRow}>
               <span className={match.winnerTeamId === match.teamAId ? styles.winnerName : ""}>
+                <span
+                  className={styles.swatch}
+                  style={{ background: colourToHex(teamColour(teams, match.teamAId)) }}
+                />
                 {teamName(teams, match.teamAId)}
               </span>
               {" vs "}
               <span className={match.winnerTeamId === match.teamBId ? styles.winnerName : ""}>
+                <span
+                  className={styles.swatch}
+                  style={{ background: colourToHex(teamColour(teams, match.teamBId)) }}
+                />
                 {teamName(teams, match.teamBId)}
               </span>
               {match.status === "COMPLETED" && (
                 <span>
                   {" "}
-                  ({match.teamAScore ?? "-"} - {match.teamBScore ?? "-"})
+                  {match.winnerTeamId === null
+                    ? "(Draw)"
+                    : `(${match.teamAScore ?? "-"} - ${match.teamBScore ?? "-"})`}
                 </span>
               )}
             </div>

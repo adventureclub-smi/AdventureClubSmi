@@ -5,8 +5,6 @@ import { createEventRegistrationWithCode } from "@/lib/event-registration-code";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-const VALID_GENDERS = ["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"];
-
 // Admin manually registering a student for a Campus Event — the same
 // "bypass the registration window" override /api/registrations gives
 // AddParticipantModal for treks, just on EventRegistration instead of
@@ -21,10 +19,10 @@ export async function POST(req: Request, context: RouteContext) {
 
   try {
     const { id: eventId } = await context.params;
-    const { userId, gender, buddyClubId } = await req.json();
+    const { userId, guest } = await req.json();
 
-    if (!userId) {
-      return NextResponse.json({ message: "userId is required." }, { status: 400 });
+    if (!userId && !guest) {
+      return NextResponse.json({ message: "userId or guest is required." }, { status: 400 });
     }
 
     const event = await prisma.trek.findUnique({ where: { id: eventId } });
@@ -35,9 +33,37 @@ export async function POST(req: Request, context: RouteContext) {
 
     if (event.eventTeamsDrawnAt) {
       return NextResponse.json(
-        { message: "Teams have already been drawn for this event." },
+        { message: "Team allocation has already started for this event." },
         { status: 400 }
       );
+    }
+
+    const registeredCount = await prisma.eventRegistration.count({ where: { trekId: eventId } });
+
+    if (registeredCount >= event.seats) {
+      return NextResponse.json(
+        { message: "This event has reached its participant limit." },
+        { status: 400 }
+      );
+    }
+
+    if (guest) {
+      const guestName = String(guest.name || "").trim();
+      const guestPhone = String(guest.phone || "").trim();
+
+      if (!guestName || !guestPhone) {
+        return NextResponse.json({ message: "Name and phone are required." }, { status: 400 });
+      }
+
+      const registration = await createEventRegistrationWithCode({
+        trekId: eventId,
+        isGuest: true,
+        guestName,
+        guestPhone,
+        guestCollege: guest.college ? String(guest.college).trim() : null,
+      });
+
+      return NextResponse.json({ message: "Guest added.", registration });
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -54,39 +80,9 @@ export async function POST(req: Request, context: RouteContext) {
       return NextResponse.json({ message: "Already registered." }, { status: 400 });
     }
 
-    const registeredCount = await prisma.eventRegistration.count({ where: { trekId: eventId } });
-
-    if (registeredCount >= event.seats) {
-      return NextResponse.json(
-        { message: "This event has reached its participant limit." },
-        { status: 400 }
-      );
-    }
-
-    if (gender && !VALID_GENDERS.includes(gender)) {
-      return NextResponse.json({ message: "Invalid gender value." }, { status: 400 });
-    }
-
-    let buddyRequestUserId: string | null = null;
-
-    if (buddyClubId) {
-      const buddy = await prisma.user.findUnique({ where: { clubId: buddyClubId } });
-
-      if (!buddy) {
-        return NextResponse.json(
-          { message: "No student found with that Club ID." },
-          { status: 400 }
-        );
-      }
-
-      buddyRequestUserId = buddy.id;
-    }
-
     const registration = await createEventRegistrationWithCode({
       trekId: eventId,
       userId,
-      gender: gender || null,
-      buddyRequestUserId,
     });
 
     return NextResponse.json({ message: "Participant added.", registration });

@@ -4,9 +4,10 @@ import { requireAdmin } from "@/lib/require-admin";
 
 type RouteContext = { params: Promise<{ id: string; matchId: string }> };
 
-// Records a match result — tug of war (best-of-pulls) always has a clear
-// winner, no draws, so winnerTeamId is required; the scores are just for
-// display (e.g. "2-1").
+// Records a match result. Group-stage matches can end in a draw (pass
+// winnerTeamId: null) — Win=3/Draw=1/Loss=0, see event-points-table.ts.
+// Knockout matches must always produce a winner, since the bracket can't
+// advance a drawn tie.
 export async function PATCH(req: Request, context: RouteContext) {
   const admin = await requireAdmin();
 
@@ -24,7 +25,16 @@ export async function PATCH(req: Request, context: RouteContext) {
       return NextResponse.json({ message: "Match not found." }, { status: 404 });
     }
 
-    if (winnerTeamId !== match.teamAId && winnerTeamId !== match.teamBId) {
+    const isDraw = winnerTeamId === null || winnerTeamId === undefined;
+
+    if (isDraw && match.stage === "KNOCKOUT") {
+      return NextResponse.json(
+        { message: "A knockout match must have a winner — no draws." },
+        { status: 400 }
+      );
+    }
+
+    if (!isDraw && winnerTeamId !== match.teamAId && winnerTeamId !== match.teamBId) {
       return NextResponse.json(
         { message: "Winner must be one of the two teams in this match." },
         { status: 400 }
@@ -36,7 +46,7 @@ export async function PATCH(req: Request, context: RouteContext) {
       data: {
         teamAScore: teamAScore === undefined || teamAScore === null ? null : Number(teamAScore),
         teamBScore: teamBScore === undefined || teamBScore === null ? null : Number(teamBScore),
-        winnerTeamId,
+        winnerTeamId: isDraw ? null : winnerTeamId,
         status: "COMPLETED",
       },
     });

@@ -13,20 +13,24 @@ export type StandingsMatch = {
 export type StandingsTeam = {
   id: string;
   name: string;
+  colour: string;
   groupNumber: number | null;
 };
 
 export type StandingsRow = {
   teamId: string;
   teamName: string;
+  teamColour: string;
   played: number;
   won: number;
+  drawn: number;
   lost: number;
   points: number;
   qualified: boolean;
 };
 
-const POINTS_PER_WIN = 2;
+const POINTS_PER_WIN = 3;
+const POINTS_PER_DRAW = 1;
 
 function seededTiebreak(teamId: string, seed: string): number {
   let hash = 0;
@@ -67,16 +71,21 @@ export function computeGroupStandings(
       const played = groupMatches.filter(
         (m) => m.teamAId === team.id || m.teamBId === team.id
       );
+      // A completed match with no winnerTeamId is a draw, not a bye (byes
+      // never reach COMPLETED — see EventMatch.teamBId's comment).
       const won = played.filter((m) => m.winnerTeamId === team.id).length;
-      const lost = played.length - won;
+      const drawn = played.filter((m) => m.winnerTeamId === null).length;
+      const lost = played.length - won - drawn;
 
       return {
         teamId: team.id,
         teamName: team.name,
+        teamColour: team.colour,
         played: played.length,
         won,
+        drawn,
         lost,
-        points: won * POINTS_PER_WIN,
+        points: won * POINTS_PER_WIN + drawn * POINTS_PER_DRAW,
         qualified: false,
       };
     });
@@ -85,7 +94,8 @@ export function computeGroupStandings(
       if (a.points !== b.points) return b.points - a.points;
 
       // Two teams tied on points who played each other — the head-to-head
-      // result breaks the tie before falling back to anything else.
+      // result breaks the tie before falling back to anything else. A drawn
+      // head-to-head settles nothing, so it falls through too.
       const headToHead = groupMatches.find(
         (m) =>
           (m.teamAId === a.teamId && m.teamBId === b.teamId) ||

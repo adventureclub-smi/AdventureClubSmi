@@ -2,26 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, UserPlus, CheckCircle2, Undo2, ScanLine } from "lucide-react";
+import QRCode from "qrcode";
+import { Trash2, UserPlus, CheckCircle2, Undo2, ScanLine, QrCode, Printer } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import AddEventParticipantModal from "./AddEventParticipantModal";
 import QrScannerModal from "./QrScannerModal";
+import { colourToHex } from "@/lib/team-colours";
 import styles from "./EventOverview.module.scss";
 
 type Registration = {
   id: string;
-  gender: string | null;
-  buddyRequestUserId: string | null;
+  isGuest: boolean;
+  guestName: string | null;
+  guestPhone: string | null;
   teamId: string | null;
   shortCode: string;
   attendanceMarked: boolean;
   attendanceMarkedAt: string | null;
-  user: { id: string; fullName: string; clubId: string };
+  user: { id: string; fullName: string; clubId: string } | null;
 };
+
+function regName(r: Registration) {
+  return r.user?.fullName ?? r.guestName ?? "Guest";
+}
+
+function regIdentifier(r: Registration) {
+  return r.user?.clubId ?? r.guestPhone ?? "—";
+}
 
 type Team = {
   id: string;
   name: string;
+  colour: string;
+  targetSize: number;
   groupNumber: number | null;
 };
 
@@ -41,8 +54,10 @@ type Match = {
 type StandingsRow = {
   teamId: string;
   teamName: string;
+  teamColour: string;
   played: number;
   won: number;
+  drawn: number;
   lost: number;
   points: number;
   qualified: boolean;
@@ -58,6 +73,7 @@ type Overview = {
     eventTeamSize: number | null;
     eventQualifiersCount: number | null;
     eventMatchesPerTeamCap: number | null;
+    eventFormat: string;
     eventTeamsDrawnAt: string | null;
   };
   registrations: Registration[];
@@ -75,26 +91,42 @@ const ROUND_LABELS: Record<string, string> = {
 
 const TABS = [
   { key: "registrations", label: "Registrations" },
-  { key: "draw", label: "Draw Teams" },
+  { key: "teams", label: "Team Allocation" },
   { key: "fixtures", label: "Fixtures & Results" },
   { key: "points", label: "Points Table" },
   { key: "bracket", label: "Knockout Bracket" },
   { key: "checkin", label: "Check-In" },
 ] as const;
 
+function teamOf(teams: Team[], id: string | null) {
+  if (!id) return null;
+  return teams.find((t) => t.id === id) ?? null;
+}
+
 function teamName(teams: Team[], id: string | null) {
-  if (!id) return "—";
-  return teams.find((t) => t.id === id)?.name ?? "Unknown Team";
+  return teamOf(teams, id)?.name ?? (id ? "Unknown Team" : "—");
+}
+
+function TeamLabel({ team }: { team: Team | null }) {
+  if (!team) return <span>—</span>;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <span className={styles.swatch} style={{ background: colourToHex(team.colour) }} />
+      {team.name}
+    </span>
+  );
 }
 
 function ResultForm({
   match,
   teams,
+  allowDraw,
   onSubmit,
 }: {
   match: Match;
   teams: Team[];
-  onSubmit: (winnerTeamId: string, teamAScore: string, teamBScore: string) => void;
+  allowDraw: boolean;
+  onSubmit: (winnerTeamId: string | null, teamAScore: string, teamBScore: string) => void;
 }) {
   const [winner, setWinner] = useState("");
   const [scoreA, setScoreA] = useState("");
@@ -112,12 +144,13 @@ function ResultForm({
         <option value="">Winner...</option>
         <option value={match.teamAId}>{teamName(teams, match.teamAId)}</option>
         <option value={match.teamBId}>{teamName(teams, match.teamBId)}</option>
+        {allowDraw && <option value="DRAW">Draw</option>}
       </select>
       <button
         type="button"
         className={styles.secondaryButton}
         disabled={!winner}
-        onClick={() => onSubmit(winner, scoreA, scoreB)}
+        onClick={() => onSubmit(winner === "DRAW" ? null : winner, scoreA, scoreB)}
       >
         Save
       </button>
@@ -138,6 +171,20 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   const [checkinQuery, setCheckinQuery] = useState("");
   const [checkinResults, setCheckinResults] = useState<Registration[] | null>(null);
   const [checkinSearching, setCheckinSearching] = useState(false);
+
+  // Team setup (pre-lock)
+  const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamColour, setNewTeamColour] = useState("");
+  const [newTeamTarget, setNewTeamTarget] = useState("8");
+  const [assignQuery, setAssignQuery] = useState("");
+  const [assignResults, setAssignResults] = useState<Registration[] | null>(null);
+  const [assignSearching, setAssignSearching] = useState(false);
+  const [locking, setLocking] = useState(false);
+
+  // Registration QR poster
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState("");
+  const [registrationUrl, setRegistrationUrl] = useState("");
 
   async function load() {
     setLoading(true);
@@ -171,27 +218,9 @@ export default function EventOverview({ eventId }: { eventId: string }) {
     };
   }, [eventId]);
 
-  async function handleDraw() {
-    setActing(true);
-    setMessage(null);
-
-    const res = await fetch(`/api/events/${eventId}/draw`, { method: "POST" });
-    const json = await res.json().catch(() => null);
-
-    setActing(false);
-
-    if (!res.ok) {
-      setMessage({ text: json?.message || "Failed to draw teams.", error: true });
-      return;
-    }
-
-    setMessage({ text: json.message });
-    load();
-  }
-
   async function handleRecordResult(
     matchId: string,
-    winnerTeamId: string,
+    winnerTeamId: string | null,
     teamAScore: string,
     teamBScore: string
   ) {
@@ -283,6 +312,135 @@ export default function EventOverview({ eventId }: { eventId: string }) {
     load();
   }
 
+  // ===== Team Allocation (physical chit picking) =====
+
+  useEffect(() => {
+    if (!assignQuery.trim()) {
+      setAssignResults(null);
+      return;
+    }
+
+    let active = true;
+
+    const timeout = setTimeout(async () => {
+      setAssignSearching(true);
+      try {
+        const res = await fetch(
+          `/api/events/${eventId}/checkin?query=${encodeURIComponent(assignQuery)}`
+        );
+        const json = await res.json();
+        if (active) setAssignResults(json.registrations ?? []);
+      } finally {
+        if (active) setAssignSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [assignQuery, eventId]);
+
+  async function handleCreateTeam() {
+    if (!newTeamName.trim() || !newTeamColour.trim()) {
+      setMessage({ text: "Team name and colour are required.", error: true });
+      return;
+    }
+
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/teams`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: newTeamName,
+        colour: newTeamColour,
+        targetSize: newTeamTarget ? Number(newTeamTarget) : 0,
+      }),
+    });
+
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to create team.", error: true });
+      return;
+    }
+
+    setNewTeamName("");
+    setNewTeamColour("");
+    load();
+  }
+
+  async function handleDeleteTeam(teamId: string) {
+    const confirmed = confirm("Delete this team? Only possible if nobody is recorded onto it.");
+    if (!confirmed) return;
+
+    const res = await fetch(`/api/events/${eventId}/teams/${teamId}`, { method: "DELETE" });
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to delete team.", error: true });
+      return;
+    }
+
+    load();
+  }
+
+  async function handleAssign(registrationId: string, teamId: string | null) {
+    const res = await fetch(`/api/events/${eventId}/teams/assign`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ registrationId, teamId }),
+    });
+
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to record allocation.", error: true });
+      return;
+    }
+
+    setAssignResults(
+      (prev) => prev?.map((r) => (r.id === registrationId ? json.registration : r)) ?? null
+    );
+    load();
+  }
+
+  async function handleLockTeams() {
+    const confirmed = confirm(
+      "Lock teams and generate fixtures? No further allocation changes or registrations will be possible after this."
+    );
+    if (!confirmed) return;
+
+    setLocking(true);
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/lock-teams`, { method: "POST" });
+    const json = await res.json().catch(() => null);
+
+    setLocking(false);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to lock teams.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
+
+  async function openQr() {
+    const url = `${window.location.origin}/events/${eventId}`;
+    setRegistrationUrl(url);
+    const dataUrl = await QRCode.toDataURL(url, {
+      width: 280,
+      margin: 2,
+      color: { dark: "#0d0d0d", light: "#ffffff" },
+    });
+    setQrDataUrl(dataUrl);
+    setQrOpen(true);
+  }
+
   async function handleDelete() {
     if (!data) return;
 
@@ -321,6 +479,8 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
   const rounds = Array.from(new Set(knockoutMatches.map((m) => m.round ?? "")));
   const presentCount = registrations.filter((r) => r.attendanceMarked).length;
+  const unassignedCount = registrations.filter((r) => !r.teamId).length;
+  const isLocked = !!event.eventTeamsDrawnAt;
 
   return (
     <div className={styles.container}>
@@ -332,11 +492,34 @@ export default function EventOverview({ eventId }: { eventId: string }) {
           { label: event.title },
         ]}
         quickActions={
-          <button className={styles.deleteButton} disabled={deleting} onClick={handleDelete}>
-            <Trash2 size={15} /> {deleting ? "Deleting..." : "Delete Event"}
-          </button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button className={styles.secondaryButton} onClick={openQr}>
+              <QrCode size={14} /> Registration QR
+            </button>
+            <button className={styles.deleteButton} disabled={deleting} onClick={handleDelete}>
+              <Trash2 size={15} /> {deleting ? "Deleting..." : "Delete Event"}
+            </button>
+          </div>
         }
       />
+
+      {qrOpen && (
+        <div className={styles.modalOverlay} onClick={() => setQrOpen(false)}>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <h3>Scan to Register</h3>
+            {qrDataUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={qrDataUrl} alt="Registration QR code" />
+            )}
+            <p>{registrationUrl}</p>
+            <a href={qrDataUrl} download={`${event.title}-registration-qr.png`}>
+              <button className={styles.primaryButton} style={{ width: "100%" }}>
+                Download
+              </button>
+            </a>
+          </div>
+        </div>
+      )}
 
       <AddEventParticipantModal
         eventId={eventId}
@@ -362,8 +545,10 @@ export default function EventOverview({ eventId }: { eventId: string }) {
           <strong>{teams.length || "—"}</strong>
         </div>
         <div className={styles.kpi}>
-          <span>Players / team</span>
-          <strong>{event.eventTeamSize ?? "—"}</strong>
+          <span>Format</span>
+          <strong style={{ fontSize: 15 }}>
+            {event.eventFormat === "DIRECT_KNOCKOUT" ? "Direct Knockout" : "League + Knockout"}
+          </strong>
         </div>
         <div className={styles.kpi}>
           <span>Qualify for knockout</span>
@@ -391,7 +576,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
       {tab === "registrations" && (
         <>
-          {!event.eventTeamsDrawnAt && (
+          {!isLocked && (
             <button
               className={styles.primaryButton}
               style={{ marginBottom: 16 }}
@@ -406,9 +591,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
               <tr>
                 <th>Code</th>
                 <th>Name</th>
-                <th>Club ID</th>
-                <th>Gender</th>
-                <th>Buddy request</th>
+                <th>Club ID / Phone</th>
                 <th>Team</th>
                 <th>Present</th>
               </tr>
@@ -419,16 +602,13 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                   <td data-label="Code" className={styles.num}>
                     {r.shortCode}
                   </td>
-                  <td data-label="Name">{r.user.fullName}</td>
-                  <td data-label="Club ID">{r.user.clubId}</td>
-                  <td data-label="Gender">{r.gender ?? "—"}</td>
-                  <td data-label="Buddy request">
-                    {r.buddyRequestUserId
-                      ? registrations.find((other) => other.user.id === r.buddyRequestUserId)?.user
-                          .fullName ?? "—"
-                      : "—"}
+                  <td data-label="Name">
+                    {regName(r)} {r.isGuest && <span className={styles.byeTag}>(guest)</span>}
                   </td>
-                  <td data-label="Team">{r.teamId ? teamName(teams, r.teamId) : "—"}</td>
+                  <td data-label="Club ID / Phone">{regIdentifier(r)}</td>
+                  <td data-label="Team">
+                    <TeamLabel team={teamOf(teams, r.teamId)} />
+                  </td>
                   <td data-label="Present">
                     {r.attendanceMarked ? (
                       <span className={styles.qualifiedTag}>Present</span>
@@ -440,7 +620,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
               ))}
               {registrations.length === 0 && (
                 <tr>
-                  <td colSpan={7}>No one has registered yet.</td>
+                  <td colSpan={5}>No one has registered yet.</td>
                 </tr>
               )}
             </tbody>
@@ -448,51 +628,165 @@ export default function EventOverview({ eventId }: { eventId: string }) {
         </>
       )}
 
-      {tab === "draw" && (
+      {tab === "teams" && (
         <div>
           <p>
-            {event.eventTeamsDrawnAt
-              ? `Teams were drawn on ${new Date(event.eventTeamsDrawnAt).toLocaleString()}. Redrawing is only possible if no match has been played yet.`
-              : "Draw teams once registration has closed and the roster is final."}
+            Teams are formed physically — a chit per participant, drawn from a bag. This page
+            only helps print the right number of chits per team and records the result once
+            picked. It never decides anyone&apos;s team.
           </p>
 
-          <button
-            className={styles.primaryButton}
-            disabled={acting}
-            onClick={handleDraw}
-            style={{ margin: "14px 0 24px" }}
-          >
-            {acting ? "Drawing..." : event.eventTeamsDrawnAt ? "Redraw Teams" : "Draw Teams"}
-          </button>
+          {isLocked ? (
+            <>
+              <p style={{ marginTop: 8 }}>
+                Teams were locked on {new Date(event.eventTeamsDrawnAt!).toLocaleString()}.
+              </p>
 
-          {Array.from(new Set(teams.map((t) => t.groupNumber))).map((groupNumber) => (
-            <div key={String(groupNumber)}>
-              {groupNumber !== null && <h3 className={styles.groupLabel}>Group {groupNumber}</h3>}
-              <div className={styles.teamGrid}>
-                {teams
-                  .filter((t) => t.groupNumber === groupNumber)
-                  .map((team) => (
-                    <div key={team.id} className={styles.teamCard}>
-                      <h3>{team.name}</h3>
-                      <ul>
-                        {registrations
-                          .filter((r) => r.teamId === team.id)
-                          .map((r) => (
-                            <li key={r.id}>{r.user.fullName}</li>
-                          ))}
-                      </ul>
-                    </div>
-                  ))}
+              {Array.from(new Set(teams.map((t) => t.groupNumber))).map((groupNumber) => (
+                <div key={String(groupNumber)}>
+                  {groupNumber !== null && <h3 className={styles.groupLabel}>Group {groupNumber}</h3>}
+                  <div className={styles.teamGrid}>
+                    {teams
+                      .filter((t) => t.groupNumber === groupNumber)
+                      .map((team) => (
+                        <div key={team.id} className={styles.teamCard}>
+                          <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span
+                              className={styles.swatch}
+                              style={{ background: colourToHex(team.colour) }}
+                            />
+                            {team.name}
+                          </h3>
+                          <ul>
+                            {registrations
+                              .filter((r) => r.teamId === team.id)
+                              .map((r) => (
+                                <li key={r.id}>{regName(r)}</li>
+                              ))}
+                          </ul>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <a
+                href={`/admin/events/${eventId}/chits`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: "inline-block", marginBottom: 20 }}
+              >
+                <button className={styles.secondaryButton} type="button">
+                  <Printer size={14} /> Print Chits
+                </button>
+              </a>
+
+              <div className={styles.sectionLabel} style={{ marginBottom: 8 }}>
+                1. Create teams
               </div>
-            </div>
-          ))}
+
+              <div className={styles.teamSetupForm}>
+                <input
+                  placeholder="Team name"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                />
+                <input
+                  placeholder="Colour (e.g. Red)"
+                  value={newTeamColour}
+                  onChange={(e) => setNewTeamColour(e.target.value)}
+                />
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Chits to print"
+                  value={newTeamTarget}
+                  onChange={(e) => setNewTeamTarget(e.target.value)}
+                  style={{ width: 120 }}
+                />
+                <button className={styles.primaryButton} onClick={handleCreateTeam}>
+                  Add Team
+                </button>
+              </div>
+
+              {teams.map((team) => {
+                const assignedCount = registrations.filter((r) => r.teamId === team.id).length;
+                return (
+                  <div key={team.id} className={styles.teamSetupCard}>
+                    <span className={styles.swatch} style={{ background: colourToHex(team.colour) }} />
+                    <strong>{team.name}</strong>
+                    <span>
+                      {assignedCount} / {team.targetSize || "?"} assigned
+                    </span>
+                    <button
+                      className={styles.secondaryButton}
+                      disabled={assignedCount > 0}
+                      onClick={() => handleDeleteTeam(team.id)}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                );
+              })}
+
+              <div className={styles.sectionLabel} style={{ margin: "24px 0 8px" }}>
+                2. Record each participant&apos;s chit
+              </div>
+
+              {unassignedCount > 0 && (
+                <p className={styles.unassignedBanner}>
+                  {unassignedCount} registered participant(s) have no recorded team yet.
+                </p>
+              )}
+
+              <input
+                className={styles.checkinSearch}
+                placeholder="Search by code, name or Club ID"
+                value={assignQuery}
+                onChange={(e) => setAssignQuery(e.target.value)}
+              />
+
+              {assignSearching && <p>Searching...</p>}
+
+              {assignResults?.map((r) => (
+                <div key={r.id} className={styles.assignRow}>
+                  <span className={styles.assignName}>
+                    {r.shortCode} · {regName(r)}
+                  </span>
+                  {teams.map((team) => (
+                    <button
+                      key={team.id}
+                      className={`${styles.teamPill} ${r.teamId === team.id ? styles.activePill : ""}`}
+                      disabled={teams.length === 0}
+                      onClick={() => handleAssign(r.id, r.teamId === team.id ? null : team.id)}
+                    >
+                      <span className={styles.swatch} style={{ background: colourToHex(team.colour) }} />
+                      {team.name}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              {assignResults && assignResults.length === 0 && <p>No match.</p>}
+
+              <button
+                className={styles.primaryButton}
+                style={{ marginTop: 24 }}
+                disabled={locking || teams.length < 2 || unassignedCount > 0 || registrations.length === 0}
+                onClick={handleLockTeams}
+              >
+                {locking ? "Locking..." : "Lock Teams & Generate Fixtures"}
+              </button>
+            </>
+          )}
         </div>
       )}
 
       {tab === "fixtures" && (
         <div>
           {groupMatches.length === 0 ? (
-            <p>Draw teams first to generate fixtures.</p>
+            <p>Lock teams first to generate fixtures.</p>
           ) : (
             Array.from(new Set(groupMatches.map((m) => m.groupNumber))).map((groupNumber) => (
               <div key={String(groupNumber)}>
@@ -507,17 +801,19 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                         <span
                           className={match.winnerTeamId === match.teamAId ? styles.winnerName : ""}
                         >
-                          {teamName(teams, match.teamAId)}
+                          <TeamLabel team={teamOf(teams, match.teamAId)} />
                         </span>
                         <span className={styles.vs}>vs</span>
                         <span
                           className={match.winnerTeamId === match.teamBId ? styles.winnerName : ""}
                         >
-                          {teamName(teams, match.teamBId)}
+                          <TeamLabel team={teamOf(teams, match.teamBId)} />
                         </span>
                         {match.status === "COMPLETED" && (
                           <span className={styles.scoreTag}>
-                            {match.teamAScore ?? "–"} – {match.teamBScore ?? "–"}
+                            {match.winnerTeamId === null
+                              ? "Draw"
+                              : `${match.teamAScore ?? "–"} – ${match.teamBScore ?? "–"}`}
                           </span>
                         )}
                       </div>
@@ -526,6 +822,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                         <ResultForm
                           match={match}
                           teams={teams}
+                          allowDraw
                           onSubmit={(winnerTeamId, a, b) =>
                             handleRecordResult(match.id, winnerTeamId, a, b)
                           }
@@ -542,7 +839,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       {tab === "points" && (
         <div>
           {standings.length === 0 ? (
-            <p>Draw teams first to see the points table.</p>
+            <p>Lock teams first to see the points table.</p>
           ) : (
             standings.map((group) => (
               <div key={String(group.groupNumber)}>
@@ -555,6 +852,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                       <th>Team</th>
                       <th>Played</th>
                       <th>Won</th>
+                      <th>Drawn</th>
                       <th>Lost</th>
                       <th>Points</th>
                     </tr>
@@ -563,6 +861,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                     {group.rows.map((row) => (
                       <tr key={row.teamId}>
                         <td data-label="Team">
+                          <span className={styles.swatch} style={{ background: colourToHex(row.teamColour) }} />{" "}
                           {row.teamName}
                           {row.qualified && <span className={styles.qualifiedTag}>Qualified</span>}
                         </td>
@@ -571,6 +870,9 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                         </td>
                         <td className={styles.num} data-label="Won">
                           {row.won}
+                        </td>
+                        <td className={styles.num} data-label="Drawn">
+                          {row.drawn}
                         </td>
                         <td className={styles.num} data-label="Lost">
                           {row.lost}
@@ -592,24 +894,35 @@ export default function EventOverview({ eventId }: { eventId: string }) {
         <div>
           <p>
             {knockoutMatches.length === 0
-              ? groupStageComplete
+              ? event.eventFormat === "DIRECT_KNOCKOUT"
+                ? "Lock teams to generate the knockout bracket directly."
+                : groupStageComplete
                 ? "Group stage is complete — generate the knockout bracket."
                 : "Finish every group-stage match before generating the bracket."
               : "Click Advance once every match in the current round is complete."}
           </p>
 
-          <button
-            className={styles.primaryButton}
-            disabled={acting || (knockoutMatches.length === 0 && !groupStageComplete)}
-            onClick={handleAdvanceBracket}
-            style={{ margin: "14px 0 28px" }}
-          >
-            {acting
-              ? "Working..."
-              : knockoutMatches.length === 0
-              ? "Generate Bracket"
-              : "Advance Bracket"}
-          </button>
+          {knockoutMatches.length === 0 && event.eventFormat === "LEAGUE_KNOCKOUT" && (
+            <button
+              className={styles.primaryButton}
+              disabled={acting || !groupStageComplete}
+              onClick={handleAdvanceBracket}
+              style={{ margin: "14px 0 28px" }}
+            >
+              {acting ? "Working..." : "Generate Bracket"}
+            </button>
+          )}
+
+          {knockoutMatches.length > 0 && (
+            <button
+              className={styles.primaryButton}
+              disabled={acting}
+              onClick={handleAdvanceBracket}
+              style={{ margin: "14px 0 28px" }}
+            >
+              {acting ? "Working..." : "Advance Bracket"}
+            </button>
+          )}
 
           {rounds.length > 0 && (
             <div className={styles.bracket}>
@@ -625,7 +938,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                             match.winnerTeamId === match.teamAId ? styles.winner : ""
                           }`}
                         >
-                          <span>{teamName(teams, match.teamAId)}</span>
+                          <TeamLabel team={teamOf(teams, match.teamAId)} />
                           {match.status === "COMPLETED" && match.teamBId && (
                             <span>{match.teamAScore ?? ""}</span>
                           )}
@@ -637,7 +950,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                               match.winnerTeamId === match.teamBId ? styles.winner : ""
                             }`}
                           >
-                            <span>{teamName(teams, match.teamBId)}</span>
+                            <TeamLabel team={teamOf(teams, match.teamBId)} />
                             {match.status === "COMPLETED" && <span>{match.teamBScore ?? ""}</span>}
                           </div>
                         ) : (
@@ -649,6 +962,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                             <ResultForm
                               match={match}
                               teams={teams}
+                              allowDraw={false}
                               onSubmit={(winnerTeamId, a, b) =>
                                 handleRecordResult(match.id, winnerTeamId, a, b)
                               }
@@ -695,7 +1009,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                 <tr>
                   <th>Code</th>
                   <th>Name</th>
-                  <th>Club ID</th>
+                  <th>Club ID / Phone</th>
                   <th>Team</th>
                   <th></th>
                 </tr>
@@ -706,9 +1020,11 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                     <td className={styles.num} data-label="Code">
                       {r.shortCode}
                     </td>
-                    <td data-label="Name">{r.user.fullName}</td>
-                    <td data-label="Club ID">{r.user.clubId}</td>
-                    <td data-label="Team">{r.teamId ? teamName(teams, r.teamId) : "—"}</td>
+                    <td data-label="Name">{regName(r)}</td>
+                    <td data-label="Club ID / Phone">{regIdentifier(r)}</td>
+                    <td data-label="Team">
+                      <TeamLabel team={teamOf(teams, r.teamId)} />
+                    </td>
                     <td data-label="">
                       {r.attendanceMarked ? (
                         <button

@@ -185,3 +185,23 @@
   font-weight: 700;
   color: var(--color-accent);
 }
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 245, 245, 0.25);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.guestToggle {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 8px;
+}

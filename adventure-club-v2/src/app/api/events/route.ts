@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       teamSize,
       qualifiersCount,
       matchesPerTeamCap,
-      balanceGender,
+      eventFormat,
       registrationOpensAt,
       registrationClosesAt,
       isTest,
@@ -39,17 +39,17 @@ export async function POST(req: Request) {
     const teamSizeNum = Number(teamSize);
     const qualifiersCountNum = Number(qualifiersCount);
     const matchesPerTeamCapNum = Number(matchesPerTeamCap);
+    const format = eventFormat === "DIRECT_KNOCKOUT" ? "DIRECT_KNOCKOUT" : "LEAGUE_KNOCKOUT";
 
+    // Qualifier count / match cap only drive the group stage, which a
+    // Direct Knockout event skips entirely.
     if (
       !title ||
       !venue ||
       !date ||
       !description ||
-      !teamSizeNum ||
-      teamSizeNum < 2 ||
-      ![4, 6].includes(qualifiersCountNum) ||
-      !matchesPerTeamCapNum ||
-      matchesPerTeamCapNum < 2
+      (format === "LEAGUE_KNOCKOUT" &&
+        (![4, 6].includes(qualifiersCountNum) || !matchesPerTeamCapNum || matchesPerTeamCapNum < 2))
     ) {
       return NextResponse.json(
         { message: "Please fill all fields." },
@@ -89,10 +89,10 @@ export async function POST(req: Request) {
         description,
         coverImage: coverImage || null,
 
-        eventTeamSize: teamSizeNum,
-        eventQualifiersCount: qualifiersCountNum,
-        eventMatchesPerTeamCap: matchesPerTeamCapNum,
-        eventBalanceGender: balanceGender !== false,
+        eventTeamSize: teamSizeNum || null,
+        eventQualifiersCount: format === "LEAGUE_KNOCKOUT" ? qualifiersCountNum : null,
+        eventMatchesPerTeamCap: format === "LEAGUE_KNOCKOUT" ? matchesPerTeamCapNum : null,
+        eventFormat: format,
 
         registrationOpensAt: parseIstDateTimeLocal(registrationOpensAt),
         registrationClosesAt: parseIstDateTimeLocal(registrationClosesAt),

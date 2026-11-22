@@ -28,6 +28,7 @@ export async function GET() {
       date: r.trek.date,
       shortCode: r.shortCode,
       teamName: r.team?.name ?? null,
+      teamColour: r.team?.colour ?? null,
       teamsDrawnAt: r.trek.eventTeamsDrawnAt,
       attendanceMarked: r.attendanceMarked,
     }));

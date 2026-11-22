@@ -9,7 +9,9 @@ type Registration = {
   id: string;
   shortCode: string;
   attendanceMarked: boolean;
-  user: { fullName: string; clubId: string };
+  user: { fullName: string; clubId: string } | null;
+  guestName: string | null;
+  guestPhone: string | null;
 };
 
 type Props = {
@@ -182,8 +184,8 @@ export default function QrScannerModal({ eventId, open, onClose, onMarked }: Pro
         {found && (
           <div className={styles.result}>
             <span className={styles.resultCode}>{found.shortCode}</span>
-            <h3>{found.user.fullName}</h3>
-            <p className={styles.resultClubId}>{found.user.clubId}</p>
+            <h3>{found.user?.fullName ?? found.guestName ?? "Guest"}</h3>
+            <p className={styles.resultClubId}>{found.user?.clubId ?? found.guestPhone ?? ""}</p>
 
             {found.attendanceMarked || justMarked ? (
               <p className={styles.markedTag}>

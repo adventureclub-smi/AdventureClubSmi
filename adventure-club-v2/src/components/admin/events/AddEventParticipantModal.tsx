@@ -27,6 +27,11 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState("");
+  const [guestMode, setGuestMode] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestCollege, setGuestCollege] = useState("");
+  const [addingGuest, setAddingGuest] = useState(false);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -87,6 +92,47 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
     setAdding("");
   }
 
+  async function addGuest() {
+    if (!guestName.trim() || !guestPhone.trim()) {
+      alert("Name and phone are required.");
+      return;
+    }
+
+    setAddingGuest(true);
+
+    try {
+      const res = await fetch(`/api/events/${eventId}/registrations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          guest: { name: guestName, phone: guestPhone, college: guestCollege || undefined },
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        setAddingGuest(false);
+        return;
+      }
+
+      alert("Guest added successfully!");
+
+      onAdded();
+      onClose();
+      setGuestName("");
+      setGuestPhone("");
+      setGuestCollege("");
+      setGuestMode(false);
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+    }
+
+    setAddingGuest(false);
+  }
+
   if (!open) return null;
 
   return (
@@ -97,37 +143,82 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
           <button onClick={onClose}>✕</button>
         </div>
 
-        <input
-          className={styles.search}
-          placeholder="Search by Name / Club ID / Phone"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-
-        {loading && <p className={styles.message}>Searching...</p>}
-
-        {!loading && members.length === 0 && query && (
-          <p className={styles.message}>No members found.</p>
-        )}
-
-        <div className={styles.results}>
-          {members.map((member) => (
-            <div key={member.id} className={styles.member}>
-              <div>
-                <h3>{member.fullName}</h3>
-                <p>{member.clubId}</p>
-                <p>
-                  {member.institution} • {member.department}
-                </p>
-                <p>{member.phoneNumber}</p>
-              </div>
-
-              <button disabled={adding === member.id} onClick={() => addMember(member.id)}>
-                {adding === member.id ? "Adding..." : "Add"}
-              </button>
-            </div>
-          ))}
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={() => setGuestMode(false)}
+            style={{ fontWeight: guestMode ? 400 : 700 }}
+          >
+            Club member
+          </button>
+          <button
+            type="button"
+            onClick={() => setGuestMode(true)}
+            style={{ fontWeight: guestMode ? 700 : 400 }}
+          >
+            Guest (no club account)
+          </button>
         </div>
+
+        {guestMode ? (
+          <div className={styles.results} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <input
+              className={styles.search}
+              placeholder="Full name"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+            />
+            <input
+              className={styles.search}
+              placeholder="Phone number"
+              value={guestPhone}
+              onChange={(e) => setGuestPhone(e.target.value)}
+            />
+            <input
+              className={styles.search}
+              placeholder="College / organisation (optional)"
+              value={guestCollege}
+              onChange={(e) => setGuestCollege(e.target.value)}
+            />
+            <button disabled={addingGuest} onClick={addGuest}>
+              {addingGuest ? "Adding..." : "Add Guest"}
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              className={styles.search}
+              placeholder="Search by Name / Club ID / Phone"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+
+            {loading && <p className={styles.message}>Searching...</p>}
+
+            {!loading && members.length === 0 && query && (
+              <p className={styles.message}>No members found.</p>
+            )}
+
+            <div className={styles.results}>
+              {members.map((member) => (
+                <div key={member.id} className={styles.member}>
+                  <div>
+                    <h3>{member.fullName}</h3>
+                    <p>{member.clubId}</p>
+                    <p>
+                      {member.institution} • {member.department}
+                    </p>
+                    <p>{member.phoneNumber}</p>
+                  </div>
+
+                  <button disabled={adding === member.id} onClick={() => addMember(member.id)}>
+                    {adding === member.id ? "Adding..." : "Add"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

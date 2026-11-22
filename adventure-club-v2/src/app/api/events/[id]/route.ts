@@ -69,18 +69,28 @@ export async function PUT(req: Request, context: RouteContext) {
       teamSize,
       qualifiersCount,
       matchesPerTeamCap,
-      balanceGender,
+      eventFormat,
       registrationOpensAt,
       registrationClosesAt,
       isTest,
       testVisibleToUserIds,
     } = body;
 
+    const format = eventFormat === "DIRECT_KNOCKOUT" ? "DIRECT_KNOCKOUT" : "LEAGUE_KNOCKOUT";
     const qualifiersCountNum = Number(qualifiersCount);
 
-    if (![4, 6].includes(qualifiersCountNum)) {
+    if (format === "LEAGUE_KNOCKOUT" && ![4, 6].includes(qualifiersCountNum)) {
       return NextResponse.json(
         { message: "Qualifier count must be 4 or 6." },
+        { status: 400 }
+      );
+    }
+
+    // Format can only still be changed before teams are locked — after
+    // that, fixtures already exist for whichever format was used.
+    if (existing.eventTeamsDrawnAt && format !== existing.eventFormat) {
+      return NextResponse.json(
+        { message: "Can't change tournament format once teams are locked." },
         { status: 400 }
       );
     }
@@ -95,10 +105,10 @@ export async function PUT(req: Request, context: RouteContext) {
         coverImage: coverImage || null,
         seats: maxParticipants ? Number(maxParticipants) : 99999,
 
-        eventTeamSize: Number(teamSize),
-        eventQualifiersCount: qualifiersCountNum,
-        eventMatchesPerTeamCap: Number(matchesPerTeamCap),
-        eventBalanceGender: balanceGender !== false,
+        eventTeamSize: teamSize ? Number(teamSize) : null,
+        eventQualifiersCount: format === "LEAGUE_KNOCKOUT" ? qualifiersCountNum : null,
+        eventMatchesPerTeamCap: format === "LEAGUE_KNOCKOUT" ? Number(matchesPerTeamCap) : null,
+        eventFormat: format,
 
         registrationOpensAt: parseIstDateTimeLocal(registrationOpensAt),
         registrationClosesAt: parseIstDateTimeLocal(registrationClosesAt),

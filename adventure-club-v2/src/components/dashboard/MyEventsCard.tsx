@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import { colourToHex } from "@/lib/team-colours";
 import styles from "./MyEventsCard.module.scss";
 
 type EventEntry = {
@@ -12,6 +13,7 @@ type EventEntry = {
   date: string;
   shortCode: string;
   teamName: string | null;
+  teamColour: string | null;
   teamsDrawnAt: string | null;
   attendanceMarked: boolean;
 };
@@ -60,7 +62,22 @@ export default function MyEventsCard() {
               <p>
                 {event.destination} · {new Date(event.date).toLocaleDateString()}
               </p>
-              {event.teamName && <p>Team: {event.teamName}</p>}
+              {event.teamName && (
+                <p>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: 9,
+                      height: 9,
+                      borderRadius: "50%",
+                      background: colourToHex(event.teamColour ?? ""),
+                      marginRight: 6,
+                      verticalAlign: "middle",
+                    }}
+                  />
+                  Team: {event.teamName}
+                </p>
+              )}
               {event.attendanceMarked && (
                 <span className={styles.presentTag}>
                   <CheckCircle2 size={13} /> Checked in

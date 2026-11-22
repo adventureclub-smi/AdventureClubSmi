@@ -395,31 +395,41 @@ model Trek {
   // =========================
   // Only meaningful when type is "EVENT" — same placeholder-field convention
   // as WORKSHOP above. An on-campus team event: students register
-  // individually (or as a buddy pair), teams are drawn at random once
-  // registration closes, and a small-group round robin feeds a knockout
-  // bracket. See src/lib/event-draw.ts and src/lib/event-bracket.ts.
+  // individually (no buddy/group sign-up — teams are never decided by this
+  // site). Teams are formed physically on the day via chit picking from a
+  // bag; the admin only records the allocation each participant ends up
+  // with. See src/lib/event-groups.ts and src/lib/event-bracket.ts.
 
+  // Target players per team, used to plan how many chits to print per team
+  // — not an automatic allocation input. Actual team sizes are whatever the
+  // admin sets up on the day based on final attendance.
   eventTeamSize Int?
 
   // How many teams advance from the group stage into the knockout bracket —
-  // 4 or 6, admin's choice per event.
+  // 4 or 6, admin's choice per event. Only meaningful for eventFormat
+  // "LEAGUE_KNOCKOUT".
   eventQualifiersCount Int?
 
   // Caps how many group-stage matches each team plays. Teams are split into
   // balanced groups sized (eventMatchesPerTeamCap + 1) so a full round robin
   // within a group never exceeds this cap — instead of one giant round robin
-  // where, say, 8 teams would mean 7 matches each.
+  // where, say, 8 teams would mean 7 matches each. Only meaningful for
+  // eventFormat "LEAGUE_KNOCKOUT".
   eventMatchesPerTeamCap Int?
 
-  // Whether the random draw stratifies by registered gender so every team
-  // gets a proportional mix automatically, instead of leaving the mix
-  // entirely to chance.
-  eventBalanceGender Boolean @default(true)
+  // "LEAGUE_KNOCKOUT" (group stage feeding a seeded knockout bracket) or
+  // "DIRECT_KNOCKOUT" (teams go straight into a knockout bracket, no group
+  // stage) — chosen by organisers once attendance/team count is known, so
+  // it stays editable right up until teams are locked.
+  eventFormat String @default("LEAGUE_KNOCKOUT")
 
+  // Set once the admin locks team allocation (after recording every
+  // participant's physically-drawn team) — fixtures get generated at that
+  // point and no further team assignment or registration is allowed.
   eventTeamsDrawnAt DateTime?
 
-  // The RNG seed used for the draw, logged so the result is reproducible/
-  // auditable rather than just "trust me".
+  // A seed logged at lock time, used only for reproducible/auditable
+  // points-table tiebreaks — never for deciding team membership.
   eventDrawSeed String?
 
   eventRegistrations EventRegistration[]
@@ -440,19 +450,18 @@ model EventRegistration {
   trekId String @db.ObjectId
   trek   Trek   @relation(fields: [trekId], references: [id])
 
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
+  // Null for a guest registration (see below) — a logged-in club member's
+  // sign-up always has this set.
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
 
-  // Captured here, specifically for this event's team-balancing, rather
-  // than on User itself — optional, scoped to this one sign-up, never shown
-  // anywhere else. "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY".
-  gender String?
-
-  // Mutual buddy-pair request — if two students each name the other, they're
-  // dealt into the same team as a unit at draw time; a one-sided request is
-  // simply ignored. Stored as a plain id (not a relation), same convention
-  // as Registration.approvedBy above.
-  buddyRequestUserId String?
+  // Guest registration — for attendees without a club account (other
+  // colleges, walk-ins). Collected directly on the form instead of resolving
+  // a User. Only meaningful when userId is null.
+  isGuest Boolean @default(false)
+  guestName String?
+  guestPhone String?
+  guestCollege String?
 
   teamId String?    @db.ObjectId
   team   EventTeam? @relation(fields: [teamId], references: [id])
@@ -478,7 +487,11 @@ model EventRegistration {
 
   createdAt DateTime @default(now())
 
-  @@unique([trekId, userId])
+  // Not a DB-level unique constraint on [trekId, userId] — userId is null
+  // for every guest registration, and a unique index would treat all of
+  // those nulls as duplicates. "One registration per logged-in user per
+  // event" is instead checked in the register API before creating.
+  @@index([trekId, userId])
   @@unique([trekId, shortCode])
 }
 
@@ -489,6 +502,15 @@ model EventTeam {
   trek   Trek   @relation(fields: [trekId], references: [id])
 
   name String
+
+  // Wristband/chit colour, e.g. "Red", "Blue" — set by the admin when the
+  // team is created, shown as a swatch everywhere the team appears.
+  colour String
+
+  // How many chits to print for this team — set by the admin once final
+  // attendance is known, purely to plan printing; never used to decide who
+  // goes where.
+  targetSize Int @default(0)
 
   // Which group this team was placed in for the group stage — only matters
   // once there's more than one group (see Trek.eventMatchesPerTeamCap); null

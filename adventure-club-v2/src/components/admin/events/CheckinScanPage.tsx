@@ -9,7 +9,9 @@ type Registration = {
   id: string;
   shortCode: string;
   attendanceMarked: boolean;
-  user: { fullName: string; clubId: string };
+  user: { fullName: string; clubId: string } | null;
+  guestName: string | null;
+  guestPhone: string | null;
 };
 
 // What a scanned QR code actually opens — a phone's own camera app reads
@@ -87,8 +89,8 @@ export default function CheckinScanPage({ eventId, code }: { eventId: string; co
   return (
     <div className={styles.container}>
       <span className={styles.code}>{registration.shortCode}</span>
-      <h1>{registration.user.fullName}</h1>
-      <p className={styles.clubId}>{registration.user.clubId}</p>
+      <h1>{registration.user?.fullName ?? registration.guestName ?? "Guest"}</h1>
+      <p className={styles.clubId}>{registration.user?.clubId ?? registration.guestPhone ?? ""}</p>
 
       {registration.attendanceMarked ? (
         <>

@@ -8,31 +8,16 @@ import { createEventRegistrationWithCode } from "@/lib/event-registration-code";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-const VALID_GENDERS = ["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"];
-
+// Registration is always individual — no buddy/group sign-up, teams are
+// never decided here (see Trek's Campus Events schema comment). Two paths:
+// a logged-in club member registering themselves, or a guest (no club
+// account — a walk-in, someone from another college, or anyone scanning the
+// event's QR who isn't logged in) registering with just their name/phone.
 export async function POST(req: Request, context: RouteContext) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-
-    if (!token) {
-      return NextResponse.json({ message: "Please login first." }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-
-    if (!payload) {
-      return NextResponse.json({ message: "Invalid session." }, { status: 401 });
-    }
-
     const { id: eventId } = await context.params;
-    const { gender, buddyClubId } = await req.json();
-
-    const user = await prisma.user.findUnique({ where: { id: payload.id } });
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found." }, { status: 404 });
-    }
+    const body = await req.json().catch(() => ({}));
+    const guest = body?.guest;
 
     const event = await prisma.trek.findUnique({ where: { id: eventId } });
 
@@ -40,7 +25,19 @@ export async function POST(req: Request, context: RouteContext) {
       return NextResponse.json({ message: "Event not found." }, { status: 404 });
     }
 
-    const registrationState = registrationStateForViewer(event, isCoreTeamRole(user.clubRole));
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    const payload = token ? verifyToken(token) : null;
+    const user = payload ? await prisma.user.findUnique({ where: { id: payload.id } }) : null;
+
+    if (!guest && !user) {
+      return NextResponse.json({ message: "Please login first." }, { status: 401 });
+    }
+
+    const registrationState = registrationStateForViewer(
+      event,
+      !!user && isCoreTeamRole(user.clubRole)
+    );
 
     if (registrationState !== "OPEN") {
       return NextResponse.json(
@@ -56,17 +53,9 @@ export async function POST(req: Request, context: RouteContext) {
 
     if (event.eventTeamsDrawnAt) {
       return NextResponse.json(
-        { message: "Teams have already been drawn for this event." },
+        { message: "Team allocation has already started for this event." },
         { status: 400 }
       );
-    }
-
-    const existing = await prisma.eventRegistration.findFirst({
-      where: { trekId: eventId, userId: user.id },
-    });
-
-    if (existing) {
-      return NextResponse.json({ message: "Already registered." }, { status: 400 });
     }
 
     const registeredCount = await prisma.eventRegistration.count({ where: { trekId: eventId } });
@@ -78,37 +67,36 @@ export async function POST(req: Request, context: RouteContext) {
       );
     }
 
-    if (gender && !VALID_GENDERS.includes(gender)) {
-      return NextResponse.json({ message: "Invalid gender value." }, { status: 400 });
+    if (guest) {
+      const guestName = String(guest.name || "").trim();
+      const guestPhone = String(guest.phone || "").trim();
+
+      if (!guestName || !guestPhone) {
+        return NextResponse.json({ message: "Name and phone are required." }, { status: 400 });
+      }
+
+      const registration = await createEventRegistrationWithCode({
+        trekId: eventId,
+        isGuest: true,
+        guestName,
+        guestPhone,
+        guestCollege: guest.college ? String(guest.college).trim() : null,
+      });
+
+      return NextResponse.json({ message: "Registration successful!", registration });
     }
 
-    let buddyRequestUserId: string | null = null;
+    const existing = await prisma.eventRegistration.findFirst({
+      where: { trekId: eventId, userId: user!.id },
+    });
 
-    if (buddyClubId) {
-      const buddy = await prisma.user.findUnique({ where: { clubId: buddyClubId } });
-
-      if (!buddy) {
-        return NextResponse.json(
-          { message: "No student found with that Club ID." },
-          { status: 400 }
-        );
-      }
-
-      if (buddy.id === user.id) {
-        return NextResponse.json(
-          { message: "You can't buddy-pair with yourself." },
-          { status: 400 }
-        );
-      }
-
-      buddyRequestUserId = buddy.id;
+    if (existing) {
+      return NextResponse.json({ message: "Already registered." }, { status: 400 });
     }
 
     const registration = await createEventRegistrationWithCode({
       trekId: eventId,
-      userId: user.id,
-      gender: gender || null,
-      buddyRequestUserId,
+      userId: user!.id,
     });
 
     return NextResponse.json({ message: "Registration successful!", registration });
