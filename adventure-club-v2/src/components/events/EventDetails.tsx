@@ -13,6 +13,66 @@ import { registrationStateFor } from "@/lib/registration-journey";
 import { colourToHex } from "@/lib/team-colours";
 import styles from "./EventDetails.module.scss";
 
+// The description is one plain-text field the admin types into a textarea —
+// this lets lines starting with "- " or "1. " render as real bullet/numbered
+// lists instead of flat paragraphs, without needing a rich-text editor.
+// Blocks are separated by a blank line; consecutive blocks of the same list
+// type merge into one list.
+function renderDescription(text: string) {
+  const blocks = text
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+  let key = 0;
+
+  while (i < blocks.length) {
+    const bulletMatch = blocks[i].match(/^[-•]\s+([\s\S]*)/);
+    const numberMatch = blocks[i].match(/^(\d+)\.\s+([\s\S]*)/);
+
+    if (bulletMatch) {
+      const items: string[] = [];
+      while (i < blocks.length) {
+        const m = blocks[i].match(/^[-•]\s+([\s\S]*)/);
+        if (!m) break;
+        items.push(m[1]);
+        i++;
+      }
+      elements.push(
+        <ul key={key++} className={styles.list}>
+          {items.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
+        </ul>
+      );
+    } else if (numberMatch) {
+      const items: { value: number; text: string }[] = [];
+      while (i < blocks.length) {
+        const m = blocks[i].match(/^(\d+)\.\s+([\s\S]*)/);
+        if (!m) break;
+        items.push({ value: Number(m[1]), text: m[2] });
+        i++;
+      }
+      elements.push(
+        <ol key={key++} className={styles.list}>
+          {items.map((item, idx) => (
+            <li key={idx} value={item.value}>
+              {item.text}
+            </li>
+          ))}
+        </ol>
+      );
+    } else {
+      elements.push(<p key={key++}>{blocks[i]}</p>);
+      i++;
+    }
+  }
+
+  return elements;
+}
+
 type Team = { id: string; name: string; colour: string; groupNumber: number | null };
 
 type Match = {
@@ -275,7 +335,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
           viewport={{ once: true }}
         >
           <h2>About This Event</h2>
-          <p>{event.description}</p>
+          {renderDescription(event.description)}
         </motion.div>
 
         <motion.div
