@@ -2,7 +2,9 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Rocket, Trash2 } from "lucide-react";
+import Image from "next/image";
+import QRCode from "qrcode";
+import { Plus, Pencil, Rocket, Trash2, MapPin, CalendarDays, Users, Trophy, QrCode } from "lucide-react";
 
 import PageHeader from "@/components/admin/shared/PageHeader";
 import CopyLinkButton from "@/components/admin/shared/CopyLinkButton";
@@ -14,6 +16,8 @@ type EventRow = {
   destination: string;
   date: string;
   seats: number;
+  description: string;
+  coverImage?: string | null;
   eventTeamSize: number | null;
   eventQualifiersCount: number | null;
   eventTeamsDrawnAt: string | null;
@@ -34,6 +38,7 @@ export default function EventsTable() {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [generatingQrId, setGeneratingQrId] = useState<string | null>(null);
 
   async function fetchEvents() {
     setLoading(true);
@@ -87,7 +92,12 @@ export default function EventsTable() {
     [events, filter]
   );
 
-  async function handleGoLive(id: string) {
+  async function handleGoLive(id: string, title: string) {
+    const confirmGoLive = confirm(
+      `Make "${title}" live? Every member gets the "New Trek/Workshop Announced" email immediately — only do this once registration details are ready.`
+    );
+    if (!confirmGoLive) return;
+
     setStatus("");
     const res = await fetch("/api/admin/treks/go-live", {
       method: "POST",
@@ -102,6 +112,31 @@ export default function EventsTable() {
     }
 
     fetchEvents();
+  }
+
+  async function downloadQr(id: string, title: string) {
+    setGeneratingQrId(id);
+
+    try {
+      const url = `${window.location.origin}/events/${id}`;
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 800,
+        margin: 2,
+        color: { dark: "#0d0d0d", light: "#ffffff" },
+      });
+
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `navira-${slug || "event"}-qr.png`;
+      link.click();
+    } finally {
+      setGeneratingQrId(null);
+    }
   }
 
   async function handleDelete(event: EventRow) {
@@ -162,75 +197,99 @@ export default function EventsTable() {
           className={`${styles.filterCard} ${filter === "drawn" ? styles.active : ""}`}
           onClick={() => setFilter("drawn")}
         >
-          <span>Teams drawn</span>
+          <span>Teams locked</span>
           <strong>{counts.drawn}</strong>
         </button>
       </div>
 
       {loading ? (
-        <p className={styles.empty}>Loading events...</p>
+        <p className={styles.hint}>Loading events...</p>
       ) : visible.length === 0 ? (
-        <p className={styles.empty}>No campus events in this view.</p>
+        <div className={styles.empty}>No campus events in this view.</div>
       ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Event</th>
-              <th>Venue</th>
-              <th>Date</th>
-              <th>Teams</th>
-              <th>Qualify</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((event) => (
-              <tr key={event.id}>
-                <td>
-                  <div className={styles.titleCell}>
-                    <strong>{event.title}</strong>
-                    {event.isDraft && <span className={`${styles.pill} ${styles.pillDraft}`}>Draft</span>}
-                    {event.isTest && <span className={`${styles.pill} ${styles.pillTest}`}>Test</span>}
-                    {event.eventTeamsDrawnAt && (
-                      <span className={`${styles.pill} ${styles.pillDrawn}`}>Drawn</span>
-                    )}
-                  </div>
-                </td>
-                <td className={styles.meta} data-label="Venue">{event.destination}</td>
-                <td className={styles.meta} data-label="Date">
-                  {new Date(event.date).toLocaleDateString()}
-                </td>
-                <td className={styles.meta} data-label="Teams">
-                  {event.eventTeamSize ? `${event.eventTeamSize} / team` : "—"}
-                </td>
-                <td className={styles.meta} data-label="Qualify">
-                  {event.eventQualifiersCount ? `Top ${event.eventQualifiersCount}` : "—"}
-                </td>
-                <td data-label="">
-                  <div className={styles.rowActions}>
-                    <Link href={`/admin/events/${event.id}`}>Manage</Link>
-                    <Link href={`/admin/edit-event/${event.id}`}>
-                      <Pencil size={13} />
-                    </Link>
-                    <CopyLinkButton path={`/events/${event.id}`} iconOnly />
-                    {event.isDraft && (
-                      <button type="button" onClick={() => handleGoLive(event.id)}>
-                        <Rocket size={13} /> Go Live
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className={styles.deleteButton}
-                      onClick={() => handleDelete(event)}
-                    >
-                      <Trash2 size={13} />
+        <div className={styles.grid}>
+          {visible.map((event) => (
+            <div key={event.id} className={styles.card}>
+              <div className={styles.imageWrap}>
+                <Image
+                  src={event.coverImage || "/images/default-trek.jpg"}
+                  alt={event.title}
+                  fill
+                  sizes="(max-width: 700px) 100vw, 340px"
+                  className={styles.image}
+                />
+
+                {event.eventTeamsDrawnAt && (
+                  <span className={styles.archivedBadge}>Teams Locked</span>
+                )}
+
+                {event.isTest && <span className={styles.testBadge}>TEST</span>}
+
+                {event.isDraft && <span className={styles.draftBadge}>DRAFT</span>}
+              </div>
+
+              <div className={styles.content}>
+                <h2>{event.title}</h2>
+
+                <div className={styles.info}>
+                  <span>
+                    <MapPin size={13} /> {event.destination}
+                  </span>
+                  <span>
+                    <CalendarDays size={13} /> {new Date(event.date).toLocaleDateString()}
+                  </span>
+                  <span>
+                    <Users size={13} /> {event.eventTeamSize ? `${event.eventTeamSize} / team` : `${event.seats} Seats`}
+                  </span>
+                  {event.eventQualifiersCount && (
+                    <span>
+                      <Trophy size={13} /> Top {event.eventQualifiersCount}
+                    </span>
+                  )}
+                </div>
+
+                <p className={styles.description}>{event.description}</p>
+
+                <div className={styles.buttons}>
+                  {event.isDraft && (
+                    <button className={styles.goLive} onClick={() => handleGoLive(event.id, event.title)}>
+                      <Rocket size={14} /> Go Live
                     </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  )}
+
+                  <Link href={`/admin/events/${event.id}`} className={styles.manage}>
+                    Manage Event
+                  </Link>
+
+                  <Link href={`/admin/edit-event/${event.id}`} className={styles.edit}>
+                    <Pencil size={14} />
+                  </Link>
+
+                  <CopyLinkButton
+                    path={`/events/${event.id}`}
+                    label={`Copy link to ${event.title}`}
+                    iconOnly
+                    className={styles.copy}
+                  />
+
+                  <button
+                    className={styles.copy}
+                    title={`Download QR code for ${event.title}`}
+                    aria-label={`Download QR code for ${event.title}`}
+                    disabled={generatingQrId === event.id}
+                    onClick={() => downloadQr(event.id, event.title)}
+                  >
+                    <QrCode size={14} />
+                  </button>
+
+                  <button className={styles.delete} onClick={() => handleDelete(event)}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -248,12 +248,13 @@ export async function GET(req: NextRequest) {
     // treks by default, the same as before this field existed.
     const treks = await prisma.trek.findMany({
       where: {
-        // This route only ever handled plain treks before Workshops and
-        // Campus Events were split into their own type:"WORKSHOP" /
-        // type:"EVENT" rows on the same shared Trek model — never updated
-        // to exclude them, so a Campus Event like Tug of War was leaking
-        // into both the admin Treks list and the public treks/homepage.
-        type: "TREK",
+        // This route backs both the admin Treks list/public treks page
+        // (TreksTable mode="treks") and the admin Workshops list
+        // (TreksTable mode="workshops") — both fetch from here and split
+        // the result client-side by type, so WORKSHOP rows must stay. Only
+        // EVENT was ever the leak: a Campus Event like Tug of War showing
+        // up in both of those trek/workshop surfaces.
+        type: { not: "EVENT" },
         ...(season ? { isHistorical: true, season } : { isHistorical: false }),
         // See the comment on the same filter in src/data/treks.ts — every
         // form of this filter requires the field to actually be stored on
