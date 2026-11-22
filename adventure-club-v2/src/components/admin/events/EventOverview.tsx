@@ -15,11 +15,21 @@ type Registration = {
   isGuest: boolean;
   guestName: string | null;
   guestPhone: string | null;
+  guestRollNo: string | null;
+  guestDepartment: string | null;
+  guestYear: string | null;
   teamId: string | null;
   shortCode: string;
   attendanceMarked: boolean;
   attendanceMarkedAt: string | null;
-  user: { id: string; fullName: string; clubId: string } | null;
+  user: {
+    id: string;
+    fullName: string;
+    clubId: string;
+    institution: string;
+    department: string;
+    year: string;
+  } | null;
 };
 
 function regName(r: Registration) {
@@ -28,6 +38,14 @@ function regName(r: Registration) {
 
 function regIdentifier(r: Registration) {
   return r.user?.clubId ?? r.guestPhone ?? "—";
+}
+
+function regDepartment(r: Registration) {
+  return r.user?.department ?? r.guestDepartment ?? "—";
+}
+
+function regYear(r: Registration) {
+  return r.user?.year ?? r.guestYear ?? "—";
 }
 
 type Team = {
@@ -522,6 +540,9 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
   const { event, registrations, teams, groupMatches, knockoutMatches, standings } = data;
 
+  const members = registrations.filter((r) => !r.isGuest);
+  const guests = registrations.filter((r) => r.isGuest);
+
   const groupStageComplete =
     groupMatches.length > 0 && groupMatches.every((m) => m.status === "COMPLETED");
 
@@ -634,26 +655,33 @@ export default function EventOverview({ eventId }: { eventId: string }) {
             </button>
           )}
 
+          <div className={styles.sectionLabel} style={{ marginBottom: 8 }}>
+            Club Members ({members.length})
+          </div>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th>Code</th>
                 <th>Name</th>
-                <th>Club ID / Phone</th>
+                <th>Club ID</th>
+                <th>Institution</th>
+                <th>Department</th>
+                <th>Year</th>
                 <th>Team</th>
                 <th>Present</th>
               </tr>
             </thead>
             <tbody>
-              {registrations.map((r) => (
+              {members.map((r) => (
                 <tr key={r.id}>
                   <td data-label="Code" className={styles.num}>
                     {r.shortCode}
                   </td>
-                  <td data-label="Name">
-                    {regName(r)} {r.isGuest && <span className={styles.byeTag}>(guest)</span>}
-                  </td>
-                  <td data-label="Club ID / Phone">{regIdentifier(r)}</td>
+                  <td data-label="Name">{regName(r)}</td>
+                  <td data-label="Club ID">{r.user?.clubId ?? "—"}</td>
+                  <td data-label="Institution">{r.user?.institution ?? "—"}</td>
+                  <td data-label="Department">{regDepartment(r)}</td>
+                  <td data-label="Year">{regYear(r)}</td>
                   <td data-label="Team">
                     <TeamLabel team={teamOf(teams, r.teamId)} />
                   </td>
@@ -666,9 +694,56 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                   </td>
                 </tr>
               ))}
-              {registrations.length === 0 && (
+              {members.length === 0 && (
                 <tr>
-                  <td colSpan={5}>No one has registered yet.</td>
+                  <td colSpan={8}>No club members registered yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          <div className={styles.sectionLabel} style={{ margin: "28px 0 8px" }}>
+            Guests ({guests.length})
+          </div>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>College ID</th>
+                <th>Department</th>
+                <th>Year</th>
+                <th>Team</th>
+                <th>Present</th>
+              </tr>
+            </thead>
+            <tbody>
+              {guests.map((r) => (
+                <tr key={r.id}>
+                  <td data-label="Code" className={styles.num}>
+                    {r.shortCode}
+                  </td>
+                  <td data-label="Name">{regName(r)}</td>
+                  <td data-label="Phone">{r.guestPhone ?? "—"}</td>
+                  <td data-label="College ID">{r.guestRollNo ?? "—"}</td>
+                  <td data-label="Department">{regDepartment(r)}</td>
+                  <td data-label="Year">{regYear(r)}</td>
+                  <td data-label="Team">
+                    <TeamLabel team={teamOf(teams, r.teamId)} />
+                  </td>
+                  <td data-label="Present">
+                    {r.attendanceMarked ? (
+                      <span className={styles.qualifiedTag}>Present</span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {guests.length === 0 && (
+                <tr>
+                  <td colSpan={8}>No guests registered yet.</td>
                 </tr>
               )}
             </tbody>

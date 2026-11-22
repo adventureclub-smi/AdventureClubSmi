@@ -5,13 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import QRCode from "qrcode";
-import { CalendarDays, MapPin, Users, Trophy, User, Phone, Building2, Hash, GraduationCap } from "lucide-react";
+import { CalendarDays, MapPin, Users, Trophy, User, Phone, Hash, GraduationCap } from "lucide-react";
 
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import PaymentCountdown from "@/components/treks/PaymentCountdown";
 import { registrationStateFor } from "@/lib/registration-journey";
 import { colourToHex } from "@/lib/team-colours";
-import { YEARS, FACULTY } from "@/lib/academic-options";
+import { YEARS, FACULTY, SMI, OTHER_DEPARTMENTS } from "@/lib/academic-options";
 import styles from "./EventDetails.module.scss";
 
 // The description is one plain-text field the admin types into a textarea —
@@ -152,9 +152,9 @@ export default function EventDetails({ eventId }: { eventId: string }) {
   const [guestMode, setGuestMode] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-  const [guestCollege, setGuestCollege] = useState("");
   const [guestRollNo, setGuestRollNo] = useState("");
   const [guestDepartment, setGuestDepartment] = useState("");
+  const [guestDepartmentOther, setGuestDepartmentOther] = useState("");
   const [guestYear, setGuestYear] = useState("");
   const [guestConfirmation, setGuestConfirmation] = useState<{
     shortCode: string;
@@ -245,11 +245,14 @@ export default function EventDetails({ eventId }: { eventId: string }) {
   async function handleGuestRegister(e: React.FormEvent) {
     e.preventDefault();
 
+    const finalDepartment =
+      guestDepartment === "Other" ? guestDepartmentOther.trim() : guestDepartment;
+
     if (
       !guestName.trim() ||
       !guestPhone.trim() ||
       !guestRollNo.trim() ||
-      !guestDepartment.trim() ||
+      !finalDepartment ||
       !guestYear.trim()
     ) {
       setMessage({
@@ -269,9 +272,8 @@ export default function EventDetails({ eventId }: { eventId: string }) {
         guest: {
           name: guestName,
           phone: guestPhone,
-          college: guestCollege || undefined,
           rollNo: guestRollNo,
-          department: guestDepartment,
+          department: finalDepartment,
           year: guestYear,
         },
       }),
@@ -300,9 +302,9 @@ export default function EventDetails({ eventId }: { eventId: string }) {
     setGuestConfirmation({ shortCode, qrDataUrl: dataUrl });
     setGuestName("");
     setGuestPhone("");
-    setGuestCollege("");
     setGuestRollNo("");
     setGuestDepartment("");
+    setGuestDepartmentOther("");
     setGuestYear("");
     setGuestMode(false);
   }
@@ -558,35 +560,50 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                   </div>
 
                   <div className={styles.inputGroup}>
-                    <Building2 size={18} className={styles.icon} />
+                    <Hash size={18} className={styles.icon} />
                     <input
-                      placeholder="College / organisation (optional)"
-                      value={guestCollege}
-                      onChange={(e) => setGuestCollege(e.target.value)}
+                      placeholder="College ID"
+                      value={guestRollNo}
+                      onChange={(e) => setGuestRollNo(e.target.value)}
+                      required
                     />
                   </div>
 
-                  <div className={styles.row}>
-                    <div className={styles.inputGroup}>
-                      <Hash size={18} className={styles.icon} />
-                      <input
-                        placeholder="College ID"
-                        value={guestRollNo}
-                        onChange={(e) => setGuestRollNo(e.target.value)}
-                        required
-                      />
-                    </div>
+                  <div className={styles.inputGroup}>
+                    <GraduationCap size={18} className={styles.icon} />
+                    <select
+                      value={guestDepartment}
+                      onChange={(e) => {
+                        setGuestDepartment(e.target.value);
+                        setGuestDepartmentOther("");
+                      }}
+                      required
+                    >
+                      <option value="" disabled>
+                        Department
+                      </option>
+                      <option value={SMI}>{SMI}</option>
+                      <option disabled>──────────</option>
+                      {OTHER_DEPARTMENTS.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
 
+                  {guestDepartment === "Other" && (
                     <div className={styles.inputGroup}>
                       <GraduationCap size={18} className={styles.icon} />
                       <input
-                        placeholder="Department"
-                        value={guestDepartment}
-                        onChange={(e) => setGuestDepartment(e.target.value)}
+                        placeholder="Enter your department"
+                        value={guestDepartmentOther}
+                        onChange={(e) => setGuestDepartmentOther(e.target.value)}
                         required
                       />
                     </div>
-                  </div>
+                  )}
 
                   <div className={styles.inputGroup}>
                     <GraduationCap size={18} className={styles.icon} />

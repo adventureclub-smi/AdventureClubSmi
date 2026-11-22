@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SMI, OTHER_DEPARTMENTS, YEARS, FACULTY } from "@/lib/academic-options";
 import styles from "../AddParticipantModal.module.scss";
 
 type Member = {
@@ -30,9 +31,9 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   const [guestMode, setGuestMode] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-  const [guestCollege, setGuestCollege] = useState("");
   const [guestRollNo, setGuestRollNo] = useState("");
   const [guestDepartment, setGuestDepartment] = useState("");
+  const [guestDepartmentOther, setGuestDepartmentOther] = useState("");
   const [guestYear, setGuestYear] = useState("");
   const [addingGuest, setAddingGuest] = useState(false);
 
@@ -96,11 +97,14 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   }
 
   async function addGuest() {
+    const finalDepartment =
+      guestDepartment === "Other" ? guestDepartmentOther.trim() : guestDepartment;
+
     if (
       !guestName.trim() ||
       !guestPhone.trim() ||
       !guestRollNo.trim() ||
-      !guestDepartment.trim() ||
+      !finalDepartment ||
       !guestYear.trim()
     ) {
       alert("Name, phone, college ID, department and year are required.");
@@ -117,9 +121,8 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
           guest: {
             name: guestName,
             phone: guestPhone,
-            college: guestCollege || undefined,
             rollNo: guestRollNo,
-            department: guestDepartment,
+            department: finalDepartment,
             year: guestYear,
           },
         }),
@@ -139,9 +142,9 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
       onClose();
       setGuestName("");
       setGuestPhone("");
-      setGuestCollege("");
       setGuestRollNo("");
       setGuestDepartment("");
+      setGuestDepartmentOther("");
       setGuestYear("");
       setGuestMode(false);
     } catch (error) {
@@ -195,28 +198,54 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
             />
             <input
               className={styles.search}
-              placeholder="College / organisation (optional)"
-              value={guestCollege}
-              onChange={(e) => setGuestCollege(e.target.value)}
-            />
-            <input
-              className={styles.search}
               placeholder="College ID"
               value={guestRollNo}
               onChange={(e) => setGuestRollNo(e.target.value)}
             />
-            <input
+            <select
               className={styles.search}
-              placeholder="Department"
               value={guestDepartment}
-              onChange={(e) => setGuestDepartment(e.target.value)}
-            />
-            <input
+              onChange={(e) => {
+                setGuestDepartment(e.target.value);
+                setGuestDepartmentOther("");
+              }}
+            >
+              <option value="" disabled>
+                Department
+              </option>
+              <option value={SMI}>{SMI}</option>
+              <option disabled>──────────</option>
+              {OTHER_DEPARTMENTS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+              <option value="Other">Other</option>
+            </select>
+            {guestDepartment === "Other" && (
+              <input
+                className={styles.search}
+                placeholder="Enter department"
+                value={guestDepartmentOther}
+                onChange={(e) => setGuestDepartmentOther(e.target.value)}
+              />
+            )}
+            <select
               className={styles.search}
-              placeholder="Year (e.g. 2nd Year)"
               value={guestYear}
               onChange={(e) => setGuestYear(e.target.value)}
-            />
+            >
+              <option value="" disabled>
+                Year
+              </option>
+              {YEARS.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+              <option disabled>──────────</option>
+              <option value={FACULTY}>{FACULTY}</option>
+            </select>
             <button disabled={addingGuest} onClick={addGuest}>
               {addingGuest ? "Adding..." : "Add Guest"}
             </button>

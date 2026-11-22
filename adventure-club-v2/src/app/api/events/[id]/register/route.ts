@@ -86,7 +86,6 @@ export async function POST(req: Request, context: RouteContext) {
         isGuest: true,
         guestName,
         guestPhone,
-        guestCollege: guest.college ? String(guest.college).trim() : null,
         guestRollNo,
         guestDepartment,
         guestYear,

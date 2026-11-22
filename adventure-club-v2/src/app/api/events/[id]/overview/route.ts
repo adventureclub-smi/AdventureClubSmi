@@ -28,7 +28,18 @@ export async function GET(req: Request, context: RouteContext) {
     const [registrations, teams, matches] = await Promise.all([
       prisma.eventRegistration.findMany({
         where: { trekId: eventId },
-        include: { user: { select: { id: true, fullName: true, clubId: true } } },
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              clubId: true,
+              institution: true,
+              department: true,
+              year: true,
+            },
+          },
+        },
         orderBy: { createdAt: "asc" },
       }),
       prisma.eventTeam.findMany({
