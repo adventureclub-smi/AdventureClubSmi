@@ -40,10 +40,10 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
 
   const treks = await prisma.trek.findMany({
     where: {
-      // Campus Events default to the same "Registration Open" status as a
-      // real trek (never set explicitly for them), so without this they'd
-      // show up here as if they were a trek to register for.
-      type: { not: "EVENT" },
+      // Campus Events deliberately DO show up here, same as treks/workshops
+      // — they're a real upcoming thing people should know about from the
+      // homepage. FeaturedTrekCard/TrekTile/Hero branch on trek.type to link
+      // to /events/[id] instead of /treks/[id] for these rows.
       date: { gte: new Date() },
       status: "Registration Open",
       // Every trek document must actually store this field for this filter

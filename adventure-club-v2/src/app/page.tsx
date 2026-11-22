@@ -57,6 +57,7 @@ export default async function Home() {
         content={content.hero}
         nextTrekDate={treks[0]?.date ?? null}
         nextTrekId={treks[0]?.id ?? null}
+        nextTrekType={treks[0]?.type ?? null}
         nextTrekRegistrationOpensAt={treks[0]?.registrationOpensAt ?? null}
       />
       <AnnouncementTicker message={content.hero.announcement} />

@@ -70,9 +70,15 @@ export async function POST(req: Request, context: RouteContext) {
     if (guest) {
       const guestName = String(guest.name || "").trim();
       const guestPhone = String(guest.phone || "").trim();
+      const guestRollNo = String(guest.rollNo || "").trim();
+      const guestDepartment = String(guest.department || "").trim();
+      const guestYear = String(guest.year || "").trim();
 
-      if (!guestName || !guestPhone) {
-        return NextResponse.json({ message: "Name and phone are required." }, { status: 400 });
+      if (!guestName || !guestPhone || !guestRollNo || !guestDepartment || !guestYear) {
+        return NextResponse.json(
+          { message: "Name, phone, college ID, department and year are required." },
+          { status: 400 }
+        );
       }
 
       const registration = await createEventRegistrationWithCode({
@@ -81,6 +87,9 @@ export async function POST(req: Request, context: RouteContext) {
         guestName,
         guestPhone,
         guestCollege: guest.college ? String(guest.college).trim() : null,
+        guestRollNo,
+        guestDepartment,
+        guestYear,
       });
 
       return NextResponse.json({ message: "Registration successful!", registration });

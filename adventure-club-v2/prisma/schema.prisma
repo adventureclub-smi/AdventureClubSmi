@@ -462,6 +462,9 @@ model EventRegistration {
   guestName String?
   guestPhone String?
   guestCollege String?
+  guestRollNo String?
+  guestDepartment String?
+  guestYear String?
 
   teamId String?    @db.ObjectId
   team   EventTeam? @relation(fields: [teamId], references: [id])

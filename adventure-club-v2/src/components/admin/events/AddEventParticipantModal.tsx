@@ -31,6 +31,9 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [guestCollege, setGuestCollege] = useState("");
+  const [guestRollNo, setGuestRollNo] = useState("");
+  const [guestDepartment, setGuestDepartment] = useState("");
+  const [guestYear, setGuestYear] = useState("");
   const [addingGuest, setAddingGuest] = useState(false);
 
   useEffect(() => {
@@ -93,8 +96,14 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   }
 
   async function addGuest() {
-    if (!guestName.trim() || !guestPhone.trim()) {
-      alert("Name and phone are required.");
+    if (
+      !guestName.trim() ||
+      !guestPhone.trim() ||
+      !guestRollNo.trim() ||
+      !guestDepartment.trim() ||
+      !guestYear.trim()
+    ) {
+      alert("Name, phone, college ID, department and year are required.");
       return;
     }
 
@@ -105,7 +114,14 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          guest: { name: guestName, phone: guestPhone, college: guestCollege || undefined },
+          guest: {
+            name: guestName,
+            phone: guestPhone,
+            college: guestCollege || undefined,
+            rollNo: guestRollNo,
+            department: guestDepartment,
+            year: guestYear,
+          },
         }),
       });
 
@@ -124,6 +140,9 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
       setGuestName("");
       setGuestPhone("");
       setGuestCollege("");
+      setGuestRollNo("");
+      setGuestDepartment("");
+      setGuestYear("");
       setGuestMode(false);
     } catch (error) {
       console.error(error);
@@ -179,6 +198,24 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
               placeholder="College / organisation (optional)"
               value={guestCollege}
               onChange={(e) => setGuestCollege(e.target.value)}
+            />
+            <input
+              className={styles.search}
+              placeholder="College ID"
+              value={guestRollNo}
+              onChange={(e) => setGuestRollNo(e.target.value)}
+            />
+            <input
+              className={styles.search}
+              placeholder="Department"
+              value={guestDepartment}
+              onChange={(e) => setGuestDepartment(e.target.value)}
+            />
+            <input
+              className={styles.search}
+              placeholder="Year (e.g. 2nd Year)"
+              value={guestYear}
+              onChange={(e) => setGuestYear(e.target.value)}
             />
             <button disabled={addingGuest} onClick={addGuest}>
               {addingGuest ? "Adding..." : "Add Guest"}

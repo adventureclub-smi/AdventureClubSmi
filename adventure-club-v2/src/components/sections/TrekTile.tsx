@@ -30,7 +30,10 @@ export default function TrekTile({
       ref={tileRef}
       {...tilt.handlers}
     >
-      <Link href={`/treks/${trek.id}`} className={styles.link}>
+      <Link
+        href={trek.type === "EVENT" ? `/events/${trek.id}` : `/treks/${trek.id}`}
+        className={styles.link}
+      >
         <div className={styles.imageWrap}>
           <Image
             src={trek.coverImage}
@@ -42,13 +45,17 @@ export default function TrekTile({
           <div className={styles.overlay} />
 
           <span className={styles.difficulty}>
-            {trek.type === "WORKSHOP"
+            {trek.type === "EVENT"
+              ? "Campus Event"
+              : trek.type === "WORKSHOP"
               ? trek.activityType === "SESSION"
                 ? "Session"
                 : "Workshop"
               : trek.difficulty}
           </span>
-          <span className={styles.availability}>{trek.seats} seats</span>
+          {trek.seats < 99999 && (
+            <span className={styles.availability}>{trek.seats} seats</span>
+          )}
 
           <div className={styles.content}>
             <p className={styles.destination}>{trek.destination}</p>

@@ -110,13 +110,15 @@ export default function FeaturedTrekCard({
 
         <div className={styles.badges}>
           <span className={styles.badge}>
-            {trek.type === "WORKSHOP"
+            {trek.type === "EVENT"
+              ? "Campus Event"
+              : trek.type === "WORKSHOP"
               ? trek.activityType === "SESSION"
                 ? "Session"
                 : "Workshop"
               : trek.difficulty}
           </span>
-          <span className={styles.badge}>{trek.seats} seats</span>
+          {trek.seats < 99999 && <span className={styles.badge}>{trek.seats} seats</span>}
 
           {journeyBadge && journeyBadge.text && (
             <StatusBadge text={journeyBadge.text} tone={journeyBadge.tone} />
@@ -144,7 +146,10 @@ export default function FeaturedTrekCard({
             Open
           </Link>
         ) : (
-          <Link href={`/treks/${trek.id}`} className={styles.button}>
+          <Link
+            href={trek.type === "EVENT" ? `/events/${trek.id}` : `/treks/${trek.id}`}
+            className={styles.button}
+          >
             Register Now →
           </Link>
         )}

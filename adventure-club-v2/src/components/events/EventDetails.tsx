@@ -5,12 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import QRCode from "qrcode";
-import { CalendarDays, MapPin, Users, Trophy, User, Phone, Building2 } from "lucide-react";
+import { CalendarDays, MapPin, Users, Trophy, User, Phone, Building2, Hash, GraduationCap } from "lucide-react";
 
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import PaymentCountdown from "@/components/treks/PaymentCountdown";
 import { registrationStateFor } from "@/lib/registration-journey";
 import { colourToHex } from "@/lib/team-colours";
+import { YEARS, FACULTY } from "@/lib/academic-options";
 import styles from "./EventDetails.module.scss";
 
 // The description is one plain-text field the admin types into a textarea —
@@ -152,6 +153,9 @@ export default function EventDetails({ eventId }: { eventId: string }) {
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [guestCollege, setGuestCollege] = useState("");
+  const [guestRollNo, setGuestRollNo] = useState("");
+  const [guestDepartment, setGuestDepartment] = useState("");
+  const [guestYear, setGuestYear] = useState("");
   const [guestConfirmation, setGuestConfirmation] = useState<{
     shortCode: string;
     qrDataUrl: string;
@@ -241,8 +245,17 @@ export default function EventDetails({ eventId }: { eventId: string }) {
   async function handleGuestRegister(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!guestName.trim() || !guestPhone.trim()) {
-      setMessage({ text: "Name and phone are required.", error: true });
+    if (
+      !guestName.trim() ||
+      !guestPhone.trim() ||
+      !guestRollNo.trim() ||
+      !guestDepartment.trim() ||
+      !guestYear.trim()
+    ) {
+      setMessage({
+        text: "Name, phone, college ID, department and year are required.",
+        error: true,
+      });
       return;
     }
 
@@ -253,7 +266,14 @@ export default function EventDetails({ eventId }: { eventId: string }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        guest: { name: guestName, phone: guestPhone, college: guestCollege || undefined },
+        guest: {
+          name: guestName,
+          phone: guestPhone,
+          college: guestCollege || undefined,
+          rollNo: guestRollNo,
+          department: guestDepartment,
+          year: guestYear,
+        },
       }),
     });
 
@@ -281,6 +301,9 @@ export default function EventDetails({ eventId }: { eventId: string }) {
     setGuestName("");
     setGuestPhone("");
     setGuestCollege("");
+    setGuestRollNo("");
+    setGuestDepartment("");
+    setGuestYear("");
     setGuestMode(false);
   }
 
@@ -541,6 +564,44 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       value={guestCollege}
                       onChange={(e) => setGuestCollege(e.target.value)}
                     />
+                  </div>
+
+                  <div className={styles.row}>
+                    <div className={styles.inputGroup}>
+                      <Hash size={18} className={styles.icon} />
+                      <input
+                        placeholder="College ID"
+                        value={guestRollNo}
+                        onChange={(e) => setGuestRollNo(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <GraduationCap size={18} className={styles.icon} />
+                      <input
+                        placeholder="Department"
+                        value={guestDepartment}
+                        onChange={(e) => setGuestDepartment(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <GraduationCap size={18} className={styles.icon} />
+                    <select value={guestYear} onChange={(e) => setGuestYear(e.target.value)} required>
+                      <option value="" disabled>
+                        Year
+                      </option>
+                      {YEARS.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                      <option disabled>──────────</option>
+                      <option value={FACULTY}>{FACULTY}</option>
+                    </select>
                   </div>
 
                   <div className={styles.formActions}>

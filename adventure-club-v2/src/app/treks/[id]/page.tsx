@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { after } from "next/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -30,6 +30,14 @@ export default async function TrekPage({
 
   if (!trek) {
     notFound();
+  }
+
+  // A Campus Event is a Trek row under the hood but has its own public page
+  // (registration, team allocation, points table, bracket) — none of
+  // TrekDetails' payment/difficulty/trip-centre UI applies to it, so any
+  // link that lands here sends it to the right place instead.
+  if (trek.type === "EVENT") {
+    redirect(`/events/${id}`);
   }
 
   // A test trek only exists for admins (previewing it) and the specific

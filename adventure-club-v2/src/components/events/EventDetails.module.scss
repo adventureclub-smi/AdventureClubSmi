@@ -352,7 +352,8 @@
   flex-shrink: 0;
 }
 
-.inputGroup input {
+.inputGroup input,
+.inputGroup select {
   flex: 1;
   min-width: 0;
   height: 100%;
@@ -363,9 +364,27 @@
   background: transparent;
   color: var(--color-text);
   font-size: 13.5px;
+  appearance: none;
 
   &::placeholder {
     color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.inputGroup select option {
+  background-color: var(--color-charcoal);
+  color: var(--color-text);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
   }
 }
 

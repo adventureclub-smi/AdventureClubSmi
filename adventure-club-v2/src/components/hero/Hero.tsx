@@ -27,16 +27,19 @@ const ConstellationField = dynamic(() => import("./ConstellationField"), {
 function HeroCountdown({
   target,
   trekId,
+  trekType,
   registrationOpensAt,
 }: {
   target: string;
   trekId: string | null;
+  trekType: string | null;
   registrationOpensAt: string | null;
 }) {
   const { phase, target: countdownTarget, label } = useRegistrationPhase(
     target,
     registrationOpensAt
   );
+  const trekHref = trekType === "EVENT" ? `/events/${trekId}` : `/treks/${trekId}`;
   const countdown = useCountdown(countdownTarget);
 
   return (
@@ -65,7 +68,7 @@ function HeroCountdown({
       </div>
 
       {trekId && phase === "trekDay" && (
-        <Link href={`/treks/${trekId}`} className={styles.countdownRegister}>
+        <Link href={trekHref} className={styles.countdownRegister}>
           Register Now
         </Link>
       )}
@@ -86,11 +89,13 @@ export default function Hero({
   content,
   nextTrekDate,
   nextTrekId = null,
+  nextTrekType = null,
   nextTrekRegistrationOpensAt = null,
 }: {
   content: HeroContent;
   nextTrekDate: string | null;
   nextTrekId?: string | null;
+  nextTrekType?: string | null;
   nextTrekRegistrationOpensAt?: string | null;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -301,6 +306,7 @@ export default function Hero({
           <HeroCountdown
             target={nextTrekDate}
             trekId={nextTrekId}
+            trekType={nextTrekType}
             registrationOpensAt={nextTrekRegistrationOpensAt}
           />
         )}
