@@ -13,6 +13,7 @@ export async function GET() {
   try {
     const trek = await prisma.trek.findFirst({
       where: {
+        type: { not: "EVENT" },
         date: {
           gte: new Date(),
         },

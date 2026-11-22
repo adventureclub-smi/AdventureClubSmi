@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import styles from "./layout.module.scss";
 import TrekTabs from "@/components/admin/TrekTabs";
@@ -34,6 +35,15 @@ export default async function TrekLayout({
 
   if (!trek) {
     return <h1>Trek not found.</h1>;
+  }
+
+  // A Campus Event is a Trek row under the hood, but it has its own
+  // purpose-built admin page (registrations, team allocation, fixtures,
+  // points table, bracket, check-in) — none of this trek-shaped layout
+  // (payments, bond forms, trip centre, booking, refunds...) applies to
+  // it, so any link that lands here gets sent to the right place instead.
+  if (trek.type === "EVENT") {
+    redirect(`/admin/events/${id}`);
   }
 
   const user = await getCurrentUser();

@@ -4,6 +4,7 @@ import NextAdventure from "./NextAdventure";
 export default async function NextAdventureServer() {
   const trek = await prisma.trek.findFirst({
     where: {
+      type: { not: "EVENT" },
       date: {
         gte: new Date(),
       },

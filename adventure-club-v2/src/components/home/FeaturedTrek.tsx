@@ -6,6 +6,7 @@ import styles from "./FeaturedTrek.module.scss";
 export default async function FeaturedTrek() {
   const trek = await prisma.trek.findFirst({
     where: {
+      type: { not: "EVENT" },
       date: {
         gte: new Date(),
       },
