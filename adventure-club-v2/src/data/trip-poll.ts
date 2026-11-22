@@ -12,7 +12,7 @@ export type TripPollOption = {
 export async function getTripPollOptions(): Promise<TripPollOption[]> {
   const [treks, votes] = await Promise.all([
     prisma.trek.findMany({
-      where: { OR: [{ isHistorical: true }, { status: "COMPLETED" }] },
+      where: { type: { not: "EVENT" }, OR: [{ isHistorical: true }, { status: "COMPLETED" }] },
       select: { id: true, title: true, destination: true, coverImage: true },
     }),
     prisma.tripPollVote.findMany({ select: { trekId: true } }),

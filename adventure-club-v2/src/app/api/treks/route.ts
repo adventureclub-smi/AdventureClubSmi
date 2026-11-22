@@ -248,6 +248,12 @@ export async function GET(req: NextRequest) {
     // treks by default, the same as before this field existed.
     const treks = await prisma.trek.findMany({
       where: {
+        // This route only ever handled plain treks before Workshops and
+        // Campus Events were split into their own type:"WORKSHOP" /
+        // type:"EVENT" rows on the same shared Trek model — never updated
+        // to exclude them, so a Campus Event like Tug of War was leaking
+        // into both the admin Treks list and the public treks/homepage.
+        type: "TREK",
         ...(season ? { isHistorical: true, season } : { isHistorical: false }),
         // See the comment on the same filter in src/data/treks.ts — every
         // form of this filter requires the field to actually be stored on

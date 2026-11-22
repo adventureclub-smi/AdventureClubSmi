@@ -23,12 +23,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         students: [],
         treks: [],
+        events: [],
         registrations: [],
         announcements: [],
       });
     }
 
-    const [users, treks, registrations, announcements] = await Promise.all([
+    const [users, treks, events, registrations, announcements] = await Promise.all([
       prisma.user.findMany({
         where: {
           OR: [
@@ -42,6 +43,21 @@ export async function GET(req: NextRequest) {
 
       prisma.trek.findMany({
         where: {
+          type: { not: "EVENT" },
+          OR: [
+            { title: { contains: q, mode: "insensitive" } },
+            { destination: { contains: q, mode: "insensitive" } },
+          ],
+        },
+        take: 6,
+      }),
+
+      // Campus Events are a Trek row too, but they live under their own
+      // admin section (/admin/events/[id]), not /admin/treks/[id] — kept as
+      // a separate search bucket/link so a match still surfaces, correctly.
+      prisma.trek.findMany({
+        where: {
+          type: "EVENT",
           OR: [
             { title: { contains: q, mode: "insensitive" } },
             { destination: { contains: q, mode: "insensitive" } },
@@ -76,6 +92,7 @@ export async function GET(req: NextRequest) {
     const results: {
       students: SearchResult[];
       treks: SearchResult[];
+      events: SearchResult[];
       registrations: SearchResult[];
       announcements: SearchResult[];
     } = {
@@ -91,6 +108,13 @@ export async function GET(req: NextRequest) {
         label: t.title,
         sublabel: t.destination,
         href: `/admin/treks/${t.id}`,
+      })),
+
+      events: events.map((e) => ({
+        id: e.id,
+        label: e.title,
+        sublabel: e.destination,
+        href: `/admin/events/${e.id}`,
       })),
 
       registrations: registrations.map((r) => ({

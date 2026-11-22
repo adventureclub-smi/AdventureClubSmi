@@ -28,6 +28,7 @@ type SearchResult = { id: string; label: string; sublabel: string; href: string 
 type SearchResults = {
   students: SearchResult[];
   treks: SearchResult[];
+  events: SearchResult[];
   registrations: SearchResult[];
   announcements: SearchResult[];
 };
@@ -134,6 +135,7 @@ export default function AdminTopbar({
     results &&
     (results.students.length ||
       results.treks.length ||
+      results.events.length ||
       results.registrations.length ||
       results.announcements.length);
 
@@ -192,6 +194,18 @@ export default function AdminTopbar({
                     <div className={styles.resultGroup}>
                       <small>Treks</small>
                       {results.treks.map((r) => (
+                        <Link key={r.id} href={r.href} onClick={() => setSearchOpen(false)}>
+                          <strong>{r.label}</strong>
+                          <span>{r.sublabel}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {results.events.length > 0 && (
+                    <div className={styles.resultGroup}>
+                      <small>Campus Events</small>
+                      {results.events.map((r) => (
                         <Link key={r.id} href={r.href} onClick={() => setSearchOpen(false)}>
                           <strong>{r.label}</strong>
                           <span>{r.sublabel}</span>

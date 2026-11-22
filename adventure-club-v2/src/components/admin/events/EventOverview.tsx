@@ -172,6 +172,14 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   const [checkinResults, setCheckinResults] = useState<Registration[] | null>(null);
   const [checkinSearching, setCheckinSearching] = useState(false);
 
+  // Tournament settings (decided later, once attendance is known)
+  const [tsTeamSize, setTsTeamSize] = useState("");
+  const [tsFormat, setTsFormat] = useState<"LEAGUE_KNOCKOUT" | "DIRECT_KNOCKOUT">("LEAGUE_KNOCKOUT");
+  const [tsQualifiers, setTsQualifiers] = useState<"4" | "6">("4");
+  const [tsMatchCap, setTsMatchCap] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsLoadedFor, setSettingsLoadedFor] = useState("");
+
   // Team setup (pre-lock)
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamColour, setNewTeamColour] = useState("");
@@ -217,6 +225,46 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       active = false;
     };
   }, [eventId]);
+
+  // Sync the tournament-settings form from the fetched event once per
+  // load of this event — but only once, so a subsequent `load()` (e.g.
+  // after assigning someone to a team) doesn't clobber an in-progress edit.
+  useEffect(() => {
+    if (!data || settingsLoadedFor === data.event.id) return;
+
+    setTsTeamSize(data.event.eventTeamSize ? String(data.event.eventTeamSize) : "");
+    setTsFormat(data.event.eventFormat === "DIRECT_KNOCKOUT" ? "DIRECT_KNOCKOUT" : "LEAGUE_KNOCKOUT");
+    setTsQualifiers(data.event.eventQualifiersCount === 6 ? "6" : "4");
+    setTsMatchCap(data.event.eventMatchesPerTeamCap ? String(data.event.eventMatchesPerTeamCap) : "");
+    setSettingsLoadedFor(data.event.id);
+  }, [data, settingsLoadedFor]);
+
+  async function handleSaveTournamentSettings() {
+    setSavingSettings(true);
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/tournament-settings`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        teamSize: tsTeamSize || undefined,
+        eventFormat: tsFormat,
+        qualifiersCount: tsFormat === "LEAGUE_KNOCKOUT" ? tsQualifiers : undefined,
+        matchesPerTeamCap: tsFormat === "LEAGUE_KNOCKOUT" ? tsMatchCap || undefined : undefined,
+      }),
+    });
+
+    const json = await res.json().catch(() => null);
+    setSavingSettings(false);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to save tournament settings.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
 
   async function handleRecordResult(
     matchId: string,
@@ -672,11 +720,57 @@ export default function EventOverview({ eventId }: { eventId: string }) {
             </>
           ) : (
             <>
+              <div className={styles.sectionLabel} style={{ marginTop: 20, marginBottom: 8 }}>
+                0. Tournament settings
+              </div>
+              <p style={{ marginBottom: 12 }}>
+                Decide these once you know who actually showed up — there&apos;s no need to guess at
+                event creation.
+              </p>
+
+              <div className={styles.teamSetupForm}>
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Target players / team"
+                  value={tsTeamSize}
+                  onChange={(e) => setTsTeamSize(e.target.value)}
+                  style={{ width: 170 }}
+                />
+                <select value={tsFormat} onChange={(e) => setTsFormat(e.target.value as typeof tsFormat)}>
+                  <option value="LEAGUE_KNOCKOUT">League + Knockout</option>
+                  <option value="DIRECT_KNOCKOUT">Direct Knockout</option>
+                </select>
+                {tsFormat === "LEAGUE_KNOCKOUT" && (
+                  <>
+                    <select value={tsQualifiers} onChange={(e) => setTsQualifiers(e.target.value as typeof tsQualifiers)}>
+                      <option value="4">Top 4 qualify</option>
+                      <option value="6">Top 6 qualify</option>
+                    </select>
+                    <input
+                      type="number"
+                      min={2}
+                      placeholder="Max matches / team (blank = all play all)"
+                      value={tsMatchCap}
+                      onChange={(e) => setTsMatchCap(e.target.value)}
+                      style={{ width: 230 }}
+                    />
+                  </>
+                )}
+                <button
+                  className={styles.primaryButton}
+                  disabled={savingSettings}
+                  onClick={handleSaveTournamentSettings}
+                >
+                  {savingSettings ? "Saving..." : "Save Settings"}
+                </button>
+              </div>
+
               <a
                 href={`/admin/events/${eventId}/chits`}
                 target="_blank"
                 rel="noreferrer"
-                style={{ display: "inline-block", marginBottom: 20 }}
+                style={{ display: "inline-block", margin: "12px 0 20px" }}
               >
                 <button className={styles.secondaryButton} type="button">
                   <Printer size={14} /> Print Chits

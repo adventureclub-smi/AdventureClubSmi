@@ -9,6 +9,7 @@ export default async function Page() {
   await requireAdminAccess(["FULL", "VISUAL"]);
 
   const treks = await prisma.trek.findMany({
+    where: { type: { not: "EVENT" } },
     orderBy: { date: "desc" },
     select: { id: true, title: true, destination: true },
   });

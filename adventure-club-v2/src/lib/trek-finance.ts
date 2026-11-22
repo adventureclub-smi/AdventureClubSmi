@@ -107,7 +107,7 @@ export async function computeTrekFinance(trekId: string) {
 // this can never drift from what each trek's own Finance tab shows.
 export async function computeAllTreksFinanceSummary() {
   const treks = await prisma.trek.findMany({
-    where: { isHistorical: false },
+    where: { type: { not: "EVENT" }, isHistorical: false },
     orderBy: { date: "desc" },
     select: { id: true, title: true },
   });

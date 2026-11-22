@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     }
 
     const treks = await prisma.trek.findMany({
-      where: { isHistorical: true, season },
+      where: { type: { not: "EVENT" }, isHistorical: true, season },
       select: { id: true, title: true },
     });
 

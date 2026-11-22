@@ -27,7 +27,7 @@ export async function GET() {
     ] = await Promise.all([
       prisma.user.count(),
 
-      prisma.trek.count({ where: { isHistorical: false } }),
+      prisma.trek.count({ where: { type: { not: "EVENT" }, isHistorical: false } }),
 
       prisma.registration.count({
         where: {
@@ -38,7 +38,9 @@ export async function GET() {
 
       prisma.registration.count({ where: { trek: { isHistorical: false } } }),
 
-      prisma.trek.count({ where: { date: { gte: new Date() }, isHistorical: false } }),
+      prisma.trek.count({
+        where: { type: { not: "EVENT" }, date: { gte: new Date() }, isHistorical: false },
+      }),
 
       prisma.payment.findMany({
         where: { status: "PAID", registration: { trek: { isHistorical: false } } },

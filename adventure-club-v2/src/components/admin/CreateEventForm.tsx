@@ -14,10 +14,6 @@ type FormState = {
   date: string;
   description: string;
   maxParticipants: string;
-  teamSize: string;
-  qualifiersCount: "4" | "6";
-  matchesPerTeamCap: string;
-  eventFormat: "LEAGUE_KNOCKOUT" | "DIRECT_KNOCKOUT";
   registrationOpensAt: string;
   registrationClosesAt: string;
   isTest: boolean;
@@ -31,10 +27,6 @@ function buildEmptyForm(): FormState {
     date: "",
     description: "",
     maxParticipants: "",
-    teamSize: "8",
-    qualifiersCount: "4",
-    matchesPerTeamCap: "4",
-    eventFormat: "LEAGUE_KNOCKOUT",
     registrationOpensAt: "",
     registrationClosesAt: "",
     isTest: false,
@@ -92,10 +84,6 @@ export default function CreateEventForm({ eventId }: { eventId?: string }) {
           date: toDateInput(event.date),
           description: event.description || "",
           maxParticipants: event.seats && event.seats !== 99999 ? String(event.seats) : "",
-          teamSize: String(event.eventTeamSize ?? "8"),
-          qualifiersCount: event.eventQualifiersCount === 6 ? "6" : "4",
-          matchesPerTeamCap: String(event.eventMatchesPerTeamCap ?? "4"),
-          eventFormat: event.eventFormat === "DIRECT_KNOCKOUT" ? "DIRECT_KNOCKOUT" : "LEAGUE_KNOCKOUT",
           registrationOpensAt: toDateTimeInput(event.registrationOpensAt),
           registrationClosesAt: toDateTimeInput(event.registrationClosesAt),
           isTest: event.isTest ?? false,
@@ -178,10 +166,6 @@ export default function CreateEventForm({ eventId }: { eventId?: string }) {
       description: form.description,
       coverImage,
       maxParticipants: form.maxParticipants ? Number(form.maxParticipants) : undefined,
-      teamSize: Number(form.teamSize),
-      qualifiersCount: Number(form.qualifiersCount),
-      matchesPerTeamCap: Number(form.matchesPerTeamCap),
-      eventFormat: form.eventFormat,
       registrationOpensAt: form.registrationOpensAt,
       registrationClosesAt: form.registrationClosesAt,
       isTest: form.isTest,
@@ -268,6 +252,11 @@ export default function CreateEventForm({ eventId }: { eventId?: string }) {
 
         <div className={styles.section}>
           <div className={styles.sectionLabel}>Basic Details</div>
+          <p className={styles.sectionHint}>
+            Team size, tournament format and qualifier count aren&apos;t set here —
+            once registration is in, set them from the event&apos;s Team Allocation
+            tab, based on who actually shows up.
+          </p>
 
           <div className={styles.sectionGrid}>
             <label className={styles.field}>
@@ -308,65 +297,6 @@ export default function CreateEventForm({ eventId }: { eventId?: string }) {
                 onChange={handleChange}
               />
             </label>
-          </div>
-        </div>
-
-        <div className={styles.section}>
-          <div className={styles.sectionLabel}>Teams & Tournament Format</div>
-          <p className={styles.sectionHint}>
-            Everyone registers individually — teams are formed physically on
-            the day by chit picking, and the admin page just records who ends
-            up on which team. These settings are planning targets (how many
-            chits to print, which tournament shape to run) — pick the
-            tournament format once final attendance is known; it's editable
-            right up until teams are locked.
-          </p>
-
-          <div className={styles.sectionGrid}>
-            <label className={styles.field}>
-              <span>Target Players per Team</span>
-              <small>Used to plan how many chits to print — not an automatic allocation</small>
-              <input
-                type="number"
-                name="teamSize"
-                min={2}
-                value={form.teamSize}
-                onChange={handleChange}
-              />
-            </label>
-
-            <label className={styles.field}>
-              <span>Tournament Format</span>
-              <select name="eventFormat" value={form.eventFormat} onChange={handleChange}>
-                <option value="LEAGUE_KNOCKOUT">League + Knockout</option>
-                <option value="DIRECT_KNOCKOUT">Direct Knockout</option>
-              </select>
-            </label>
-
-            {form.eventFormat === "LEAGUE_KNOCKOUT" && (
-              <>
-                <label className={styles.field}>
-                  <span>Max Group-Stage Matches per Team</span>
-                  <small>Teams are grouped so nobody plays more than this many games</small>
-                  <input
-                    type="number"
-                    name="matchesPerTeamCap"
-                    min={2}
-                    value={form.matchesPerTeamCap}
-                    onChange={handleChange}
-                    required
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span>Teams That Qualify for Knockout</span>
-                  <select name="qualifiersCount" value={form.qualifiersCount} onChange={handleChange}>
-                    <option value="4">Top 4</option>
-                    <option value="6">Top 6</option>
-                  </select>
-                </label>
-              </>
-            )}
           </div>
         </div>
 

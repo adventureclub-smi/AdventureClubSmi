@@ -5,6 +5,10 @@ import styles from "./UpcomingTreks.module.scss";
 export default async function UpcomingTreks() {
   const treks = await prisma.trek.findMany({
     where: {
+      // Campus Events default to the same "Registration Open" status as a
+      // real trek (never set explicitly for them), so without this they'd
+      // show up here as if they were a trek to register for.
+      type: { not: "EVENT" },
       date: {
         gte: new Date(),
       },

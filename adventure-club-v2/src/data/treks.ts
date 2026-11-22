@@ -40,6 +40,10 @@ export async function getUpcomingTreks(): Promise<TrekSummary[]> {
 
   const treks = await prisma.trek.findMany({
     where: {
+      // Campus Events default to the same "Registration Open" status as a
+      // real trek (never set explicitly for them), so without this they'd
+      // show up here as if they were a trek to register for.
+      type: { not: "EVENT" },
       date: { gte: new Date() },
       status: "Registration Open",
       // Every trek document must actually store this field for this filter
@@ -99,6 +103,7 @@ export type MyRegistrationSummary = RegistrationLike & { trekId: string };
 export async function getTrekMapPins(): Promise<TrekMapPin[]> {
   const treks = await prisma.trek.findMany({
     where: {
+      type: { not: "EVENT" },
       latitude: { not: null },
       longitude: { not: null },
       // Every trek document must actually store this field for this filter
@@ -142,6 +147,7 @@ export async function getTrekMapPins(): Promise<TrekMapPin[]> {
 export async function getUpcomingTrekRoutes(): Promise<UpcomingTrekRoute[]> {
   const treks = await prisma.trek.findMany({
     where: {
+      type: { not: "EVENT" },
       date: { gte: new Date() },
       status: "Registration Open",
       // Every trek document must actually store this field for this filter

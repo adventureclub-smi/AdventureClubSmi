@@ -66,35 +66,16 @@ export async function PUT(req: Request, context: RouteContext) {
       description,
       coverImage,
       maxParticipants,
-      teamSize,
-      qualifiersCount,
-      matchesPerTeamCap,
-      eventFormat,
       registrationOpensAt,
       registrationClosesAt,
       isTest,
       testVisibleToUserIds,
     } = body;
 
-    const format = eventFormat === "DIRECT_KNOCKOUT" ? "DIRECT_KNOCKOUT" : "LEAGUE_KNOCKOUT";
-    const qualifiersCountNum = Number(qualifiersCount);
-
-    if (format === "LEAGUE_KNOCKOUT" && ![4, 6].includes(qualifiersCountNum)) {
-      return NextResponse.json(
-        { message: "Qualifier count must be 4 or 6." },
-        { status: 400 }
-      );
-    }
-
-    // Format can only still be changed before teams are locked — after
-    // that, fixtures already exist for whichever format was used.
-    if (existing.eventTeamsDrawnAt && format !== existing.eventFormat) {
-      return NextResponse.json(
-        { message: "Can't change tournament format once teams are locked." },
-        { status: 400 }
-      );
-    }
-
+    // Team size, tournament format, qualifier count and match cap are
+    // managed exclusively by /tournament-settings (the Team Allocation
+    // tab) — this route never touches them, so editing the event's basic
+    // details can't accidentally reset a decision made there.
     const event = await prisma.trek.update({
       where: { id },
       data: {
@@ -104,11 +85,6 @@ export async function PUT(req: Request, context: RouteContext) {
         description,
         coverImage: coverImage || null,
         seats: maxParticipants ? Number(maxParticipants) : 99999,
-
-        eventTeamSize: teamSize ? Number(teamSize) : null,
-        eventQualifiersCount: format === "LEAGUE_KNOCKOUT" ? qualifiersCountNum : null,
-        eventMatchesPerTeamCap: format === "LEAGUE_KNOCKOUT" ? Number(matchesPerTeamCap) : null,
-        eventFormat: format,
 
         registrationOpensAt: parseIstDateTimeLocal(registrationOpensAt),
         registrationClosesAt: parseIstDateTimeLocal(registrationClosesAt),

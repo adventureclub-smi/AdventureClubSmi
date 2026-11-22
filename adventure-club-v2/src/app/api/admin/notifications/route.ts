@@ -48,6 +48,7 @@ export async function GET() {
 
         prisma.trek.findMany({
           where: {
+            type: { not: "EVENT" },
             registrationClosesAt: { lte: in48h, gte: new Date() },
           },
           take: 10,

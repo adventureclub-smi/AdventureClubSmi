@@ -90,7 +90,7 @@ export async function GET() {
         }),
 
         prisma.trek.count({
-          where: { date: { lt: new Date() }, isHistorical: false },
+          where: { type: { not: "EVENT" }, date: { lt: new Date() }, isHistorical: false },
         }),
 
         prisma.registration.findMany({

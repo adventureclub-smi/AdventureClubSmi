@@ -50,7 +50,7 @@ export async function POST(req: Request, context: RouteContext) {
     if (existingKnockout.length === 0) {
       if (!event.eventQualifiersCount) {
         return NextResponse.json(
-          { message: "This event has no group-stage qualifier count set." },
+          { message: "Set the qualifier count in Team Allocation's tournament settings before generating the bracket." },
           { status: 400 }
         );
       }

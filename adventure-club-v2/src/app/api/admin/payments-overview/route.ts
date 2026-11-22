@@ -22,7 +22,7 @@ export async function GET() {
       }),
 
       prisma.trek.findMany({
-        where: { date: { gte: new Date() }, isHistorical: false },
+        where: { type: { not: "EVENT" }, date: { gte: new Date() }, isHistorical: false },
         orderBy: { date: "asc" },
         include: { registrations: true },
       }),

@@ -48,6 +48,11 @@ export async function GET() {
     // season's abandoned drafts from resurfacing here too.
     const liveTreks = await prisma.trek.findMany({
       where: {
+        // Campus Events default to the same "Registration Open" status as a
+        // real trek, and are never "Completed" either — Events have their
+        // own card (MyEventsCard), so they must never masquerade as a trek
+        // here.
+        type: { not: "EVENT" },
         isHistorical: false,
         status: { not: "Completed" },
         // See the comment on this filter in src/data/treks.ts — every trek
@@ -133,6 +138,7 @@ export async function GET() {
     // currently open — fall back to the soonest upcoming trek of any status.
     const trek = await prisma.trek.findFirst({
       where: {
+        type: { not: "EVENT" },
         date: {
           gte: now,
         },

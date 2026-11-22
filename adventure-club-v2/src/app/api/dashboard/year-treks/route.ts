@@ -27,6 +27,10 @@ export async function GET() {
 
     const [treks, registrations] = await Promise.all([
       prisma.trek.findMany({
+        // Campus Events use EventRegistration, not Registration, so they'd
+        // always show here as "Didn't Attend" even for someone who
+        // registered and attended the event.
+        where: { type: { not: "EVENT" } },
         orderBy: { date: "asc" },
       }),
       prisma.registration.findMany({

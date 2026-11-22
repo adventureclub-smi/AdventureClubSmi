@@ -26,31 +26,16 @@ export async function POST(req: Request) {
       description,
       coverImage,
       maxParticipants,
-      teamSize,
-      qualifiersCount,
-      matchesPerTeamCap,
-      eventFormat,
       registrationOpensAt,
       registrationClosesAt,
       isTest,
       testVisibleToUserIds,
     } = body;
 
-    const teamSizeNum = Number(teamSize);
-    const qualifiersCountNum = Number(qualifiersCount);
-    const matchesPerTeamCapNum = Number(matchesPerTeamCap);
-    const format = eventFormat === "DIRECT_KNOCKOUT" ? "DIRECT_KNOCKOUT" : "LEAGUE_KNOCKOUT";
-
-    // Qualifier count / match cap only drive the group stage, which a
-    // Direct Knockout event skips entirely.
-    if (
-      !title ||
-      !venue ||
-      !date ||
-      !description ||
-      (format === "LEAGUE_KNOCKOUT" &&
-        (![4, 6].includes(qualifiersCountNum) || !matchesPerTeamCapNum || matchesPerTeamCapNum < 2))
-    ) {
+    // Team size, tournament format, qualifier count and match cap are all
+    // decided later — once actual attendance is known — via the Team
+    // Allocation tab's tournament-settings panel, not here at creation.
+    if (!title || !venue || !date || !description) {
       return NextResponse.json(
         { message: "Please fill all fields." },
         { status: 400 }
@@ -89,10 +74,7 @@ export async function POST(req: Request) {
         description,
         coverImage: coverImage || null,
 
-        eventTeamSize: teamSizeNum || null,
-        eventQualifiersCount: format === "LEAGUE_KNOCKOUT" ? qualifiersCountNum : null,
-        eventMatchesPerTeamCap: format === "LEAGUE_KNOCKOUT" ? matchesPerTeamCapNum : null,
-        eventFormat: format,
+        // Left unset at creation — decided later via tournament-settings.
 
         registrationOpensAt: parseIstDateTimeLocal(registrationOpensAt),
         registrationClosesAt: parseIstDateTimeLocal(registrationClosesAt),

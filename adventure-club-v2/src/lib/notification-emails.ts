@@ -238,6 +238,7 @@ export async function notifyInitialPaymentReminders(
 export async function notifyRegistrationOpenedIfDue() {
   const dueTreks = await prisma.trek.findMany({
     where: {
+      type: { not: "EVENT" },
       // MongoDB's comparison operators use BSON type-bracketing, so a plain
       // `lte` would also match documents where the field is null — `not: null`
       // rules those back out.
