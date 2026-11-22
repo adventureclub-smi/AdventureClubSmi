@@ -7,6 +7,7 @@ import { ImagePlus, X } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import TestVisibilityPicker from "@/components/admin/TestVisibilityPicker";
 import { YEARS } from "@/lib/academic-options";
+import { formatIstDateTimeLocal } from "@/lib/ist-time";
 import styles from "./CreateTrekForm.module.scss";
 
 type FormState = {
@@ -73,26 +74,17 @@ const emptyForm: FormState = {
   transportIncluded: false,
 };
 
-// `.toISOString()` always returns UTC, but `<input type="date"/"datetime-local">`
-// expects the value expressed in the browser's LOCAL time — using toISOString()
-// here shifted the displayed time by the timezone offset (e.g. -5:30 for IST)
-// every time the edit form reloaded, even though the correct instant was saved.
-function pad(n: number) {
-  return String(n).padStart(2, "0");
-}
-
+// Both read off Asia/Kolkata explicitly via formatIstDateTimeLocal — see
+// its own comment for why naively reading local Date getters (getHours(),
+// getDate()...) silently shows the wrong time whenever the admin's own
+// machine isn't set to IST.
 function toDateInput(value?: string | null) {
-  if (!value) return "";
-  const d = new Date(value);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const full = formatIstDateTimeLocal(value);
+  return full ? full.slice(0, 10) : "";
 }
 
 function toDateTimeInput(value?: string | null) {
-  if (!value) return "";
-  const d = new Date(value);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
+  return formatIstDateTimeLocal(value);
 }
 
 export default function CreateTrekForm({ trekId }: { trekId?: string }) {
