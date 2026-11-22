@@ -391,10 +391,22 @@ export default function EventDetails({ eventId }: { eventId: string }) {
 
           {!alreadyRegistered && !event.eventTeamsDrawnAt && registrationState === "NOT_OPEN" && (
             <>
-              <div className={styles.badgeRow}>
-                <StatusBadge text="Opening Soon" tone="waiting" />
-              </div>
-              <p className={styles.note}>Registration hasn&apos;t opened yet.</p>
+              {event.registrationOpensAt ? (
+                <PaymentCountdown
+                  deadline={event.registrationOpensAt}
+                  heading="Registrations Open Soon"
+                  subheading="Registrations open in"
+                  expiredHeading="Registrations Opening"
+                  expiredMessage="Registrations are about to open — check back shortly."
+                />
+              ) : (
+                <>
+                  <div className={styles.badgeRow}>
+                    <StatusBadge text="Opening Soon" tone="waiting" />
+                  </div>
+                  <p className={styles.note}>Registration hasn&apos;t opened yet.</p>
+                </>
+              )}
             </>
           )}
 
