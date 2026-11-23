@@ -473,6 +473,15 @@
   font-size: 14px;
 }
 
+.roundLabel {
+  display: inline-block;
+  width: 70px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, rgba(245, 245, 245, 0.55));
+}
+
 .teamPill {
   display: inline-flex;
   align-items: center;

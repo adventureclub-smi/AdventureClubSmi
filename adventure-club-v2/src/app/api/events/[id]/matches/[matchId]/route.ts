@@ -4,10 +4,15 @@ import { requireAdmin } from "@/lib/require-admin";
 
 type RouteContext = { params: Promise<{ id: string; matchId: string }> };
 
-// Records a match result. Group-stage matches can end in a draw (pass
-// winnerTeamId: null) — Win=3/Draw=1/Loss=0, see event-points-table.ts.
-// Knockout matches must always produce a winner, since the bracket can't
-// advance a drawn tie.
+// Records a match result from its two rounds — each round always has a
+// clear winner, never a tie. Win=3/Draw=1/Loss=0 (see event-points-table.ts)
+// falls straight out of that: win both rounds = 3 points, split 1-1 = 1
+// point each. teamAScore/teamBScore are derived here as rounds won (0-2),
+// not entered directly, so every existing "(2-1)"-style score display
+// keeps working unchanged.
+//
+// A KNOCKOUT match can't advance as a draw, so a 1-1 split there requires
+// an explicit tiebreakWinnerId alongside the two round winners.
 export async function PATCH(req: Request, context: RouteContext) {
   const admin = await requireAdmin();
 
@@ -17,7 +22,7 @@ export async function PATCH(req: Request, context: RouteContext) {
 
   try {
     const { id: eventId, matchId } = await context.params;
-    const { teamAScore, teamBScore, winnerTeamId } = await req.json();
+    const { round1WinnerId, round2WinnerId, tiebreakWinnerId } = await req.json();
 
     const match = await prisma.eventMatch.findUnique({ where: { id: matchId } });
 
@@ -25,28 +30,50 @@ export async function PATCH(req: Request, context: RouteContext) {
       return NextResponse.json({ message: "Match not found." }, { status: 404 });
     }
 
-    const isDraw = winnerTeamId === null || winnerTeamId === undefined;
+    if (!match.teamBId) {
+      return NextResponse.json({ message: "This match is a bye — there's nothing to record." }, { status: 400 });
+    }
 
-    if (isDraw && match.stage === "KNOCKOUT") {
+    const validTeamIds = [match.teamAId, match.teamBId];
+
+    if (!validTeamIds.includes(round1WinnerId) || !validTeamIds.includes(round2WinnerId)) {
       return NextResponse.json(
-        { message: "A knockout match must have a winner — no draws." },
+        { message: "Each round's winner must be one of the two teams in this match." },
         { status: 400 }
       );
     }
 
-    if (!isDraw && winnerTeamId !== match.teamAId && winnerTeamId !== match.teamBId) {
-      return NextResponse.json(
-        { message: "Winner must be one of the two teams in this match." },
-        { status: 400 }
-      );
+    const teamAScore = [round1WinnerId, round2WinnerId].filter((id) => id === match.teamAId).length;
+    const teamBScore = 2 - teamAScore;
+
+    let winnerTeamId: string | null;
+
+    if (teamAScore === 2) {
+      winnerTeamId = match.teamAId;
+    } else if (teamBScore === 2) {
+      winnerTeamId = match.teamBId;
+    } else if (match.stage === "KNOCKOUT") {
+      // Split 1-1 — a playoff match can't stay a draw, so a tie-break
+      // winner is required to decide who advances.
+      if (!validTeamIds.includes(tiebreakWinnerId)) {
+        return NextResponse.json(
+          { message: "This match split 1-1 — pick a tie-break winner to advance." },
+          { status: 400 }
+        );
+      }
+      winnerTeamId = tiebreakWinnerId;
+    } else {
+      winnerTeamId = null;
     }
 
     const updated = await prisma.eventMatch.update({
       where: { id: matchId },
       data: {
-        teamAScore: teamAScore === undefined || teamAScore === null ? null : Number(teamAScore),
-        teamBScore: teamBScore === undefined || teamBScore === null ? null : Number(teamBScore),
-        winnerTeamId: isDraw ? null : winnerTeamId,
+        round1WinnerId,
+        round2WinnerId,
+        teamAScore,
+        teamBScore,
+        winnerTeamId,
         status: "COMPLETED",
       },
     });

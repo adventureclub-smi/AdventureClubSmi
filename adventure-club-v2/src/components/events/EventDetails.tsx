@@ -12,6 +12,7 @@ import PaymentCountdown from "@/components/treks/PaymentCountdown";
 import { registrationStateFor } from "@/lib/registration-journey";
 import { colourToHex } from "@/lib/team-colours";
 import { YEARS, FACULTY, SMI, OTHER_DEPARTMENTS } from "@/lib/academic-options";
+import { PLAYOFF_ROUND_LABELS } from "@/lib/event-playoff";
 import styles from "./EventDetails.module.scss";
 
 // The description is one plain-text field the admin types into a textarea —
@@ -129,7 +130,7 @@ type PublicData = {
 };
 
 const ROUND_LABELS: Record<string, string> = {
-  FINAL: "Final",
+  ...PLAYOFF_ROUND_LABELS,
   SEMIFINAL: "Semifinal",
   QUARTERFINAL: "Quarterfinal",
 };

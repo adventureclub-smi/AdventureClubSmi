@@ -397,24 +397,25 @@ model Trek {
   // as WORKSHOP above. An on-campus team event: students register
   // individually (no buddy/group sign-up — teams are never decided by this
   // site). Teams are formed physically on the day via chit picking from a
-  // bag; the admin only records the allocation each participant ends up
-  // with. See src/lib/event-groups.ts and src/lib/event-bracket.ts.
+  // bag; the website draws them automatically instead — one click, equally
+  // sized, randomly coloured. See src/lib/event-draw.ts,
+  // src/lib/event-groups.ts and src/lib/event-playoff.ts.
 
-  // Target players per team, used to plan how many chits to print per team
-  // — not an automatic allocation input. Actual team sizes are whatever the
-  // admin sets up on the day based on final attendance.
+  // Target players per team — how many teams the draw creates is derived
+  // from total registrations / this number.
   eventTeamSize Int?
 
-  // How many teams advance from the group stage into the knockout bracket —
-  // 4 or 6, admin's choice per event. Only meaningful for eventFormat
-  // "LEAGUE_KNOCKOUT".
+  // Top 4 advance from the league table into the page playoff (Qualifier/
+  // Eliminator/Qualifier 2/Final — see event-playoff.ts). Fixed at 4 by
+  // that format, so this field exists mainly for display; only meaningful
+  // for eventFormat "LEAGUE_KNOCKOUT".
   eventQualifiersCount Int?
 
-  // Caps how many group-stage matches each team plays. Teams are split into
-  // balanced groups sized (eventMatchesPerTeamCap + 1) so a full round robin
-  // within a group never exceeds this cap — instead of one giant round robin
-  // where, say, 8 teams would mean 7 matches each. Only meaningful for
-  // eventFormat "LEAGUE_KNOCKOUT".
+  // Caps how many opponents each team plays in the league stage — e.g. 8
+  // teams with a cap of 5 means every team plays a random 5 of the other 7,
+  // not a full round robin, all within one combined table (no separate
+  // groups). See event-groups.ts's generateLeagueSchedule. Only meaningful
+  // for eventFormat "LEAGUE_KNOCKOUT".
   eventMatchesPerTeamCap Int?
 
   // "LEAGUE_KNOCKOUT" (group stage feeding a seeded knockout bracket) or
@@ -541,24 +542,47 @@ model EventMatch {
   // "GROUP" | "KNOCKOUT"
   stage String
 
-  // Only meaningful for stage "GROUP" — which group this fixture belongs to.
+  // Only meaningful for stage "GROUP" — every league-stage match currently
+  // belongs to one combined table (see event-groups.ts's schedule
+  // generator, which caps matches per team without splitting into separate
+  // groups), so this is always null in practice; kept nullable rather than
+  // removed in case a future format reintroduces real groups.
   groupNumber Int?
 
-  // Only meaningful for stage "KNOCKOUT" — "QF" | "SF" | "FINAL".
+  // Only meaningful for stage "KNOCKOUT" — the page-playoff round names
+  // "QUALIFIER" | "ELIMINATOR" | "QUALIFIER_2" | "FINAL" (see
+  // src/lib/event-playoff.ts), or the generic single-elimination round
+  // names from event-bracket.ts when the event's format is
+  // DIRECT_KNOCKOUT instead.
   round String?
 
   teamAId String    @db.ObjectId
   teamA   EventTeam @relation("EventMatchTeamA", fields: [teamAId], references: [id])
 
   // Null means a bye — teamA advances automatically, no match is actually
-  // played (only possible in a knockout's first round, when the qualifier
-  // count isn't already a power of two). See src/lib/event-bracket.ts.
+  // played (only possible in a DIRECT_KNOCKOUT first round, when the
+  // qualifier count isn't already a power of two). See
+  // src/lib/event-bracket.ts. The page-playoff format never has byes.
   teamBId String?    @db.ObjectId
   teamB   EventTeam? @relation("EventMatchTeamB", fields: [teamBId], references: [id])
 
+  // Every match is played as two rounds — each round has a clear winner
+  // (never a tie). These two fields are the actual recorded result;
+  // teamAScore/teamBScore (rounds won, 0-2) and winnerTeamId are derived
+  // from them when the result is saved, not entered directly.
+  round1WinnerId String?
+  round2WinnerId String?
+
+  // Rounds won by each team (0, 1 or 2) — derived from round1Winner/
+  // round2Winner, kept as plain fields so every existing "(2-1)"-style
+  // score display keeps working unchanged.
   teamAScore Int?
   teamBScore Int?
 
+  // Null means a draw (each team won one round) — only ever possible for
+  // a GROUP-stage match. A KNOCKOUT match that splits 1-1 requires the
+  // admin to additionally record a tie-break winner here instead, since a
+  // playoff match can never advance as a draw.
   winnerTeamId String?
 
   // "SCHEDULED" | "COMPLETED"

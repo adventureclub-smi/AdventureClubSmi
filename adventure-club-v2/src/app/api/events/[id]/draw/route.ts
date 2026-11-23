@@ -2,15 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { runEventDraw } from "@/lib/event-draw";
+import { mulberry32, seedToInt, generateLeagueSchedule } from "@/lib/event-groups";
 import { seedInitialBracket } from "@/lib/event-bracket";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 // Runs (or re-runs, before anything's been played) the random team draw for
 // a Campus Event — equally-sized teams, picked and coloured automatically —
-// then generates its fixtures in the same request: group-stage round robins
-// for LEAGUE_KNOCKOUT, or the first knockout round directly for
-// DIRECT_KNOCKOUT, since fixtures are a pure function of the drawn teams.
+// then generates its fixtures in the same request: for LEAGUE_KNOCKOUT,
+// every team gets a random, capped set of opponents in one combined table
+// (see event-groups.ts); for DIRECT_KNOCKOUT, the first knockout round is
+// seeded directly — fixtures are a pure function of the drawn teams either
+// way.
 export async function POST(req: Request, context: RouteContext) {
   const admin = await requireAdmin();
 
@@ -29,7 +32,7 @@ export async function POST(req: Request, context: RouteContext) {
 
     if (!event.eventTeamSize || (event.eventFormat !== "DIRECT_KNOCKOUT" && !event.eventMatchesPerTeamCap)) {
       return NextResponse.json(
-        { message: "Set the team size (and match cap, for League + Knockout) in Tournament Settings first." },
+        { message: "Set the team size (and matches per team, for League + Knockout) in Tournament Settings first." },
         { status: 400 }
       );
     }
@@ -69,7 +72,6 @@ export async function POST(req: Request, context: RouteContext) {
     const result = runEventDraw({
       registrationIds: registrations.map((r) => r.id),
       teamSize: event.eventTeamSize,
-      matchesPerTeamCap: event.eventMatchesPerTeamCap ?? registrations.length,
     });
 
     const createdTeams = [];
@@ -81,7 +83,6 @@ export async function POST(req: Request, context: RouteContext) {
           name: team.name,
           colour: team.colour,
           targetSize: team.registrationIds.length,
-          groupNumber: team.groupNumber,
         },
       });
 
@@ -123,26 +124,24 @@ export async function POST(req: Request, context: RouteContext) {
         }
       }
     } else {
-      // Round-robin fixtures within each group — every team plays every
-      // other team in its own group exactly once.
-      const groupNumbers = Array.from(new Set(createdTeams.map((t) => t.groupNumber)));
+      // One combined league table — every team plays a random, capped set
+      // of opponents (not necessarily everyone), derived from the same
+      // seed as the team draw so the whole thing is reproducible together.
+      const schedule = generateLeagueSchedule(
+        createdTeams.map((t) => t.id),
+        event.eventMatchesPerTeamCap!,
+        mulberry32(seedToInt(`${result.seed}:fixtures`))
+      );
 
-      for (const groupNumber of groupNumbers) {
-        const teamsInGroup = createdTeams.filter((t) => t.groupNumber === groupNumber);
-
-        for (let i = 0; i < teamsInGroup.length; i++) {
-          for (let j = i + 1; j < teamsInGroup.length; j++) {
-            await prisma.eventMatch.create({
-              data: {
-                trekId: eventId,
-                stage: "GROUP",
-                groupNumber,
-                teamAId: teamsInGroup[i].id,
-                teamBId: teamsInGroup[j].id,
-              },
-            });
-          }
-        }
+      for (const pair of schedule) {
+        await prisma.eventMatch.create({
+          data: {
+            trekId: eventId,
+            stage: "GROUP",
+            teamAId: pair.teamAId,
+            teamBId: pair.teamBId,
+          },
+        });
       }
     }
 

@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { Trash2, UserPlus, CheckCircle2, Undo2, ScanLine, QrCode } from "lucide-react";
+import { Trash2, UserPlus, CheckCircle2, Undo2, ScanLine, QrCode, Trophy } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import AddEventParticipantModal from "./AddEventParticipantModal";
 import QrScannerModal from "./QrScannerModal";
 import { colourToHex } from "@/lib/team-colours";
+import { PLAYOFF_ROUND_LABELS } from "@/lib/event-playoff";
 import styles from "./EventOverview.module.scss";
 
 type Registration = {
@@ -101,8 +102,11 @@ type Overview = {
   standings: { groupNumber: number | null; rows: StandingsRow[] }[];
 };
 
+// DIRECT_KNOCKOUT's generic bracket rounds, plus LEAGUE_KNOCKOUT's fixed
+// page-playoff rounds (Qualifier/Eliminator/Qualifier 2/Final) — a given
+// event only ever produces rounds from one of the two sets.
 const ROUND_LABELS: Record<string, string> = {
-  FINAL: "Final",
+  ...PLAYOFF_ROUND_LABELS,
   SEMIFINAL: "Semifinal",
   QUARTERFINAL: "Quarterfinal",
 };
@@ -121,10 +125,6 @@ function teamOf(teams: Team[], id: string | null) {
   return teams.find((t) => t.id === id) ?? null;
 }
 
-function teamName(teams: Team[], id: string | null) {
-  return teamOf(teams, id)?.name ?? (id ? "Unknown Team" : "—");
-}
-
 function TeamLabel({ team }: { team: Team | null }) {
   if (!team) return <span>—</span>;
   return (
@@ -135,6 +135,10 @@ function TeamLabel({ team }: { team: Team | null }) {
   );
 }
 
+// Every match is two rounds, each with a clear winner — never entered as a
+// single "winner" + score. A 1-1 split is a legitimate draw for a league
+// match (allowDraw), but a knockout match can't advance as a draw, so that
+// case asks for one more pick: who wins the tie-break.
 function ResultForm({
   match,
   teams,
@@ -144,31 +148,61 @@ function ResultForm({
   match: Match;
   teams: Team[];
   allowDraw: boolean;
-  onSubmit: (winnerTeamId: string | null, teamAScore: string, teamBScore: string) => void;
+  onSubmit: (round1WinnerId: string, round2WinnerId: string, tiebreakWinnerId: string | null) => void;
 }) {
-  const [winner, setWinner] = useState("");
-  const [scoreA, setScoreA] = useState("");
-  const [scoreB, setScoreB] = useState("");
+  const [round1, setRound1] = useState("");
+  const [round2, setRound2] = useState("");
+  const [tiebreak, setTiebreak] = useState("");
 
   if (!match.teamBId) {
     return <span className={styles.byeTag}>Bye</span>;
   }
 
+  const teamAId = match.teamAId;
+  const teamBId = match.teamBId;
+  const isSplit = round1 && round2 && round1 !== round2;
+  const needsTiebreak = isSplit && !allowDraw;
+  const canSave = !!round1 && !!round2 && (!needsTiebreak || !!tiebreak);
+
+  function pill(roundValue: string, setRound: (v: string) => void, teamId: string) {
+    return (
+      <button
+        type="button"
+        className={`${styles.teamPill} ${roundValue === teamId ? styles.activePill : ""}`}
+        onClick={() => setRound(teamId)}
+      >
+        <TeamLabel team={teamOf(teams, teamId)} />
+      </button>
+    );
+  }
+
   return (
-    <div className={styles.resultForm}>
-      <input placeholder="A" value={scoreA} onChange={(e) => setScoreA(e.target.value)} />
-      <input placeholder="B" value={scoreB} onChange={(e) => setScoreB(e.target.value)} />
-      <select value={winner} onChange={(e) => setWinner(e.target.value)}>
-        <option value="">Winner...</option>
-        <option value={match.teamAId}>{teamName(teams, match.teamAId)}</option>
-        <option value={match.teamBId}>{teamName(teams, match.teamBId)}</option>
-        {allowDraw && <option value="DRAW">Draw</option>}
-      </select>
+    <div className={styles.resultForm} style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className={styles.roundLabel}>Round 1</span>
+        {pill(round1, setRound1, teamAId)}
+        {pill(round1, setRound1, teamBId)}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className={styles.roundLabel}>Round 2</span>
+        {pill(round2, setRound2, teamAId)}
+        {pill(round2, setRound2, teamBId)}
+      </div>
+
+      {needsTiebreak && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className={styles.roundLabel}>Tie-break</span>
+          {pill(tiebreak, setTiebreak, teamAId)}
+          {pill(tiebreak, setTiebreak, teamBId)}
+        </div>
+      )}
+
       <button
         type="button"
         className={styles.secondaryButton}
-        disabled={!winner}
-        onClick={() => onSubmit(winner === "DRAW" ? null : winner, scoreA, scoreB)}
+        disabled={!canSave}
+        onClick={() => onSubmit(round1, round2, needsTiebreak ? tiebreak : null)}
       >
         Save
       </button>
@@ -193,7 +227,6 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   // Tournament settings (decided later, once attendance is known)
   const [tsTeamSize, setTsTeamSize] = useState("");
   const [tsFormat, setTsFormat] = useState<"LEAGUE_KNOCKOUT" | "DIRECT_KNOCKOUT">("LEAGUE_KNOCKOUT");
-  const [tsQualifiers, setTsQualifiers] = useState<"4" | "6">("4");
   const [tsMatchCap, setTsMatchCap] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsLoadedFor, setSettingsLoadedFor] = useState("");
@@ -245,7 +278,6 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
     setTsTeamSize(data.event.eventTeamSize ? String(data.event.eventTeamSize) : "");
     setTsFormat(data.event.eventFormat === "DIRECT_KNOCKOUT" ? "DIRECT_KNOCKOUT" : "LEAGUE_KNOCKOUT");
-    setTsQualifiers(data.event.eventQualifiersCount === 6 ? "6" : "4");
     setTsMatchCap(data.event.eventMatchesPerTeamCap ? String(data.event.eventMatchesPerTeamCap) : "");
     setSettingsLoadedFor(data.event.id);
   }, [data, settingsLoadedFor]);
@@ -260,7 +292,6 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       body: JSON.stringify({
         teamSize: tsTeamSize || undefined,
         eventFormat: tsFormat,
-        qualifiersCount: tsFormat === "LEAGUE_KNOCKOUT" ? tsQualifiers : undefined,
         matchesPerTeamCap: tsFormat === "LEAGUE_KNOCKOUT" ? tsMatchCap || undefined : undefined,
       }),
     });
@@ -279,9 +310,9 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
   async function handleRecordResult(
     matchId: string,
-    winnerTeamId: string | null,
-    teamAScore: string,
-    teamBScore: string
+    round1WinnerId: string,
+    round2WinnerId: string,
+    tiebreakWinnerId: string | null
   ) {
     setMessage(null);
 
@@ -289,9 +320,9 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        winnerTeamId,
-        teamAScore: teamAScore || undefined,
-        teamBScore: teamBScore || undefined,
+        round1WinnerId,
+        round2WinnerId,
+        tiebreakWinnerId: tiebreakWinnerId || undefined,
       }),
     });
 
@@ -461,6 +492,11 @@ export default function EventOverview({ eventId }: { eventId: string }) {
         ]}
         quickActions={
           <div style={{ display: "flex", gap: 10 }}>
+            <a href={`/events/${eventId}/display`} target="_blank" rel="noopener noreferrer">
+              <button className={styles.secondaryButton} type="button">
+                <Trophy size={14} /> TV Display
+              </button>
+            </a>
             <button className={styles.secondaryButton} onClick={openQr}>
               <QrCode size={14} /> Registration QR
             </button>
@@ -519,8 +555,8 @@ export default function EventOverview({ eventId }: { eventId: string }) {
           </strong>
         </div>
         <div className={styles.kpi}>
-          <span>Qualify for knockout</span>
-          <strong>{event.eventQualifiersCount ?? "—"}</strong>
+          <span>Qualify for playoff</span>
+          <strong>{event.eventFormat === "DIRECT_KNOCKOUT" ? "—" : "Top 4"}</strong>
         </div>
       </div>
 
@@ -679,20 +715,14 @@ export default function EventOverview({ eventId }: { eventId: string }) {
               <option value="DIRECT_KNOCKOUT">Direct Knockout</option>
             </select>
             {tsFormat === "LEAGUE_KNOCKOUT" && (
-              <>
-                <select value={tsQualifiers} onChange={(e) => setTsQualifiers(e.target.value as typeof tsQualifiers)}>
-                  <option value="4">Top 4 qualify</option>
-                  <option value="6">Top 6 qualify</option>
-                </select>
-                <input
-                  type="number"
-                  min={2}
-                  placeholder="Max matches / team"
-                  value={tsMatchCap}
-                  onChange={(e) => setTsMatchCap(e.target.value)}
-                  style={{ width: 230 }}
-                />
-              </>
+              <input
+                type="number"
+                min={2}
+                placeholder="Max matches / team"
+                value={tsMatchCap}
+                onChange={(e) => setTsMatchCap(e.target.value)}
+                style={{ width: 230 }}
+              />
             )}
             <button
               className={styles.primaryButton}
@@ -788,8 +818,8 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                           match={match}
                           teams={teams}
                           allowDraw
-                          onSubmit={(winnerTeamId, a, b) =>
-                            handleRecordResult(match.id, winnerTeamId, a, b)
+                          onSubmit={(round1, round2, tiebreak) =>
+                            handleRecordResult(match.id, round1, round2, tiebreak)
                           }
                         />
                       )}
@@ -928,8 +958,8 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                               match={match}
                               teams={teams}
                               allowDraw={false}
-                              onSubmit={(winnerTeamId, a, b) =>
-                                handleRecordResult(match.id, winnerTeamId, a, b)
+                              onSubmit={(round1, round2, tiebreak) =>
+                                handleRecordResult(match.id, round1, round2, tiebreak)
                               }
                             />
                           </div>

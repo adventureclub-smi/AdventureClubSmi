@@ -55,20 +55,21 @@ export async function GET(req: Request, context: RouteContext) {
     const groupMatches = matches.filter((m) => m.stage === "GROUP");
     const knockoutMatches = matches.filter((m) => m.stage === "KNOCKOUT");
 
-    const standings = event.eventQualifiersCount
-      ? computeGroupStandings(
-          teams,
-          groupMatches.map((m) => ({
-            teamAId: m.teamAId,
-            teamBId: m.teamBId ?? "",
-            winnerTeamId: m.winnerTeamId,
-            status: m.status,
-            groupNumber: m.groupNumber,
-          })),
-          event.eventQualifiersCount,
-          event.eventDrawSeed ?? ""
-        )
-      : [];
+    const standings =
+      groupMatches.length > 0
+        ? computeGroupStandings(
+            teams,
+            groupMatches.map((m) => ({
+              teamAId: m.teamAId,
+              teamBId: m.teamBId ?? "",
+              winnerTeamId: m.winnerTeamId,
+              status: m.status,
+              groupNumber: m.groupNumber,
+            })),
+            event.eventQualifiersCount ?? 4,
+            event.eventDrawSeed ?? ""
+          )
+        : [];
 
     return NextResponse.json({
       event,

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { computeGroupStandings } from "@/lib/event-points-table";
 import { seedInitialBracket, nextRoundPairs, roundNamesForBracketSize } from "@/lib/event-bracket";
+import { seedPagePlayoff, nextPlayoffStep, PLAYOFF_ROUND_LABELS } from "@/lib/event-playoff";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -21,10 +22,11 @@ function seededTiebreak(teamId: string, seed: string): number {
   return hash;
 }
 
-// One "advance the bracket" action, re-used for every step: generates the
-// first knockout round from the finished group stage, or — once called
-// again after a round's results are in — pairs up that round's winners into
-// the next one. The admin UI just has a single button it keeps clicking.
+// One "advance" action, re-used for every step — the admin UI just has a
+// single button it keeps clicking. LEAGUE_KNOCKOUT plays a fixed 4-team
+// page playoff (Qualifier/Eliminator/Qualifier 2/Final — see
+// event-playoff.ts); DIRECT_KNOCKOUT plays the generic bracket in
+// event-bracket.ts instead, seeded directly from every team at draw time.
 export async function POST(req: Request, context: RouteContext) {
   const admin = await requireAdmin();
 
@@ -47,91 +49,15 @@ export async function POST(req: Request, context: RouteContext) {
       orderBy: { id: "asc" },
     });
 
+    if (event.eventFormat !== "DIRECT_KNOCKOUT") {
+      return handlePagePlayoff(eventId, event, teams, existingKnockout);
+    }
+
     if (existingKnockout.length === 0) {
-      if (!event.eventQualifiersCount) {
-        return NextResponse.json(
-          { message: "Set the qualifier count in Team Allocation's tournament settings before generating the bracket." },
-          { status: 400 }
-        );
-      }
-
-      const groupMatches = await prisma.eventMatch.findMany({
-        where: { trekId: eventId, stage: "GROUP" },
-      });
-
-      const unplayed = groupMatches.filter((m) => m.status !== "COMPLETED");
-      if (unplayed.length > 0) {
-        return NextResponse.json(
-          { message: "The group stage isn't finished yet." },
-          { status: 400 }
-        );
-      }
-
-      const standings = computeGroupStandings(
-        teams,
-        groupMatches.map((m) => ({
-          teamAId: m.teamAId,
-          teamBId: m.teamBId ?? "",
-          winnerTeamId: m.winnerTeamId,
-          status: m.status,
-          groupNumber: m.groupNumber,
-        })),
-        event.eventQualifiersCount,
-        event.eventDrawSeed ?? ""
+      return NextResponse.json(
+        { message: "Direct Knockout seeds its bracket when teams are drawn — nothing to generate here." },
+        { status: 400 }
       );
-
-      const qualifiers = standings
-        .flatMap((group) =>
-          group.rows
-            .filter((row) => row.qualified)
-            .map((row, positionInGroup) => ({ row, positionInGroup }))
-        )
-        .sort((a, b) => {
-          if (a.positionInGroup !== b.positionInGroup) return a.positionInGroup - b.positionInGroup;
-          if (a.row.points !== b.row.points) return b.row.points - a.row.points;
-          return (
-            seededTiebreak(a.row.teamId, event.eventDrawSeed ?? "") -
-            seededTiebreak(b.row.teamId, event.eventDrawSeed ?? "")
-          );
-        })
-        .map(({ row }, i) => ({ teamId: row.teamId, seed: i + 1 }));
-
-      if (qualifiers.length < 2) {
-        return NextResponse.json(
-          { message: "Not enough qualifying teams to start a bracket." },
-          { status: 400 }
-        );
-      }
-
-      const { roundName, slots } = seedInitialBracket(qualifiers);
-
-      for (const slot of slots) {
-        if (slot.type === "bye") {
-          await prisma.eventMatch.create({
-            data: {
-              trekId: eventId,
-              stage: "KNOCKOUT",
-              round: roundName,
-              teamAId: slot.teamId,
-              teamBId: null,
-              winnerTeamId: slot.teamId,
-              status: "COMPLETED",
-            },
-          });
-        } else {
-          await prisma.eventMatch.create({
-            data: {
-              trekId: eventId,
-              stage: "KNOCKOUT",
-              round: roundName,
-              teamAId: slot.teamAId,
-              teamBId: slot.teamBId,
-            },
-          });
-        }
-      }
-
-      return NextResponse.json({ message: `${roundName} bracket generated.`, round: roundName });
     }
 
     const currentRoundName = existingKnockout[existingKnockout.length - 1].round!;
@@ -147,10 +73,7 @@ export async function POST(req: Request, context: RouteContext) {
 
     // Recover how many teams the bracket actually started with from the
     // first round's own rows — a match row held 2 of them, a bye row held
-    // 1 — which works the same whether that round came from group-stage
-    // qualifiers (LEAGUE_KNOCKOUT) or directly from every team
-    // (DIRECT_KNOCKOUT), instead of relying on eventQualifiersCount (which
-    // DIRECT_KNOCKOUT events never set).
+    // 1.
     const firstRoundName = existingKnockout[0].round!;
     const firstRoundRows = existingKnockout.filter((m) => m.round === firstRoundName);
     const startingTeamCount = firstRoundRows.reduce((sum, m) => sum + (m.teamBId ? 2 : 1), 0);
@@ -187,4 +110,86 @@ export async function POST(req: Request, context: RouteContext) {
     console.error(error);
     return NextResponse.json({ message: "Something went wrong." }, { status: 500 });
   }
+}
+
+async function handlePagePlayoff(
+  eventId: string,
+  event: { eventDrawSeed: string | null },
+  teams: { id: string; name: string; colour: string }[],
+  existingKnockout: {
+    id: string;
+    round: string | null;
+    teamAId: string;
+    teamBId: string | null;
+    winnerTeamId: string | null;
+    status: string;
+  }[]
+) {
+  if (existingKnockout.length === 0) {
+    const groupMatches = await prisma.eventMatch.findMany({
+      where: { trekId: eventId, stage: "GROUP" },
+    });
+
+    const unplayed = groupMatches.filter((m) => m.status !== "COMPLETED");
+    if (unplayed.length > 0) {
+      return NextResponse.json({ message: "The league stage isn't finished yet." }, { status: 400 });
+    }
+
+    const [standings] = computeGroupStandings(
+      teams.map((t) => ({ ...t, groupNumber: null })),
+      groupMatches.map((m) => ({
+        teamAId: m.teamAId,
+        teamBId: m.teamBId ?? "",
+        winnerTeamId: m.winnerTeamId,
+        status: m.status,
+        groupNumber: null,
+      })),
+      4,
+      event.eventDrawSeed ?? ""
+    );
+
+    const qualifiers = standings.rows.filter((row) => row.qualified).map((row) => row.teamId);
+
+    if (qualifiers.length < 4) {
+      return NextResponse.json(
+        { message: "Need at least 4 teams in the league table to start the playoff." },
+        { status: 400 }
+      );
+    }
+
+    const [qualifier, eliminator] = seedPagePlayoff(
+      qualifiers.slice(0, 4) as [string, string, string, string]
+    );
+
+    await prisma.eventMatch.create({
+      data: { trekId: eventId, stage: "KNOCKOUT", round: qualifier.round, teamAId: qualifier.teamAId, teamBId: qualifier.teamBId },
+    });
+    await prisma.eventMatch.create({
+      data: { trekId: eventId, stage: "KNOCKOUT", round: eliminator.round, teamAId: eliminator.teamAId, teamBId: eliminator.teamBId },
+    });
+
+    return NextResponse.json({ message: "Qualifier and Eliminator generated." });
+  }
+
+  const step = nextPlayoffStep(existingKnockout);
+
+  if (step.kind === "waiting") {
+    return NextResponse.json({ message: step.waitingOn }, { status: 400 });
+  }
+
+  if (step.kind === "done") {
+    return NextResponse.json({ message: "The tournament is already complete." });
+  }
+
+  await prisma.eventMatch.create({
+    data: {
+      trekId: eventId,
+      stage: "KNOCKOUT",
+      round: step.round,
+      teamAId: step.teamAId,
+      teamBId: step.teamBId,
+    },
+  });
+
+  return NextResponse.json({ message: `${PLAYOFF_ROUND_LABELS[step.round]} generated.` });
 }
