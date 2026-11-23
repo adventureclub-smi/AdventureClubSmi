@@ -43,11 +43,14 @@ export async function GET(req: Request, context: RouteContext) {
 
     // The admin can draw teams, play with fixtures and record results
     // freely to test the tournament setup before the real thing starts —
-    // none of that (teams, fixtures, standings) is real to anyone else
-    // until "Close Registrations & Start Tournament" is clicked, so a
-    // regular visitor (registering or not) sees nothing has started yet.
+    // none of that (teams, fixtures, standings) shows up on this public
+    // page for anyone, admin included, until "Close Registrations & Start
+    // Tournament" is clicked. Admin testing happens through the admin
+    // panel's own (always-authenticated) overview endpoint, not by an
+    // admin bypass here — this page should show exactly what every other
+    // visitor sees, with no exceptions.
     const tournamentStarted = !!event.eventTournamentStarted;
-    const canSeeTournament = tournamentStarted || isAdmin || isCoreTeamMember;
+    const canSeeTournament = tournamentStarted;
 
     if (!canSeeTournament) {
       return NextResponse.json({
