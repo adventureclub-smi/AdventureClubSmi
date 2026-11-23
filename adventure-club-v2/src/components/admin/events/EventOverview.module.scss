@@ -57,6 +57,70 @@
 
 // ===== KPI strip: one card, divided by 1px rules, no icons, no shadow =====
 
+.draftBanner,
+.liveBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  p {
+    margin-top: 4px;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    max-width: 560px;
+  }
+
+  button {
+    flex: none;
+  }
+}
+
+.draftBanner {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+
+  strong {
+    color: var(--color-danger);
+  }
+}
+
+.liveBanner {
+  background: rgba(0, 160, 115, 0.08);
+  border: 1px solid rgba(0, 160, 115, 0.3);
+
+  strong {
+    color: var(--color-accent);
+  }
+}
+
+.helperNote {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.undoButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: none;
+  color: var(--color-danger);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.08);
+  }
+}
+
 .kpiStrip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

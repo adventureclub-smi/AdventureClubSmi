@@ -89,3 +89,49 @@ export function generateLeagueSchedule(
 
   return pairs;
 }
+
+// Reorders an already-built set of fixtures so the same team doesn't play
+// twice in a row — the circulant construction above packs a team's matches
+// close together (literally back-to-back at distance 1), which is fine for
+// correctness but means no rest between a team's games if played in that
+// order. Greedily picks, at each step, whichever remaining fixture's
+// least-rested team has had the longest break since it last played — this
+// keeps every team's gap at least `minGap` matches whenever the fixture
+// list allows it, and degrades to "as much gap as possible" rather than
+// failing when it doesn't (e.g. a team that's in nearly every fixture).
+export function spaceOutFixtures<T extends { teamAId: string; teamBId: string }>(
+  pairs: T[],
+  minGap = 2
+): T[] {
+  const remaining = pairs.slice();
+  const ordered: T[] = [];
+  const lastPlayedAt = new Map<string, number>();
+
+  while (remaining.length > 0) {
+    let bestIndex = 0;
+    let bestGap = -Infinity;
+
+    for (let i = 0; i < remaining.length; i++) {
+      const { teamAId, teamBId } = remaining[i];
+      const gapA = lastPlayedAt.has(teamAId) ? ordered.length - lastPlayedAt.get(teamAId)! : Infinity;
+      const gapB = lastPlayedAt.has(teamBId) ? ordered.length - lastPlayedAt.get(teamBId)! : Infinity;
+      const gap = Math.min(gapA, gapB);
+
+      if (gap > bestGap) {
+        bestGap = gap;
+        bestIndex = i;
+      }
+
+      // Already found a fixture that satisfies the rest requirement — no
+      // need to keep scanning for something even better.
+      if (bestGap >= minGap) break;
+    }
+
+    const [chosen] = remaining.splice(bestIndex, 1);
+    ordered.push(chosen);
+    lastPlayedAt.set(chosen.teamAId, ordered.length - 1);
+    lastPlayedAt.set(chosen.teamBId, ordered.length - 1);
+  }
+
+  return ordered;
+}

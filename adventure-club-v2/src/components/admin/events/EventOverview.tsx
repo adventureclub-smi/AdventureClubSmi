@@ -94,6 +94,7 @@ type Overview = {
     eventMatchesPerTeamCap: number | null;
     eventFormat: string;
     eventTeamsDrawnAt: string | null;
+    eventTournamentStarted: boolean | null;
   };
   registrations: Registration[];
   teams: Team[];
@@ -191,11 +192,14 @@ function ResultForm({
       </div>
 
       {needsTiebreak && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span className={styles.roundLabel}>Tie-break</span>
-          {pill(tiebreak, setTiebreak, teamAId)}
-          {pill(tiebreak, setTiebreak, teamBId)}
-        </div>
+        <>
+          <p className={styles.helperNote}>Rounds split 1-1 — knockout matches are best-of-3, so Round 3 decides it.</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className={styles.roundLabel}>Round 3</span>
+            {pill(tiebreak, setTiebreak, teamAId)}
+            {pill(tiebreak, setTiebreak, teamBId)}
+          </div>
+        </>
       )}
 
       <button
@@ -336,6 +340,26 @@ export default function EventOverview({ eventId }: { eventId: string }) {
     load();
   }
 
+  async function handleUndoResult(matchId: string) {
+    const confirmed = confirm(
+      "Undo this result? If it's a knockout match, any round it already fed into (Qualifier 2, the Final) will be undone too."
+    );
+    if (!confirmed) return;
+
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/matches/${matchId}`, { method: "DELETE" });
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to undo result.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
+
   async function handleAdvanceBracket() {
     setActing(true);
     setMessage(null);
@@ -405,7 +429,9 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   async function handleDraw() {
     const confirmed = data?.event.eventTeamsDrawnAt
       ? confirm("Redraw teams? This replaces the current teams and fixtures — only possible if no match has been played yet.")
-      : confirm("Draw teams now? Registration will close and fixtures will be generated immediately.");
+      : confirm(
+          "Draw teams now and generate fixtures? Registration stays open and nothing is shown publicly yet — use \"Close Registrations & Start Tournament\" below when you're ready to go live."
+        );
     if (!confirmed) return;
 
     setActing(true);
@@ -418,6 +444,35 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
     if (!res.ok) {
       setMessage({ text: json?.message || "Failed to draw teams.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
+
+  async function handleStartTournament(started: boolean) {
+    const confirmed = started
+      ? confirm(
+          "Close registrations and start the tournament? Teams, fixtures and the points table become visible to everyone right away."
+        )
+      : confirm("Reopen registrations? The tournament goes back to being hidden from the public.");
+    if (!confirmed) return;
+
+    setActing(true);
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/start-tournament`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ started }),
+    });
+    const json = await res.json().catch(() => null);
+
+    setActing(false);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to update the tournament.", error: true });
       return;
     }
 
@@ -538,6 +593,25 @@ export default function EventOverview({ eventId }: { eventId: string }) {
         onClose={() => setScannerOpen(false)}
         onMarked={load}
       />
+
+      <div className={event.eventTournamentStarted ? styles.liveBanner : styles.draftBanner}>
+        <div>
+          <strong>{event.eventTournamentStarted ? "Live" : "Draft — hidden from the public"}</strong>
+          <p>
+            {event.eventTournamentStarted
+              ? "Registrations are closed. Teams, fixtures and the points table are visible to everyone."
+              : "Registrations are still open. Draw teams and play with fixtures freely — nothing here is visible on the public page or the TV display yet."}
+          </p>
+        </div>
+        <button
+          type="button"
+          className={event.eventTournamentStarted ? styles.secondaryButton : styles.primaryButton}
+          disabled={acting}
+          onClick={() => handleStartTournament(!event.eventTournamentStarted)}
+        >
+          {event.eventTournamentStarted ? "Reopen Registrations" : "Close Registrations & Start Tournament"}
+        </button>
+      </div>
 
       <div className={styles.kpiStrip}>
         <div className={styles.kpi}>
@@ -813,7 +887,15 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                         )}
                       </div>
 
-                      {match.status !== "COMPLETED" && (
+                      {match.status === "COMPLETED" ? (
+                        <button
+                          type="button"
+                          className={styles.undoButton}
+                          onClick={() => handleUndoResult(match.id)}
+                        >
+                          <Undo2 size={13} /> Undo
+                        </button>
+                      ) : (
                         <ResultForm
                           match={match}
                           teams={teams}
@@ -952,16 +1034,26 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                           <span className={styles.byeTag}>Bye</span>
                         )}
 
-                        {match.status !== "COMPLETED" && match.teamBId && (
+                        {match.teamBId && (
                           <div style={{ marginTop: 8 }}>
-                            <ResultForm
-                              match={match}
-                              teams={teams}
-                              allowDraw={false}
-                              onSubmit={(round1, round2, tiebreak) =>
-                                handleRecordResult(match.id, round1, round2, tiebreak)
-                              }
-                            />
+                            {match.status === "COMPLETED" ? (
+                              <button
+                                type="button"
+                                className={styles.undoButton}
+                                onClick={() => handleUndoResult(match.id)}
+                              >
+                                <Undo2 size={13} /> Undo
+                              </button>
+                            ) : (
+                              <ResultForm
+                                match={match}
+                                teams={teams}
+                                allowDraw={false}
+                                onSubmit={(round1, round2, tiebreak) =>
+                                  handleRecordResult(match.id, round1, round2, tiebreak)
+                                }
+                              />
+                            )}
                           </div>
                         )}
                       </div>

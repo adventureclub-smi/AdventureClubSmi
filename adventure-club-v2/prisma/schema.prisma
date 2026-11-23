@@ -433,6 +433,16 @@ model Trek {
   // points-table tiebreaks — never for deciding team membership.
   eventDrawSeed String?
 
+  // Flips true from one admin action ("Close Registrations & Start
+  // Tournament" — see /api/events/[id]/start-tournament) that also sets
+  // registrationClosedManually. Until then the admin can draw teams, play
+  // with fixtures and record results freely to test the setup, but none of
+  // it — teams, fixtures, standings — is visible on the public event page
+  // or the TV display; everyone but admins/core team sees registration is
+  // still open and nothing else. Missing/false on every event created
+  // before this field existed, which is the correct default (hidden).
+  eventTournamentStarted Boolean?
+
   eventRegistrations EventRegistration[]
 
   eventTeams EventTeam[]

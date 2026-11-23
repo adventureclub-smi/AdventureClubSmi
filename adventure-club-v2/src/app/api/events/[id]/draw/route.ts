@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { runEventDraw } from "@/lib/event-draw";
-import { mulberry32, seedToInt, generateLeagueSchedule } from "@/lib/event-groups";
+import { mulberry32, seedToInt, generateLeagueSchedule, spaceOutFixtures } from "@/lib/event-groups";
 import { seedInitialBracket } from "@/lib/event-bracket";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -127,10 +127,12 @@ export async function POST(req: Request, context: RouteContext) {
       // One combined league table — every team plays a random, capped set
       // of opponents (not necessarily everyone), derived from the same
       // seed as the team draw so the whole thing is reproducible together.
-      const schedule = generateLeagueSchedule(
-        createdTeams.map((t) => t.id),
-        event.eventMatchesPerTeamCap!,
-        mulberry32(seedToInt(`${result.seed}:fixtures`))
+      const schedule = spaceOutFixtures(
+        generateLeagueSchedule(
+          createdTeams.map((t) => t.id),
+          event.eventMatchesPerTeamCap!,
+          mulberry32(seedToInt(`${result.seed}:fixtures`))
+        )
       );
 
       for (const pair of schedule) {

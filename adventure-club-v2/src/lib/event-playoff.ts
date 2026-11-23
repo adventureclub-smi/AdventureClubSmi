@@ -103,3 +103,21 @@ export function nextPlayoffStep(matches: PlayoffMatch[]): NextPlayoffStep {
 
   return { kind: "done" };
 }
+
+// Which already-generated rounds stop being valid if this round's result is
+// undone — e.g. undoing the Qualifier invalidates Qualifier 2 and the Final
+// (both were seeded from results downstream of it), but leaves the
+// Eliminator alone since it never depended on the Qualifier. Used by the
+// match-undo endpoint to delete exactly the rounds a corrected result would
+// otherwise leave in an inconsistent state, and nothing more.
+export function roundsInvalidatedByUndo(round: PlayoffRound): PlayoffRound[] {
+  switch (round) {
+    case "QUALIFIER":
+    case "ELIMINATOR":
+      return ["QUALIFIER_2", "FINAL"];
+    case "QUALIFIER_2":
+      return ["FINAL"];
+    case "FINAL":
+      return [];
+  }
+}

@@ -22,10 +22,9 @@ export async function GET(req: Request, context: RouteContext) {
 
     const user = await getCurrentUser();
     const isAdmin = user?.role === "admin";
+    const isCoreTeamMember = !!user && isCoreTeamRole(user.clubRole);
 
     if (event.isTest || event.isDraft) {
-      const isCoreTeamMember = !!user && isCoreTeamRole(user.clubRole);
-
       const allowedForTest =
         !event.isTest || isAdmin || (!!user && event.testVisibleToUserIds.includes(user.id));
       const allowedForDraft = !event.isDraft || isAdmin || isCoreTeamMember;
@@ -35,16 +34,43 @@ export async function GET(req: Request, context: RouteContext) {
       }
     }
 
-    const [registeredCount, myRegistration, teams, groupMatches, knockoutMatches] =
-      await Promise.all([
-        prisma.eventRegistration.count({ where: { trekId: eventId } }),
-        user
-          ? prisma.eventRegistration.findFirst({ where: { trekId: eventId, userId: user.id } })
-          : null,
-        prisma.eventTeam.findMany({ where: { trekId: eventId } }),
-        prisma.eventMatch.findMany({ where: { trekId: eventId, stage: "GROUP" } }),
-        prisma.eventMatch.findMany({ where: { trekId: eventId, stage: "KNOCKOUT" }, orderBy: { id: "asc" } }),
-      ]);
+    const [registeredCount, myRegistration] = await Promise.all([
+      prisma.eventRegistration.count({ where: { trekId: eventId } }),
+      user
+        ? prisma.eventRegistration.findFirst({ where: { trekId: eventId, userId: user.id } })
+        : null,
+    ]);
+
+    // The admin can draw teams, play with fixtures and record results
+    // freely to test the tournament setup before the real thing starts —
+    // none of that (teams, fixtures, standings) is real to anyone else
+    // until "Close Registrations & Start Tournament" is clicked, so a
+    // regular visitor (registering or not) sees nothing has started yet.
+    const tournamentStarted = !!event.eventTournamentStarted;
+    const canSeeTournament = tournamentStarted || isAdmin || isCoreTeamMember;
+
+    if (!canSeeTournament) {
+      return NextResponse.json({
+        event,
+        registeredCount,
+        loggedIn: !!user,
+        isRegistered: !!myRegistration,
+        myShortCode: myRegistration?.shortCode ?? null,
+        myAttendanceMarked: myRegistration?.attendanceMarked ?? false,
+        myTeam: null,
+        teams: [],
+        groupMatches: [],
+        knockoutMatches: [],
+        standings: [],
+        tournamentStarted: false,
+      });
+    }
+
+    const [teams, groupMatches, knockoutMatches] = await Promise.all([
+      prisma.eventTeam.findMany({ where: { trekId: eventId } }),
+      prisma.eventMatch.findMany({ where: { trekId: eventId, stage: "GROUP" }, orderBy: { id: "asc" } }),
+      prisma.eventMatch.findMany({ where: { trekId: eventId, stage: "KNOCKOUT" }, orderBy: { id: "asc" } }),
+    ]);
 
     let myTeam = null;
     if (myRegistration?.teamId) {
@@ -62,6 +88,23 @@ export async function GET(req: Request, context: RouteContext) {
         };
       }
     }
+
+    // Every team's roster, by name — shown on the public Teams view and the
+    // TV display, not just the logged-in visitor's own team (myTeam above).
+    const allRegistrations = await prisma.eventRegistration.findMany({
+      where: { trekId: eventId, teamId: { not: null } },
+      include: { user: { select: { fullName: true } } },
+    });
+
+    const rosterByTeam = new Map<string, string[]>();
+    for (const r of allRegistrations) {
+      const name = r.user?.fullName ?? r.guestName ?? "Guest";
+      const list = rosterByTeam.get(r.teamId!) ?? [];
+      list.push(name);
+      rosterByTeam.set(r.teamId!, list);
+    }
+
+    const teamsWithRosters = teams.map((t) => ({ ...t, members: rosterByTeam.get(t.id) ?? [] }));
 
     const standings =
       groupMatches.length > 0
@@ -87,10 +130,11 @@ export async function GET(req: Request, context: RouteContext) {
       myShortCode: myRegistration?.shortCode ?? null,
       myAttendanceMarked: myRegistration?.attendanceMarked ?? false,
       myTeam,
-      teams,
+      teams: teamsWithRosters,
       groupMatches,
       knockoutMatches,
       standings,
+      tournamentStarted: true,
     });
   } catch (error) {
     console.error(error);
