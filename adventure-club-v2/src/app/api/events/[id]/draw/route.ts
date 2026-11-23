@@ -30,6 +30,13 @@ export async function POST(req: Request, context: RouteContext) {
       return NextResponse.json({ message: "Event not found." }, { status: 404 });
     }
 
+    if (event.eventTournamentStarted) {
+      return NextResponse.json(
+        { message: "Can't redraw teams once the tournament has started." },
+        { status: 400 }
+      );
+    }
+
     if (!event.eventTeamSize || (event.eventFormat !== "DIRECT_KNOCKOUT" && !event.eventMatchesPerTeamCap)) {
       return NextResponse.json(
         { message: "Set the team size (and matches per team, for League + Knockout) in Tournament Settings first." },
@@ -156,6 +163,60 @@ export async function POST(req: Request, context: RouteContext) {
       message: "Teams drawn and fixtures generated.",
       teams: createdTeams.length,
     });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ message: "Something went wrong." }, { status: 500 });
+  }
+}
+
+// Undoes a test draw entirely — clears every team and fixture and puts the
+// event back to "not drawn yet", rather than immediately drawing again like
+// POST does. For when a draw was only ever for checking the setup and the
+// admin wants a clean slate (e.g. more people registered since) without
+// also generating a fresh set of fixtures in the same action.
+export async function DELETE(req: Request, context: RouteContext) {
+  const admin = await requireAdmin();
+
+  if (!admin) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+  }
+
+  try {
+    const { id: eventId } = await context.params;
+
+    const event = await prisma.trek.findUnique({ where: { id: eventId } });
+
+    if (!event || event.type !== "EVENT") {
+      return NextResponse.json({ message: "Event not found." }, { status: 404 });
+    }
+
+    if (event.eventTournamentStarted) {
+      return NextResponse.json(
+        { message: "Can't undo team allocation once the tournament has started." },
+        { status: 400 }
+      );
+    }
+
+    const anyMatchPlayed = await prisma.eventMatch.findFirst({
+      where: { trekId: eventId, status: "COMPLETED" },
+    });
+
+    if (anyMatchPlayed) {
+      return NextResponse.json(
+        { message: "Team allocation can't be undone once a match has been played." },
+        { status: 400 }
+      );
+    }
+
+    await prisma.eventMatch.deleteMany({ where: { trekId: eventId } });
+    await prisma.eventRegistration.updateMany({ where: { trekId: eventId }, data: { teamId: null } });
+    await prisma.eventTeam.deleteMany({ where: { trekId: eventId } });
+    await prisma.trek.update({
+      where: { id: eventId },
+      data: { eventTeamsDrawnAt: null, eventDrawSeed: null },
+    });
+
+    return NextResponse.json({ message: "Team allocation undone." });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "Something went wrong." }, { status: 500 });

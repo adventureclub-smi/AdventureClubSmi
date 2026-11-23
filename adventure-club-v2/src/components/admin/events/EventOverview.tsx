@@ -451,6 +451,49 @@ export default function EventOverview({ eventId }: { eventId: string }) {
     load();
   }
 
+  async function handleUndoDraw() {
+    const confirmed = confirm(
+      "Undo team allocation? This clears every team and fixture and puts the event back to not-drawn-yet — only possible if no match has been played yet."
+    );
+    if (!confirmed) return;
+
+    setActing(true);
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/draw`, { method: "DELETE" });
+    const json = await res.json().catch(() => null);
+
+    setActing(false);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to undo team allocation.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
+
+  async function handleDeleteRegistration(registrationId: string, name: string) {
+    const confirmed = confirm(
+      `Remove ${name}'s registration? They'll be free to register again from their own dashboard.`
+    );
+    if (!confirmed) return;
+
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/registrations/${registrationId}`, { method: "DELETE" });
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to delete registration.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
+
   async function handleStartTournament(started: boolean) {
     const confirmed = started
       ? confirm(
@@ -654,7 +697,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
       {tab === "registrations" && (
         <>
-          {!isLocked && (
+          {!event.eventTournamentStarted && (
             <button
               className={styles.primaryButton}
               style={{ marginBottom: 16 }}
@@ -678,6 +721,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                 <th>Year</th>
                 <th>Team</th>
                 <th>Present</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -701,11 +745,20 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                       "—"
                     )}
                   </td>
+                  <td data-label="">
+                    <button
+                      type="button"
+                      className={styles.undoButton}
+                      onClick={() => handleDeleteRegistration(r.id, regName(r))}
+                    >
+                      <Trash2 size={13} /> Remove
+                    </button>
+                  </td>
                 </tr>
               ))}
               {members.length === 0 && (
                 <tr>
-                  <td colSpan={8}>No club members registered yet.</td>
+                  <td colSpan={9}>No club members registered yet.</td>
                 </tr>
               )}
             </tbody>
@@ -725,6 +778,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                 <th>Year</th>
                 <th>Team</th>
                 <th>Present</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -748,11 +802,20 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                       "—"
                     )}
                   </td>
+                  <td data-label="">
+                    <button
+                      type="button"
+                      className={styles.undoButton}
+                      onClick={() => handleDeleteRegistration(r.id, regName(r))}
+                    >
+                      <Trash2 size={13} /> Remove
+                    </button>
+                  </td>
                 </tr>
               ))}
               {guests.length === 0 && (
                 <tr>
-                  <td colSpan={8}>No guests registered yet.</td>
+                  <td colSpan={9}>No guests registered yet.</td>
                 </tr>
               )}
             </tbody>
@@ -809,18 +872,20 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
           <p>
             {isLocked
-              ? `Teams were drawn on ${new Date(event.eventTeamsDrawnAt!).toLocaleString()}. Redrawing is only possible if no match has been played yet.`
-              : "Draw teams once registration has closed and the roster is final."}
+              ? `Teams were drawn on ${new Date(event.eventTeamsDrawnAt!).toLocaleString()}. Redrawing or undoing is only possible if no match has been played yet.`
+              : "Draw teams any time to test the setup — redraw or undo freely until a match is actually played."}
           </p>
 
-          <button
-            className={styles.primaryButton}
-            disabled={acting}
-            onClick={handleDraw}
-            style={{ margin: "14px 0 24px" }}
-          >
-            {acting ? "Drawing..." : isLocked ? "Redraw Teams" : "Draw Teams"}
-          </button>
+          <div style={{ display: "flex", gap: 10, margin: "14px 0 24px" }}>
+            <button className={styles.primaryButton} disabled={acting} onClick={handleDraw}>
+              {acting ? "Drawing..." : isLocked ? "Redraw Teams" : "Draw Teams"}
+            </button>
+            {isLocked && (
+              <button type="button" className={styles.undoButton} disabled={acting} onClick={handleUndoDraw}>
+                <Undo2 size={13} /> Undo Team Allocation
+              </button>
+            )}
+          </div>
 
           {Array.from(new Set(teams.map((t) => t.groupNumber))).map((groupNumber) => (
             <div key={String(groupNumber)}>
