@@ -112,6 +112,7 @@ type PublicData = {
     seats: number;
     eventTeamSize: number | null;
     eventTeamsDrawnAt: string | null;
+    eventTournamentStarted: boolean | null;
     registrationOpensAt: string | null;
     registrationClosesAt: string | null;
     registrationOpenedManually: boolean;
@@ -464,18 +465,18 @@ export default function EventDetails({ eventId }: { eventId: string }) {
             </>
           )}
 
-          {!alreadyRegistered && event.eventTeamsDrawnAt && (
+          {!alreadyRegistered && event.eventTournamentStarted && (
             <>
               <div className={styles.badgeRow}>
                 <StatusBadge text="Registrations Closed" tone="danger" />
               </div>
               <p className={styles.note}>
-                Team allocation has already started — registration for this event is closed.
+                The tournament has started — registration for this event is closed.
               </p>
             </>
           )}
 
-          {!alreadyRegistered && !event.eventTeamsDrawnAt && registrationState === "NOT_OPEN" && (
+          {!alreadyRegistered && !event.eventTournamentStarted && registrationState === "NOT_OPEN" && (
             <>
               {event.registrationOpensAt ? (
                 <PaymentCountdown
@@ -496,7 +497,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
             </>
           )}
 
-          {!alreadyRegistered && !event.eventTeamsDrawnAt && registrationState === "CLOSED" && (
+          {!alreadyRegistered && !event.eventTournamentStarted && registrationState === "CLOSED" && (
             <>
               <div className={styles.badgeRow}>
                 <StatusBadge text="Registrations Closed" tone="danger" />
@@ -505,7 +506,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
             </>
           )}
 
-          {!alreadyRegistered && !event.eventTeamsDrawnAt && registrationState === "OPEN" && (
+          {!alreadyRegistered && !event.eventTournamentStarted && registrationState === "OPEN" && (
             <>
               {event.registrationClosesAt && (
                 <PaymentCountdown
