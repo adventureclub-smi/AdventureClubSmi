@@ -51,9 +51,9 @@ export async function POST(req: Request, context: RouteContext) {
       );
     }
 
-    if (event.eventTeamsDrawnAt) {
+    if (event.eventTournamentStarted) {
       return NextResponse.json(
-        { message: "Team allocation has already started for this event." },
+        { message: "The tournament has started — registration for this event is closed." },
         { status: 400 }
       );
     }

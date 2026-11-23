@@ -8,8 +8,9 @@ type RouteContext = { params: Promise<{ id: string }> };
 // Admin manually registering a student for a Campus Event — the same
 // "bypass the registration window" override /api/registrations gives
 // AddParticipantModal for treks, just on EventRegistration instead of
-// Registration. Still blocked once teams are drawn, same as a normal
-// self-registration, since there's no slot to put a late add into.
+// Registration. Blocked once the tournament has actually started, same as
+// a normal self-registration — a test draw alone doesn't block this, since
+// the admin can always redraw before starting for real.
 export async function POST(req: Request, context: RouteContext) {
   const admin = await requireAdmin();
 
@@ -31,9 +32,9 @@ export async function POST(req: Request, context: RouteContext) {
       return NextResponse.json({ message: "Event not found." }, { status: 404 });
     }
 
-    if (event.eventTeamsDrawnAt) {
+    if (event.eventTournamentStarted) {
       return NextResponse.json(
-        { message: "Team allocation has already started for this event." },
+        { message: "The tournament has started — registration for this event is closed." },
         { status: 400 }
       );
     }
