@@ -451,7 +451,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                 </div>
               ) : (
                 <p className={styles.note}>
-                  Teams are formed physically on the day — show up and pick your chit.
+                  You&apos;re registered! Teams will be drawn randomly once registration closes.
                 </p>
               )}
 
@@ -533,8 +533,8 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                   </button>
 
                   <p className={styles.note}>
-                    Come alone — no need to register with a group. Teams are formed on the day by picking a
-                    chit from a bag.
+                    Come alone — no need to register with a group. Teams are drawn randomly once
+                    registration closes.
                   </p>
                 </>
               ) : (

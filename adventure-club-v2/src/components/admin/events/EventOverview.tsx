@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { Trash2, UserPlus, CheckCircle2, Undo2, ScanLine, QrCode, Printer } from "lucide-react";
+import { Trash2, UserPlus, CheckCircle2, Undo2, ScanLine, QrCode } from "lucide-react";
 import PageHeader from "@/components/admin/shared/PageHeader";
 import AddEventParticipantModal from "./AddEventParticipantModal";
 import QrScannerModal from "./QrScannerModal";
@@ -198,14 +198,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsLoadedFor, setSettingsLoadedFor] = useState("");
 
-  // Team setup (pre-lock)
-  const [newTeamName, setNewTeamName] = useState("");
-  const [newTeamColour, setNewTeamColour] = useState("");
-  const [newTeamTarget, setNewTeamTarget] = useState("8");
-  const [assignQuery, setAssignQuery] = useState("");
-  const [assignResults, setAssignResults] = useState<Registration[] | null>(null);
-  const [assignSearching, setAssignSearching] = useState(false);
-  const [locking, setLocking] = useState(false);
+  // Draw
 
   // Registration QR poster
   const [qrOpen, setQrOpen] = useState(false);
@@ -378,116 +371,22 @@ export default function EventOverview({ eventId }: { eventId: string }) {
     load();
   }
 
-  // ===== Team Allocation (physical chit picking) =====
-
-  useEffect(() => {
-    if (!assignQuery.trim()) {
-      setAssignResults(null);
-      return;
-    }
-
-    let active = true;
-
-    const timeout = setTimeout(async () => {
-      setAssignSearching(true);
-      try {
-        const res = await fetch(
-          `/api/events/${eventId}/checkin?query=${encodeURIComponent(assignQuery)}`
-        );
-        const json = await res.json();
-        if (active) setAssignResults(json.registrations ?? []);
-      } finally {
-        if (active) setAssignSearching(false);
-      }
-    }, 300);
-
-    return () => {
-      active = false;
-      clearTimeout(timeout);
-    };
-  }, [assignQuery, eventId]);
-
-  async function handleCreateTeam() {
-    if (!newTeamName.trim() || !newTeamColour.trim()) {
-      setMessage({ text: "Team name and colour are required.", error: true });
-      return;
-    }
-
-    setMessage(null);
-
-    const res = await fetch(`/api/events/${eventId}/teams`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: newTeamName,
-        colour: newTeamColour,
-        targetSize: newTeamTarget ? Number(newTeamTarget) : 0,
-      }),
-    });
-
-    const json = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      setMessage({ text: json?.message || "Failed to create team.", error: true });
-      return;
-    }
-
-    setNewTeamName("");
-    setNewTeamColour("");
-    load();
-  }
-
-  async function handleDeleteTeam(teamId: string) {
-    const confirmed = confirm("Delete this team? Only possible if nobody is recorded onto it.");
+  async function handleDraw() {
+    const confirmed = data?.event.eventTeamsDrawnAt
+      ? confirm("Redraw teams? This replaces the current teams and fixtures — only possible if no match has been played yet.")
+      : confirm("Draw teams now? Registration will close and fixtures will be generated immediately.");
     if (!confirmed) return;
 
-    const res = await fetch(`/api/events/${eventId}/teams/${teamId}`, { method: "DELETE" });
-    const json = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      setMessage({ text: json?.message || "Failed to delete team.", error: true });
-      return;
-    }
-
-    load();
-  }
-
-  async function handleAssign(registrationId: string, teamId: string | null) {
-    const res = await fetch(`/api/events/${eventId}/teams/assign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ registrationId, teamId }),
-    });
-
-    const json = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      setMessage({ text: json?.message || "Failed to record allocation.", error: true });
-      return;
-    }
-
-    setAssignResults(
-      (prev) => prev?.map((r) => (r.id === registrationId ? json.registration : r)) ?? null
-    );
-    load();
-  }
-
-  async function handleLockTeams() {
-    const confirmed = confirm(
-      "Lock teams and generate fixtures? No further allocation changes or registrations will be possible after this."
-    );
-    if (!confirmed) return;
-
-    setLocking(true);
+    setActing(true);
     setMessage(null);
 
-    const res = await fetch(`/api/events/${eventId}/lock-teams`, { method: "POST" });
+    const res = await fetch(`/api/events/${eventId}/draw`, { method: "POST" });
     const json = await res.json().catch(() => null);
 
-    setLocking(false);
+    setActing(false);
 
     if (!res.ok) {
-      setMessage({ text: json?.message || "Failed to lock teams.", error: true });
+      setMessage({ text: json?.message || "Failed to draw teams.", error: true });
       return;
     }
 
@@ -754,201 +653,98 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       {tab === "teams" && (
         <div>
           <p>
-            Teams are formed physically — a chit per participant, drawn from a bag. This page
-            only helps print the right number of chits per team and records the result once
-            picked. It never decides anyone&apos;s team.
+            Teams are drawn automatically — everyone registered gets shuffled into equally-sized,
+            randomly-coloured teams in one click. Set the team size (and format) below, then draw.
           </p>
 
-          {isLocked ? (
-            <>
-              <p style={{ marginTop: 8 }}>
-                Teams were locked on {new Date(event.eventTeamsDrawnAt!).toLocaleString()}.
-              </p>
+          <div className={styles.sectionLabel} style={{ marginTop: 20, marginBottom: 8 }}>
+            Tournament settings
+          </div>
+          <p style={{ marginBottom: 12 }}>
+            Decide these once you know who actually showed up — there&apos;s no need to guess at
+            event creation.
+          </p>
 
-              {Array.from(new Set(teams.map((t) => t.groupNumber))).map((groupNumber) => (
-                <div key={String(groupNumber)}>
-                  {groupNumber !== null && <h3 className={styles.groupLabel}>Group {groupNumber}</h3>}
-                  <div className={styles.teamGrid}>
-                    {teams
-                      .filter((t) => t.groupNumber === groupNumber)
-                      .map((team) => (
-                        <div key={team.id} className={styles.teamCard}>
-                          <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span
-                              className={styles.swatch}
-                              style={{ background: colourToHex(team.colour) }}
-                            />
-                            {team.name}
-                          </h3>
-                          <ul>
-                            {registrations
-                              .filter((r) => r.teamId === team.id)
-                              .map((r) => (
-                                <li key={r.id}>{regName(r)}</li>
-                              ))}
-                          </ul>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            <>
-              <div className={styles.sectionLabel} style={{ marginTop: 20, marginBottom: 8 }}>
-                0. Tournament settings
-              </div>
-              <p style={{ marginBottom: 12 }}>
-                Decide these once you know who actually showed up — there&apos;s no need to guess at
-                event creation.
-              </p>
-
-              <div className={styles.teamSetupForm}>
-                <input
-                  type="number"
-                  min={1}
-                  placeholder="Target players / team"
-                  value={tsTeamSize}
-                  onChange={(e) => setTsTeamSize(e.target.value)}
-                  style={{ width: 170 }}
-                />
-                <select value={tsFormat} onChange={(e) => setTsFormat(e.target.value as typeof tsFormat)}>
-                  <option value="LEAGUE_KNOCKOUT">League + Knockout</option>
-                  <option value="DIRECT_KNOCKOUT">Direct Knockout</option>
+          <div className={styles.teamSetupForm}>
+            <input
+              type="number"
+              min={1}
+              placeholder="Players / team"
+              value={tsTeamSize}
+              onChange={(e) => setTsTeamSize(e.target.value)}
+              style={{ width: 170 }}
+            />
+            <select value={tsFormat} onChange={(e) => setTsFormat(e.target.value as typeof tsFormat)}>
+              <option value="LEAGUE_KNOCKOUT">League + Knockout</option>
+              <option value="DIRECT_KNOCKOUT">Direct Knockout</option>
+            </select>
+            {tsFormat === "LEAGUE_KNOCKOUT" && (
+              <>
+                <select value={tsQualifiers} onChange={(e) => setTsQualifiers(e.target.value as typeof tsQualifiers)}>
+                  <option value="4">Top 4 qualify</option>
+                  <option value="6">Top 6 qualify</option>
                 </select>
-                {tsFormat === "LEAGUE_KNOCKOUT" && (
-                  <>
-                    <select value={tsQualifiers} onChange={(e) => setTsQualifiers(e.target.value as typeof tsQualifiers)}>
-                      <option value="4">Top 4 qualify</option>
-                      <option value="6">Top 6 qualify</option>
-                    </select>
-                    <input
-                      type="number"
-                      min={2}
-                      placeholder="Max matches / team (blank = all play all)"
-                      value={tsMatchCap}
-                      onChange={(e) => setTsMatchCap(e.target.value)}
-                      style={{ width: 230 }}
-                    />
-                  </>
-                )}
-                <button
-                  className={styles.primaryButton}
-                  disabled={savingSettings}
-                  onClick={handleSaveTournamentSettings}
-                >
-                  {savingSettings ? "Saving..." : "Save Settings"}
-                </button>
-              </div>
-
-              <a
-                href={`/admin/events/${eventId}/chits`}
-                target="_blank"
-                rel="noreferrer"
-                style={{ display: "inline-block", margin: "12px 0 20px" }}
-              >
-                <button className={styles.secondaryButton} type="button">
-                  <Printer size={14} /> Print Chits
-                </button>
-              </a>
-
-              <div className={styles.sectionLabel} style={{ marginBottom: 8 }}>
-                1. Create teams
-              </div>
-
-              <div className={styles.teamSetupForm}>
-                <input
-                  placeholder="Team name"
-                  value={newTeamName}
-                  onChange={(e) => setNewTeamName(e.target.value)}
-                />
-                <input
-                  placeholder="Colour (e.g. Red)"
-                  value={newTeamColour}
-                  onChange={(e) => setNewTeamColour(e.target.value)}
-                />
                 <input
                   type="number"
-                  min={1}
-                  placeholder="Chits to print"
-                  value={newTeamTarget}
-                  onChange={(e) => setNewTeamTarget(e.target.value)}
-                  style={{ width: 120 }}
+                  min={2}
+                  placeholder="Max matches / team"
+                  value={tsMatchCap}
+                  onChange={(e) => setTsMatchCap(e.target.value)}
+                  style={{ width: 230 }}
                 />
-                <button className={styles.primaryButton} onClick={handleCreateTeam}>
-                  Add Team
-                </button>
-              </div>
+              </>
+            )}
+            <button
+              className={styles.primaryButton}
+              disabled={savingSettings}
+              onClick={handleSaveTournamentSettings}
+            >
+              {savingSettings ? "Saving..." : "Save Settings"}
+            </button>
+          </div>
 
-              {teams.map((team) => {
-                const assignedCount = registrations.filter((r) => r.teamId === team.id).length;
-                return (
-                  <div key={team.id} className={styles.teamSetupCard}>
-                    <span className={styles.swatch} style={{ background: colourToHex(team.colour) }} />
-                    <strong>{team.name}</strong>
-                    <span>
-                      {assignedCount} / {team.targetSize || "?"} assigned
-                    </span>
-                    <button
-                      className={styles.secondaryButton}
-                      disabled={assignedCount > 0}
-                      onClick={() => handleDeleteTeam(team.id)}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                );
-              })}
+          <p>
+            {isLocked
+              ? `Teams were drawn on ${new Date(event.eventTeamsDrawnAt!).toLocaleString()}. Redrawing is only possible if no match has been played yet.`
+              : "Draw teams once registration has closed and the roster is final."}
+          </p>
 
-              <div className={styles.sectionLabel} style={{ margin: "24px 0 8px" }}>
-                2. Record each participant&apos;s chit
-              </div>
+          <button
+            className={styles.primaryButton}
+            disabled={acting}
+            onClick={handleDraw}
+            style={{ margin: "14px 0 24px" }}
+          >
+            {acting ? "Drawing..." : isLocked ? "Redraw Teams" : "Draw Teams"}
+          </button>
 
-              {unassignedCount > 0 && (
-                <p className={styles.unassignedBanner}>
-                  {unassignedCount} registered participant(s) have no recorded team yet.
-                </p>
-              )}
-
-              <input
-                className={styles.checkinSearch}
-                placeholder="Search by code, name or Club ID"
-                value={assignQuery}
-                onChange={(e) => setAssignQuery(e.target.value)}
-              />
-
-              {assignSearching && <p>Searching...</p>}
-
-              {assignResults?.map((r) => (
-                <div key={r.id} className={styles.assignRow}>
-                  <span className={styles.assignName}>
-                    {r.shortCode} · {regName(r)}
-                  </span>
-                  {teams.map((team) => (
-                    <button
-                      key={team.id}
-                      className={`${styles.teamPill} ${r.teamId === team.id ? styles.activePill : ""}`}
-                      disabled={teams.length === 0}
-                      onClick={() => handleAssign(r.id, r.teamId === team.id ? null : team.id)}
-                    >
-                      <span className={styles.swatch} style={{ background: colourToHex(team.colour) }} />
-                      {team.name}
-                    </button>
+          {Array.from(new Set(teams.map((t) => t.groupNumber))).map((groupNumber) => (
+            <div key={String(groupNumber)}>
+              {groupNumber !== null && <h3 className={styles.groupLabel}>Group {groupNumber}</h3>}
+              <div className={styles.teamGrid}>
+                {teams
+                  .filter((t) => t.groupNumber === groupNumber)
+                  .map((team) => (
+                    <div key={team.id} className={styles.teamCard}>
+                      <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span
+                          className={styles.swatch}
+                          style={{ background: colourToHex(team.colour) }}
+                        />
+                        {team.name}
+                      </h3>
+                      <ul>
+                        {registrations
+                          .filter((r) => r.teamId === team.id)
+                          .map((r) => (
+                            <li key={r.id}>{regName(r)}</li>
+                          ))}
+                      </ul>
+                    </div>
                   ))}
-                </div>
-              ))}
-              {assignResults && assignResults.length === 0 && <p>No match.</p>}
-
-              <button
-                className={styles.primaryButton}
-                style={{ marginTop: 24 }}
-                disabled={locking || teams.length < 2 || unassignedCount > 0 || registrations.length === 0}
-                onClick={handleLockTeams}
-              >
-                {locking ? "Locking..." : "Lock Teams & Generate Fixtures"}
-              </button>
-            </>
-          )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
