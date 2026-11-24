@@ -151,6 +151,12 @@
   }
 }
 
+.kpiSub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
 .status {
   margin: 0 0 16px;
   padding: 10px 14px;
@@ -166,12 +172,22 @@
 }
 
 // ===== Underline tabs, on a full-width rule =====
+// More tabs than fit on a phone screen (7, at last count) — rather than
+// wrapping into a ragged second line, they scroll horizontally, same as a
+// native app's tab strip. The scrollbar itself is hidden since the row's
+// own fade/clip at the edge already signals there's more to it.
 
 .tabs {
   display: flex;
   gap: 4px;
   border-bottom: 1px solid var(--color-charcoal);
   margin-bottom: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .tab {
@@ -183,6 +199,8 @@
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
+  flex: none;
+  white-space: nowrap;
 
   &.active {
     color: var(--color-text);
@@ -224,6 +242,38 @@
 // Below 640px a data table becomes a stack of two-line rows: the header
 // disappears and each cell prints its own label before its value.
 @media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+
+  // The banner's text and its action button sit side by side on desktop;
+  // on a phone that squeezes both until the button's label wraps mid-word.
+  // Stacked, the button also gets a full-width, easy-to-hit tap target —
+  // this is the button that opens or closes the whole tournament.
+  .draftBanner,
+  .liveBanner {
+    flex-direction: column;
+    align-items: stretch;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  // Team names + a two-row result form don't fit next to each other at
+  // phone width without clipping — stack the result form under the
+  // fixture instead of beside it.
+  .matchRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .resultForm {
+    width: 100%;
+  }
+
   .kpiStrip {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -268,6 +318,14 @@
         text-align: left;
       }
     }
+  }
+
+  // Slightly taller than desktop so every row action (Mark Present, Remove,
+  // Undo...) is a comfortable thumb target instead of a precision tap.
+  .primaryButton,
+  .secondaryButton,
+  .undoButton {
+    min-height: 36px;
   }
 }
 

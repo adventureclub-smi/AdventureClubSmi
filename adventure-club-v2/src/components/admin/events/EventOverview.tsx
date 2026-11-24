@@ -227,6 +227,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("registrations");
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [acting, setActing] = useState(false);
+  const [undoingAll, setUndoingAll] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -248,14 +249,18 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [registrationUrl, setRegistrationUrl] = useState("");
 
+  // Re-fetches in the background after an action (toggle check-in, draw,
+  // delete...) without touching `loading` — that flag is only for the very
+  // first load. Flipping it here would unmount the whole tab back to the
+  // "Loading event..." screen on every click, which is jarring for
+  // something as routine as a Remove button.
   async function load() {
-    setLoading(true);
     try {
       const res = await fetch(`/api/events/${eventId}/overview`);
       const json = await res.json();
       setData(json);
-    } finally {
-      setLoading(false);
+    } catch {
+      // The page still shows the last good data — nothing to recover here.
     }
   }
 
@@ -359,6 +364,29 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
     if (!res.ok) {
       setMessage({ text: json?.message || "Failed to undo result.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
+
+  async function handleUndoAllResults() {
+    const confirmed = confirm(
+      "Undo every recorded result for this event? Group and knockout results alike are reset, and any knockout rounds generated from them are deleted — teams and fixtures themselves are untouched."
+    );
+    if (!confirmed) return;
+
+    setUndoingAll(true);
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/matches/undo-all`, { method: "POST" });
+    const json = await res.json().catch(() => null);
+
+    setUndoingAll(false);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to undo results.", error: true });
       return;
     }
 
@@ -665,7 +693,10 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       <div className={styles.kpiStrip}>
         <div className={styles.kpi}>
           <span>Registered</span>
-          <strong>{registrations.length}</strong>
+          <strong>
+            {registrations.length}
+            <span className={styles.kpiSub}> ({presentCount} present)</span>
+          </strong>
         </div>
         <div className={styles.kpi}>
           <span>Teams</span>
@@ -940,6 +971,19 @@ export default function EventOverview({ eventId }: { eventId: string }) {
 
       {tab === "fixtures" && (
         <div>
+          {(groupMatches.some((m) => m.status === "COMPLETED") ||
+            knockoutMatches.some((m) => m.status === "COMPLETED" && m.teamBId)) && (
+            <button
+              type="button"
+              className={styles.undoButton}
+              disabled={undoingAll}
+              onClick={handleUndoAllResults}
+              style={{ marginBottom: 16 }}
+            >
+              <Undo2 size={13} /> {undoingAll ? "Undoing..." : "Undo All Results"}
+            </button>
+          )}
+
           {groupMatches.length === 0 ? (
             <p>Lock teams first to generate fixtures.</p>
           ) : (
@@ -1239,7 +1283,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
           <table className={styles.table} style={{ marginTop: 16 }}>
             <thead>
               <tr>
-                <th>Code</th>
+                <th>S.No</th>
                 <th>Name</th>
                 <th>Club ID / Phone</th>
                 <th>Department</th>
@@ -1253,10 +1297,10 @@ export default function EventOverview({ eventId }: { eventId: string }) {
             <tbody>
               {registrations
                 .filter((r) => r.attendanceMarked)
-                .map((r) => (
+                .map((r, idx) => (
                   <tr key={r.id}>
-                    <td className={styles.num} data-label="Code">
-                      {r.shortCode}
+                    <td className={styles.num} data-label="S.No">
+                      {idx + 1}
                     </td>
                     <td data-label="Name">{regName(r)}</td>
                     <td data-label="Club ID / Phone">{regIdentifier(r)}</td>
