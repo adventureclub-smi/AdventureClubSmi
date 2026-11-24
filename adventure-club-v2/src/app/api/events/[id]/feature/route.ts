@@ -8,9 +8,10 @@ type RouteContext = { params: Promise<{ id: string }> };
 // section (see /api/homepage/featured-event). Only one event is ever
 // featured at a time — turning this on unfeatures whatever else was
 // featured, rather than asking the admin to remember to turn the old one
-// off first. Gated on the tournament having actually started, same as every
-// other "this is now public" action for a Campus Event, since nothing about
-// teams/fixtures is meant to be visible before that.
+// off first. Gated on teams actually being drawn (not on the tournament
+// having started) — an admin may want students to see the roster and start
+// checking their team right after the draw, well before registrations are
+// formally closed.
 export async function POST(req: Request, context: RouteContext) {
   const admin = await requireAdmin();
 
@@ -28,9 +29,9 @@ export async function POST(req: Request, context: RouteContext) {
       return NextResponse.json({ message: "Event not found." }, { status: 404 });
     }
 
-    if (featured && !event.eventTournamentStarted) {
+    if (featured && !event.eventTeamsDrawnAt) {
       return NextResponse.json(
-        { message: "Start the tournament (\"Close Registrations & Start Tournament\") before featuring it on the homepage." },
+        { message: "Draw teams first — there's nothing to show on the homepage yet." },
         { status: 400 }
       );
     }

@@ -559,6 +559,13 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   }
 
   async function handleToggleFeatured(featured: boolean) {
+    if (featured) {
+      const confirmed = confirm(
+        "Feature this on the homepage? Every team's full roster (names included) becomes visible to anyone who visits the site, logged in or not — right under the Hero section."
+      );
+      if (!confirmed) return;
+    }
+
     setActing(true);
     setMessage(null);
 
@@ -722,7 +729,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
             {event.eventTournamentStarted ? "Reopen Registrations" : "Close Registrations & Start Tournament"}
           </button>
 
-          {event.eventTournamentStarted && (
+          {isLocked && (
             <button
               type="button"
               className={styles.secondaryButton}

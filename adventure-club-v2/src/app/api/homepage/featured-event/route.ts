@@ -4,12 +4,14 @@ import { getCurrentUser } from "@/lib/current-user";
 import { buildEventPublicPayload } from "@/lib/event-public-payload";
 
 // Powers the homepage's Live League section — finds whichever Campus Event
-// the admin has featured (see /api/events/[id]/feature) and actually
-// started, and returns the same shape /api/events/[id]/public does once a
-// tournament's started. Only one event is ever featured at a time (the
-// feature route enforces that), so there's nothing to disambiguate here.
-// `event: null` means "nothing to show" — the homepage section renders
-// nothing rather than an empty state in that case.
+// the admin has featured (see /api/events/[id]/feature), which only ever
+// happens once teams are drawn (that route's own check), and returns the
+// same shape /api/events/[id]/public does once a tournament's started. Only
+// one event is ever featured at a time (the feature route enforces that),
+// so there's nothing to disambiguate here. No login required to read this —
+// the whole point is that guests and on-spot sign-ups with no NAVIRA
+// account can still see their team. `event: null` means "nothing to show"
+// — the homepage section renders nothing rather than an empty state.
 //
 // Forced dynamic: the early "nothing featured" branch returns before ever
 // calling getCurrentUser() (the only dynamic-API use in this file), so
@@ -22,7 +24,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const event = await prisma.trek.findFirst({
-      where: { type: "EVENT", eventFeaturedOnHomepage: true, eventTournamentStarted: true },
+      where: { type: "EVENT", eventFeaturedOnHomepage: true, eventTeamsDrawnAt: { not: null } },
     });
 
     if (!event) {
