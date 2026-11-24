@@ -7,7 +7,7 @@ import { Trophy } from "lucide-react";
 import { colourToHex } from "@/lib/team-colours";
 import styles from "./LiveLeagueSection.module.scss";
 
-type Team = { id: string; name: string; colour: string };
+type Team = { id: string; name: string; colour: string; members?: string[] };
 
 type StandingsRow = {
   teamId: string;
@@ -41,6 +41,12 @@ const POLL_MS = 15000;
 // admin has both started a tournament and explicitly featured it (see the
 // event admin page's "Feature on Homepage" toggle) — most of the time
 // there's no event live, and this section simply isn't there.
+//
+// The full team-by-team roster (not just "myTeam") is shown to everyone,
+// logged in or not — a lot of sign-ups are guests or added on the spot by
+// an admin, so "log in to see your team" would leave them with no way to
+// ever find out which team they're on. Scanning the roster for your own
+// name works regardless of whether you have a NAVIRA account at all.
 export default function LiveLeagueSection() {
   const [data, setData] = useState<FeaturedEvent | null>(null);
 
@@ -108,12 +114,38 @@ export default function LiveLeagueSection() {
               <p className={styles.note}>Teams haven&apos;t been drawn yet — check back soon.</p>
             )}
 
-            {!data?.loggedIn && (
-              <p className={styles.note}>
-                Registered for this?{" "}
-                <Link href={`/login?redirect=/events/${event.id}`}>Log in</Link> to see your team.
-              </p>
-            )}
+            {(() => {
+              // A lot of sign-ups are guests or added on the spot — people
+              // with no NAVIRA account to log into and see "myTeam" above.
+              // The full roster is the thing that actually works for
+              // everyone: find your own team by scanning for your name.
+              const teams = (data?.teams ?? []).filter((t) => (t.members ?? []).length > 0);
+              if (teams.length === 0) return null;
+
+              return (
+                <div className={styles.rosterSection}>
+                  <h3>Teams</h3>
+                  <div className={styles.rosterGrid}>
+                    {teams.map((team) => (
+                      <div key={team.id} className={styles.rosterCard}>
+                        <div className={styles.rosterCardHead}>
+                          <span
+                            className={styles.swatch}
+                            style={{ background: colourToHex(team.colour) }}
+                          />
+                          {team.name}
+                        </div>
+                        <ul>
+                          {(team.members ?? []).map((name, i) => (
+                            <li key={`${team.id}-${i}`}>{name}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {(() => {
               const rows = data?.standings?.[0]?.rows ?? [];

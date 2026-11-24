@@ -100,6 +100,50 @@
   flex: none;
 }
 
+.rosterSection {
+  margin-top: 40px;
+  text-align: left;
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+}
+
+.rosterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.rosterCard {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--color-midnight);
+
+  ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    font-size: 13px;
+    color: var(--color-text-muted);
+  }
+
+  li {
+    padding: 2px 0;
+  }
+}
+
+.rosterCardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
 .standings {
   margin-top: 32px;
   border-radius: 12px;
