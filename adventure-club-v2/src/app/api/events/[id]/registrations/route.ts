@@ -11,6 +11,11 @@ type RouteContext = { params: Promise<{ id: string }> };
 // Registration. Blocked once the tournament has actually started, same as
 // a normal self-registration — a test draw alone doesn't block this, since
 // the admin can always redraw before starting for real.
+//
+// Added this way means added in person — this is the on-spot-registration
+// path (a walk-in at the admin's desk, or an admin typing in someone who
+// registered late), never a remote self-signup, so it goes straight onto
+// the Present List instead of needing a separate check-in scan afterwards.
 export async function POST(req: Request, context: RouteContext) {
   const admin = await requireAdmin();
 
@@ -76,9 +81,12 @@ export async function POST(req: Request, context: RouteContext) {
         guestDepartment,
         guestYear,
         gender: finalGender,
+        attendanceMarked: true,
+        attendanceMarkedAt: new Date(),
+        attendanceMarkedBy: admin.fullName,
       });
 
-      return NextResponse.json({ message: "Guest added.", registration });
+      return NextResponse.json({ message: "Guest added and marked present.", registration });
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -99,9 +107,12 @@ export async function POST(req: Request, context: RouteContext) {
       trekId: eventId,
       userId,
       gender: finalGender,
+      attendanceMarked: true,
+      attendanceMarkedAt: new Date(),
+      attendanceMarkedBy: admin.fullName,
     });
 
-    return NextResponse.json({ message: "Participant added.", registration });
+    return NextResponse.json({ message: "Participant added and marked present.", registration });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "Something went wrong." }, { status: 500 });

@@ -89,7 +89,7 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
         return;
       }
 
-      alert("Participant added successfully!");
+      alert(data.message || "Participant added successfully!");
 
       onAdded();
       onClose();
@@ -146,7 +146,7 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
         return;
       }
 
-      alert("Guest added successfully!");
+      alert(data.message || "Guest added successfully!");
 
       onAdded();
       onClose();

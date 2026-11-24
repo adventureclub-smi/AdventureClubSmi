@@ -1235,6 +1235,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                 <th>Gender</th>
                 <th>Team</th>
                 <th>Checked in at</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -1256,11 +1257,19 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                     <td data-label="Checked in at">
                       {r.attendanceMarkedAt ? new Date(r.attendanceMarkedAt).toLocaleString() : "—"}
                     </td>
+                    <td data-label="">
+                      <button
+                        className={styles.secondaryButton}
+                        onClick={() => handleToggleCheckin(r.id, false)}
+                      >
+                        <Undo2 size={13} /> Remove
+                      </button>
+                    </td>
                   </tr>
                 ))}
               {presentCount === 0 && (
                 <tr>
-                  <td colSpan={8}>Nobody&apos;s been checked in yet — use the Check-In tab.</td>
+                  <td colSpan={9}>Nobody&apos;s been checked in yet — use the Check-In tab.</td>
                 </tr>
               )}
             </tbody>
