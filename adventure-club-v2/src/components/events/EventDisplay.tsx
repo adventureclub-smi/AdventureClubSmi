@@ -151,7 +151,11 @@ export default function EventDisplay({ eventId }: { eventId: string }) {
 
     async function poll() {
       try {
-        const res = await fetch(`/api/events/${eventId}/public`, { cache: "no-store" });
+        // preview=1 only has any effect for an authenticated admin/core-team
+        // viewer (see the API route) — it lets the TV display be used to
+        // check the setup before the tournament is actually started, while
+        // an anonymous visitor on this same link still sees nothing early.
+        const res = await fetch(`/api/events/${eventId}/public?preview=1`, { cache: "no-store" });
         const json = await res.json();
         if (!active || !json?.event) return;
 

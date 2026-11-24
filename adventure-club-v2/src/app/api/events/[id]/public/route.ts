@@ -45,12 +45,17 @@ export async function GET(req: Request, context: RouteContext) {
     // freely to test the tournament setup before the real thing starts —
     // none of that (teams, fixtures, standings) shows up on this public
     // page for anyone, admin included, until "Close Registrations & Start
-    // Tournament" is clicked. Admin testing happens through the admin
-    // panel's own (always-authenticated) overview endpoint, not by an
-    // admin bypass here — this page should show exactly what every other
-    // visitor sees, with no exceptions.
+    // Tournament" is clicked. This page never bypasses that for anyone.
+    //
+    // The TV display is different: it's an admin tool for previewing the
+    // setup (fixtures, colours, layout) before the tournament is live, so
+    // it asks for ?preview=1 — honoured only when the requester is also an
+    // authenticated admin/core-team member, never for an anonymous visitor
+    // who happens to open the same link.
+    const url = new URL(req.url);
+    const wantsPreview = url.searchParams.get("preview") === "1";
     const tournamentStarted = !!event.eventTournamentStarted;
-    const canSeeTournament = tournamentStarted;
+    const canSeeTournament = tournamentStarted || (wantsPreview && (isAdmin || isCoreTeamMember));
 
     if (!canSeeTournament) {
       return NextResponse.json({
