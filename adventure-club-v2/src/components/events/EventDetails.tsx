@@ -531,12 +531,12 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {!guestMode ? (
                 <>
                   {loggedIn ? (
-                    <>
+                    <div className={styles.form}>
                       <div className={styles.inputGroup}>
                         <Users size={18} className={styles.icon} />
                         <select value={gender} onChange={(e) => setGender(e.target.value)}>
                           <option value="" disabled>
-                            Gender
+                            Select your gender
                           </option>
                           {GENDERS.map((g) => (
                             <option key={g} value={g}>
@@ -549,7 +549,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       <button onClick={handleRegister} disabled={submitting} className={styles.registerButton}>
                         {submitting ? "Registering..." : "Register Now"}
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <Link href={`/login?redirect=/events/${eventId}`} className={styles.registerButton}>
                       Continue with NAVIRA Account
