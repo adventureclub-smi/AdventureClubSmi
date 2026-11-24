@@ -612,6 +612,11 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   const presentCount = registrations.filter((r) => r.attendanceMarked).length;
   const unassignedCount = registrations.filter((r) => !r.teamId).length;
   const isLocked = !!event.eventTeamsDrawnAt;
+  // Same check the draw route itself makes before allowing a redraw — a
+  // bye counts as "played" there too, so it does here as well.
+  const anyMatchPlayed =
+    groupMatches.some((m) => m.status === "COMPLETED") ||
+    knockoutMatches.some((m) => m.status === "COMPLETED");
 
   return (
     <div className={styles.container}>
@@ -693,14 +698,20 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       <div className={styles.kpiStrip}>
         <div className={styles.kpi}>
           <span>Registered</span>
-          <strong>
-            {registrations.length}
-            <span className={styles.kpiSub}> ({presentCount} present)</span>
-          </strong>
+          <strong>{registrations.length}</strong>
+        </div>
+        <div className={styles.kpi}>
+          <span>Present</span>
+          <strong>{presentCount}</strong>
         </div>
         <div className={styles.kpi}>
           <span>Teams</span>
-          <strong>{teams.length || "—"}</strong>
+          <strong>
+            {teams.length || "—"}
+            {teams.length > 0 && (
+              <span className={styles.kpiSub}> ({anyMatchPlayed ? "locked" : "can redraw"})</span>
+            )}
+          </strong>
         </div>
         <div className={styles.kpi}>
           <span>Format</span>
