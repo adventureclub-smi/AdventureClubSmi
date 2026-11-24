@@ -748,7 +748,13 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                     {r.attendanceMarked ? (
                       <span className={styles.qualifiedTag}>Present</span>
                     ) : (
-                      "—"
+                      <button
+                        type="button"
+                        className={styles.primaryButton}
+                        onClick={() => handleToggleCheckin(r.id, true)}
+                      >
+                        <CheckCircle2 size={13} /> Mark Present
+                      </button>
                     )}
                   </td>
                   <td data-label="">
@@ -805,7 +811,13 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                     {r.attendanceMarked ? (
                       <span className={styles.qualifiedTag}>Present</span>
                     ) : (
-                      "—"
+                      <button
+                        type="button"
+                        className={styles.primaryButton}
+                        onClick={() => handleToggleCheckin(r.id, true)}
+                      >
+                        <CheckCircle2 size={13} /> Mark Present
+                      </button>
                     )}
                   </td>
                   <td data-label="">
