@@ -1040,6 +1040,69 @@ export default function EventOverview({ eventId }: { eventId: string }) {
               </div>
             ))
           )}
+
+          {knockoutMatches.length > 0 && (
+            <>
+              <h3 className={styles.groupLabel} style={{ marginTop: 28 }}>
+                Knockout
+              </h3>
+              {rounds.map((round) => (
+                <div key={round}>
+                  <h3 className={styles.groupLabel}>{ROUND_LABELS[round] ?? round}</h3>
+                  {knockoutMatches
+                    .filter((m) => m.round === round)
+                    .map((match) => (
+                      <div key={match.id} className={styles.matchRow}>
+                        <div className={styles.matchTeams}>
+                          <span
+                            className={match.winnerTeamId === match.teamAId ? styles.winnerName : ""}
+                          >
+                            <TeamLabel team={teamOf(teams, match.teamAId)} />
+                          </span>
+                          {match.teamBId ? (
+                            <>
+                              <span className={styles.vs}>vs</span>
+                              <span
+                                className={match.winnerTeamId === match.teamBId ? styles.winnerName : ""}
+                              >
+                                <TeamLabel team={teamOf(teams, match.teamBId)} />
+                              </span>
+                            </>
+                          ) : (
+                            <span className={styles.byeTag}>Bye</span>
+                          )}
+                          {match.status === "COMPLETED" && match.teamBId && (
+                            <span className={styles.scoreTag}>
+                              {match.teamAScore ?? "–"} – {match.teamBScore ?? "–"}
+                            </span>
+                          )}
+                        </div>
+
+                        {match.teamBId &&
+                          (match.status === "COMPLETED" ? (
+                            <button
+                              type="button"
+                              className={styles.undoButton}
+                              onClick={() => handleUndoResult(match.id)}
+                            >
+                              <Undo2 size={13} /> Undo
+                            </button>
+                          ) : (
+                            <ResultForm
+                              match={match}
+                              teams={teams}
+                              allowDraw={false}
+                              onSubmit={(round1, round2, tiebreak) =>
+                                handleRecordResult(match.id, round1, round2, tiebreak)
+                              }
+                            />
+                          ))}
+                      </div>
+                    ))}
+                </div>
+              ))}
+            </>
+          )}
         </div>
       )}
 
@@ -1106,7 +1169,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                 : groupStageComplete
                 ? "Group stage is complete — generate the knockout bracket."
                 : "Finish every group-stage match before generating the bracket."
-              : "Click Advance once every match in the current round is complete."}
+              : "A read-only view of the bracket — enter and undo results in Fixtures & Results. Click Advance once every match in the current round is complete."}
           </p>
 
           {knockoutMatches.length === 0 && event.eventFormat === "LEAGUE_KNOCKOUT" && (
@@ -1162,29 +1225,6 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                           </div>
                         ) : (
                           <span className={styles.byeTag}>Bye</span>
-                        )}
-
-                        {match.teamBId && (
-                          <div style={{ marginTop: 8 }}>
-                            {match.status === "COMPLETED" ? (
-                              <button
-                                type="button"
-                                className={styles.undoButton}
-                                onClick={() => handleUndoResult(match.id)}
-                              >
-                                <Undo2 size={13} /> Undo
-                              </button>
-                            ) : (
-                              <ResultForm
-                                match={match}
-                                teams={teams}
-                                allowDraw={false}
-                                onSubmit={(round1, round2, tiebreak) =>
-                                  handleRecordResult(match.id, round1, round2, tiebreak)
-                                }
-                              />
-                            )}
-                          </div>
                         )}
                       </div>
                     ))}
