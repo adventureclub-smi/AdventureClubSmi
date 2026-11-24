@@ -28,6 +28,7 @@ export async function POST(req: Request) {
       maxParticipants,
       registrationOpensAt,
       registrationClosesAt,
+      eventStartsAt,
       isTest,
       testVisibleToUserIds,
     } = body;
@@ -78,6 +79,7 @@ export async function POST(req: Request) {
 
         registrationOpensAt: parseIstDateTimeLocal(registrationOpensAt),
         registrationClosesAt: parseIstDateTimeLocal(registrationClosesAt),
+        eventStartsAt: parseIstDateTimeLocal(eventStartsAt),
         registrationOpenedManually: false,
         registrationClosedManually: false,
 

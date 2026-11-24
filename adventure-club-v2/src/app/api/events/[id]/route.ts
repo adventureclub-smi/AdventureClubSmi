@@ -68,6 +68,7 @@ export async function PUT(req: Request, context: RouteContext) {
       maxParticipants,
       registrationOpensAt,
       registrationClosesAt,
+      eventStartsAt,
       isTest,
       testVisibleToUserIds,
     } = body;
@@ -88,6 +89,7 @@ export async function PUT(req: Request, context: RouteContext) {
 
         registrationOpensAt: parseIstDateTimeLocal(registrationOpensAt),
         registrationClosesAt: parseIstDateTimeLocal(registrationClosesAt),
+        eventStartsAt: parseIstDateTimeLocal(eventStartsAt),
 
         isTest: Boolean(isTest),
         testVisibleToUserIds: isTest && Array.isArray(testVisibleToUserIds) ? testVisibleToUserIds : [],

@@ -17,6 +17,7 @@ type FormState = {
   maxParticipants: string;
   registrationOpensAt: string;
   registrationClosesAt: string;
+  eventStartsAt: string;
   isTest: boolean;
   testVisibleToUserIds: string[];
 };
@@ -30,6 +31,7 @@ function buildEmptyForm(): FormState {
     maxParticipants: "",
     registrationOpensAt: "",
     registrationClosesAt: "",
+    eventStartsAt: "",
     isTest: false,
     testVisibleToUserIds: [],
   };
@@ -82,6 +84,7 @@ export default function CreateEventForm({ eventId }: { eventId?: string }) {
           maxParticipants: event.seats && event.seats !== 99999 ? String(event.seats) : "",
           registrationOpensAt: toDateTimeInput(event.registrationOpensAt),
           registrationClosesAt: toDateTimeInput(event.registrationClosesAt),
+          eventStartsAt: toDateTimeInput(event.eventStartsAt),
           isTest: event.isTest ?? false,
           testVisibleToUserIds: event.testVisibleToUserIds ?? [],
         });
@@ -164,6 +167,7 @@ export default function CreateEventForm({ eventId }: { eventId?: string }) {
       maxParticipants: form.maxParticipants ? Number(form.maxParticipants) : undefined,
       registrationOpensAt: form.registrationOpensAt,
       registrationClosesAt: form.registrationClosesAt,
+      eventStartsAt: form.eventStartsAt,
       isTest: form.isTest,
       testVisibleToUserIds: form.isTest ? form.testVisibleToUserIds : [],
     };
@@ -298,8 +302,23 @@ export default function CreateEventForm({ eventId }: { eventId?: string }) {
 
         <div className={styles.section}>
           <div className={styles.sectionLabel}>Schedule</div>
+          <p className={styles.sectionHint}>
+            Event Start Time drives the homepage&apos;s pre-tournament countdown —
+            leave it blank and that section simply won&apos;t show.
+          </p>
 
           <div className={styles.sectionGrid}>
+            <label className={styles.field}>
+              <span>Event Start Time</span>
+              <small>The actual kickoff — shown counting down on the homepage</small>
+              <input
+                type="datetime-local"
+                name="eventStartsAt"
+                value={form.eventStartsAt}
+                onChange={handleChange}
+              />
+            </label>
+
             <label className={styles.field}>
               <span>Registration Opens At</span>
               <input

@@ -313,6 +313,13 @@ model Trek {
 
   registrationClosesAt DateTime?
 
+  // Only meaningful for a Campus Event (type "EVENT") — the actual kickoff
+  // moment (date + time), set on the event's own form alongside the
+  // date-only `date` field above. Powers the homepage's pre-tournament
+  // countdown (UpcomingEventCountdown) — left null, that section simply
+  // has nothing to count down to and doesn't render.
+  eventStartsAt DateTime?
+
   registrationOpenedManually Boolean @default(false)
 
   registrationClosedManually Boolean @default(false)
