@@ -8,6 +8,13 @@ import { prisma } from "@/lib/prisma";
 // draft/test events excluded same as every other public listing. `event:
 // null` means there's nothing to count down to, and the section renders
 // nothing in that case rather than an empty state.
+//
+// Forced dynamic: this handler has a static path and reads no
+// request-specific data, so without this Next.js treats it as safe to
+// pre-render once at build time and cache that response forever — meaning
+// an admin setting eventStartsAt afterward would never actually show up.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const event = await prisma.trek.findFirst({

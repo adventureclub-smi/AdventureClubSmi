@@ -10,6 +10,15 @@ import { buildEventPublicPayload } from "@/lib/event-public-payload";
 // feature route enforces that), so there's nothing to disambiguate here.
 // `event: null` means "nothing to show" — the homepage section renders
 // nothing rather than an empty state in that case.
+//
+// Forced dynamic: the early "nothing featured" branch returns before ever
+// calling getCurrentUser() (the only dynamic-API use in this file), so
+// Next.js's build-time analysis can conclude this route never needs
+// per-request data and cache that one response forever — exactly the bug
+// this caused in production. See upcoming-event/route.ts for the sibling
+// case.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const event = await prisma.trek.findFirst({
