@@ -18,6 +18,11 @@ export async function POST(req: Request, context: RouteContext) {
     const { id: eventId } = await context.params;
     const body = await req.json().catch(() => ({}));
     const guest = body?.guest;
+    const gender = String(body?.gender || "").trim();
+
+    if (!gender) {
+      return NextResponse.json({ message: "Gender is required." }, { status: 400 });
+    }
 
     const event = await prisma.trek.findUnique({ where: { id: eventId } });
 
@@ -89,6 +94,7 @@ export async function POST(req: Request, context: RouteContext) {
         guestRollNo,
         guestDepartment,
         guestYear,
+        gender,
       });
 
       return NextResponse.json({ message: "Registration successful!", registration });
@@ -105,6 +111,7 @@ export async function POST(req: Request, context: RouteContext) {
     const registration = await createEventRegistrationWithCode({
       trekId: eventId,
       userId: user!.id,
+      gender,
     });
 
     return NextResponse.json({ message: "Registration successful!", registration });

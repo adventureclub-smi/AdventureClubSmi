@@ -11,7 +11,7 @@ import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import PaymentCountdown from "@/components/treks/PaymentCountdown";
 import { registrationStateFor } from "@/lib/registration-journey";
 import { colourToHex } from "@/lib/team-colours";
-import { YEARS, FACULTY, SMI, OTHER_DEPARTMENTS } from "@/lib/academic-options";
+import { YEARS, FACULTY, SMI, OTHER_DEPARTMENTS, GENDERS } from "@/lib/academic-options";
 import { PLAYOFF_ROUND_LABELS } from "@/lib/event-playoff";
 import styles from "./EventDetails.module.scss";
 
@@ -158,6 +158,8 @@ export default function EventDetails({ eventId }: { eventId: string }) {
   const [guestDepartment, setGuestDepartment] = useState("");
   const [guestDepartmentOther, setGuestDepartmentOther] = useState("");
   const [guestYear, setGuestYear] = useState("");
+  const [guestGender, setGuestGender] = useState("");
+  const [gender, setGender] = useState("");
   const [guestConfirmation, setGuestConfirmation] = useState<{
     shortCode: string;
     qrDataUrl: string;
@@ -222,13 +224,18 @@ export default function EventDetails({ eventId }: { eventId: string }) {
   }, [data?.myShortCode, eventId]);
 
   async function handleRegister() {
+    if (!gender) {
+      setMessage({ text: "Please select your gender.", error: true });
+      return;
+    }
+
     setSubmitting(true);
     setMessage(null);
 
     const res = await fetch(`/api/events/${eventId}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ gender }),
     });
 
     const json = await res.json().catch(() => null);
@@ -255,10 +262,11 @@ export default function EventDetails({ eventId }: { eventId: string }) {
       !guestPhone.trim() ||
       !guestRollNo.trim() ||
       !finalDepartment ||
-      !guestYear.trim()
+      !guestYear.trim() ||
+      !guestGender.trim()
     ) {
       setMessage({
-        text: "Name, phone, college ID, department and year are required.",
+        text: "Name, phone, college ID, department, year and gender are required.",
         error: true,
       });
       return;
@@ -278,6 +286,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
           department: finalDepartment,
           year: guestYear,
         },
+        gender: guestGender,
       }),
     });
 
@@ -308,6 +317,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
     setGuestDepartment("");
     setGuestDepartmentOther("");
     setGuestYear("");
+    setGuestGender("");
     setGuestMode(false);
   }
 
@@ -521,9 +531,25 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {!guestMode ? (
                 <>
                   {loggedIn ? (
-                    <button onClick={handleRegister} disabled={submitting} className={styles.registerButton}>
-                      {submitting ? "Registering..." : "Register Now"}
-                    </button>
+                    <>
+                      <div className={styles.inputGroup}>
+                        <Users size={18} className={styles.icon} />
+                        <select value={gender} onChange={(e) => setGender(e.target.value)}>
+                          <option value="" disabled>
+                            Gender
+                          </option>
+                          {GENDERS.map((g) => (
+                            <option key={g} value={g}>
+                              {g}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <button onClick={handleRegister} disabled={submitting} className={styles.registerButton}>
+                        {submitting ? "Registering..." : "Register Now"}
+                      </button>
+                    </>
                   ) : (
                     <Link href={`/login?redirect=/events/${eventId}`} className={styles.registerButton}>
                       Continue with NAVIRA Account
@@ -620,6 +646,20 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       ))}
                       <option disabled>──────────</option>
                       <option value={FACULTY}>{FACULTY}</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <Users size={18} className={styles.icon} />
+                    <select value={guestGender} onChange={(e) => setGuestGender(e.target.value)} required>
+                      <option value="" disabled>
+                        Gender
+                      </option>
+                      {GENDERS.map((g) => (
+                        <option key={g} value={g}>
+                          {g}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

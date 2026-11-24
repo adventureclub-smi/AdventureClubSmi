@@ -44,3 +44,7 @@ export const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 // so both SignupForm and Profile skip those fields entirely once this is
 // selected.
 export const FACULTY = "Faculty";
+
+// Collected at Campus Event registration (see EventRegistration.gender) to
+// let the team draw balance each team's gender split.
+export const GENDERS = ["Male", "Female", "Other"];

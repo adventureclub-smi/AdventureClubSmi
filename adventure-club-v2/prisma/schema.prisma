@@ -477,6 +477,13 @@ model EventRegistration {
   guestDepartment String?
   guestYear String?
 
+  // Collected at registration time for every sign-up, club member and guest
+  // alike — not pulled from the User profile, since no such field exists
+  // there and asking fresh here is simpler than backfilling every account.
+  // "Male" | "Female" | "Other". Used only so the team draw (event-draw.ts)
+  // can balance each team's gender split; nothing else reads it.
+  gender String?
+
   teamId String?    @db.ObjectId
   team   EventTeam? @relation(fields: [teamId], references: [id])
 

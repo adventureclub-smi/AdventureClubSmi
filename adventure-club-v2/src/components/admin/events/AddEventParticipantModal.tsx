@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SMI, OTHER_DEPARTMENTS, YEARS, FACULTY } from "@/lib/academic-options";
+import { SMI, OTHER_DEPARTMENTS, YEARS, FACULTY, GENDERS } from "@/lib/academic-options";
 import styles from "../AddParticipantModal.module.scss";
 
 type Member = {
@@ -28,6 +28,7 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState("");
+  const [memberGender, setMemberGender] = useState("");
   const [guestMode, setGuestMode] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
@@ -35,6 +36,7 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   const [guestDepartment, setGuestDepartment] = useState("");
   const [guestDepartmentOther, setGuestDepartmentOther] = useState("");
   const [guestYear, setGuestYear] = useState("");
+  const [guestGender, setGuestGender] = useState("");
   const [addingGuest, setAddingGuest] = useState(false);
 
   useEffect(() => {
@@ -65,13 +67,18 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
   }, [query]);
 
   async function addMember(userId: string) {
+    if (!memberGender) {
+      alert("Pick their gender first.");
+      return;
+    }
+
     setAdding(userId);
 
     try {
       const res = await fetch(`/api/events/${eventId}/registrations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId, gender: memberGender }),
       });
 
       const data = await res.json();
@@ -88,6 +95,7 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
       onClose();
       setQuery("");
       setMembers([]);
+      setMemberGender("");
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
@@ -105,9 +113,10 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
       !guestPhone.trim() ||
       !guestRollNo.trim() ||
       !finalDepartment ||
-      !guestYear.trim()
+      !guestYear.trim() ||
+      !guestGender.trim()
     ) {
-      alert("Name, phone, college ID, department and year are required.");
+      alert("Name, phone, college ID, department, year and gender are required.");
       return;
     }
 
@@ -125,6 +134,7 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
             department: finalDepartment,
             year: guestYear,
           },
+          gender: guestGender,
         }),
       });
 
@@ -146,6 +156,7 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
       setGuestDepartment("");
       setGuestDepartmentOther("");
       setGuestYear("");
+      setGuestGender("");
       setGuestMode(false);
     } catch (error) {
       console.error(error);
@@ -246,6 +257,20 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
               <option disabled>──────────</option>
               <option value={FACULTY}>{FACULTY}</option>
             </select>
+            <select
+              className={styles.search}
+              value={guestGender}
+              onChange={(e) => setGuestGender(e.target.value)}
+            >
+              <option value="" disabled>
+                Gender
+              </option>
+              {GENDERS.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
             <button disabled={addingGuest} onClick={addGuest}>
               {addingGuest ? "Adding..." : "Add Guest"}
             </button>
@@ -258,6 +283,22 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
+
+            <select
+              className={styles.search}
+              value={memberGender}
+              onChange={(e) => setMemberGender(e.target.value)}
+              style={{ marginTop: 8 }}
+            >
+              <option value="" disabled>
+                Their gender (required before adding)
+              </option>
+              {GENDERS.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
 
             {loading && <p className={styles.message}>Searching...</p>}
 
