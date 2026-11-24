@@ -22,7 +22,14 @@ export async function GET() {
         type: "EVENT",
         isDraft: false,
         isTest: false,
-        eventTournamentStarted: { not: true },
+        // Not `{ not: true }` — eventTournamentStarted is never written at
+        // all until an admin actually starts the tournament, so on every
+        // event that hasn't started yet the field is genuinely *missing*
+        // from the Mongo document, not `null`. Prisma's `not`/`equals`
+        // filters don't treat a missing field as matching here; `isSet`
+        // (Mongo-specific) is what actually catches that case, alongside
+        // the (currently never-written, but defensively-handled) `false`.
+        OR: [{ eventTournamentStarted: { isSet: false } }, { eventTournamentStarted: false }],
         eventStartsAt: { not: null },
       },
       orderBy: { eventStartsAt: "asc" },
