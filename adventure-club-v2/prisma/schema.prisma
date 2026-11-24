@@ -443,6 +443,15 @@ model Trek {
   // before this field existed, which is the correct default (hidden).
   eventTournamentStarted Boolean?
 
+  // Set from the admin's "Feature on Homepage" toggle (see
+  // /api/events/[id]/feature) — shows this event's live teams/standings in
+  // the homepage's Live League section, right under the Hero. Only one
+  // event is ever featured at a time: turning this on for one event turns
+  // it off for every other. Meaningless (and ignored by the homepage
+  // route) unless eventTournamentStarted is also true, since nothing about
+  // teams/fixtures is public before then anyway.
+  eventFeaturedOnHomepage Boolean?
+
   eventRegistrations EventRegistration[]
 
   eventTeams EventTeam[]

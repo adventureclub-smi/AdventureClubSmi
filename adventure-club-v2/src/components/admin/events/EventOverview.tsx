@@ -100,6 +100,7 @@ type Overview = {
     eventFormat: string;
     eventTeamsDrawnAt: string | null;
     eventTournamentStarted: boolean | null;
+    eventFeaturedOnHomepage: boolean | null;
   };
   registrations: Registration[];
   teams: Team[];
@@ -557,6 +558,28 @@ export default function EventOverview({ eventId }: { eventId: string }) {
     load();
   }
 
+  async function handleToggleFeatured(featured: boolean) {
+    setActing(true);
+    setMessage(null);
+
+    const res = await fetch(`/api/events/${eventId}/feature`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ featured }),
+    });
+    const json = await res.json().catch(() => null);
+
+    setActing(false);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to update homepage feature.", error: true });
+      return;
+    }
+
+    setMessage({ text: json.message });
+    load();
+  }
+
   async function openQr() {
     const url = `${window.location.origin}/events/${eventId}`;
     setRegistrationUrl(url);
@@ -617,6 +640,10 @@ export default function EventOverview({ eventId }: { eventId: string }) {
   const anyMatchPlayed =
     groupMatches.some((m) => m.status === "COMPLETED") ||
     knockoutMatches.some((m) => m.status === "COMPLETED");
+  const totalMatches = groupMatches.length + knockoutMatches.length;
+  const completedMatches =
+    groupMatches.filter((m) => m.status === "COMPLETED").length +
+    knockoutMatches.filter((m) => m.status === "COMPLETED").length;
 
   return (
     <div className={styles.container}>
@@ -685,14 +712,27 @@ export default function EventOverview({ eventId }: { eventId: string }) {
               : "Registrations are still open. Draw teams and play with fixtures freely — nothing here is visible on the public page or the TV display yet."}
           </p>
         </div>
-        <button
-          type="button"
-          className={event.eventTournamentStarted ? styles.secondaryButton : styles.primaryButton}
-          disabled={acting}
-          onClick={() => handleStartTournament(!event.eventTournamentStarted)}
-        >
-          {event.eventTournamentStarted ? "Reopen Registrations" : "Close Registrations & Start Tournament"}
-        </button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className={event.eventTournamentStarted ? styles.secondaryButton : styles.primaryButton}
+            disabled={acting}
+            onClick={() => handleStartTournament(!event.eventTournamentStarted)}
+          >
+            {event.eventTournamentStarted ? "Reopen Registrations" : "Close Registrations & Start Tournament"}
+          </button>
+
+          {event.eventTournamentStarted && (
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              disabled={acting}
+              onClick={() => handleToggleFeatured(!event.eventFeaturedOnHomepage)}
+            >
+              {event.eventFeaturedOnHomepage ? "Remove from Homepage" : "Feature on Homepage"}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={styles.kpiStrip}>
@@ -710,6 +750,15 @@ export default function EventOverview({ eventId }: { eventId: string }) {
             {teams.length || "—"}
             {teams.length > 0 && (
               <span className={styles.kpiSub}> ({anyMatchPlayed ? "locked" : "can redraw"})</span>
+            )}
+          </strong>
+        </div>
+        <div className={styles.kpi}>
+          <span>Matches</span>
+          <strong>
+            {totalMatches || "—"}
+            {totalMatches > 0 && (
+              <span className={styles.kpiSub}> ({completedMatches} played)</span>
             )}
           </strong>
         </div>

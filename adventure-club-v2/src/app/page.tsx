@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/hero/Hero";
+import LiveLeagueSection from "@/components/sections/LiveLeagueSection";
 import AnnouncementTicker from "@/components/sections/AnnouncementTicker";
 import RecruitmentBanner from "@/components/shared/RecruitmentBanner";
 import AdventureStats from "@/components/sections/AdventureStats";
@@ -60,6 +61,7 @@ export default async function Home() {
         nextTrekType={treks[0]?.type ?? null}
         nextTrekRegistrationOpensAt={treks[0]?.registrationOpensAt ?? null}
       />
+      <LiveLeagueSection />
       <AnnouncementTicker message={content.hero.announcement} />
       <RecruitmentBanner />
       <AdventureStats stats={content.stats} />

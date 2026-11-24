@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/current-user";
 import { isCoreTeamRole } from "@/lib/core-team-roles";
-import { computeGroupStandings } from "@/lib/event-points-table";
+import { buildEventPublicPayload } from "@/lib/event-public-payload";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -74,76 +74,9 @@ export async function GET(req: Request, context: RouteContext) {
       });
     }
 
-    const [teams, groupMatches, knockoutMatches] = await Promise.all([
-      prisma.eventTeam.findMany({ where: { trekId: eventId } }),
-      prisma.eventMatch.findMany({ where: { trekId: eventId, stage: "GROUP" }, orderBy: { id: "asc" } }),
-      prisma.eventMatch.findMany({ where: { trekId: eventId, stage: "KNOCKOUT" }, orderBy: { id: "asc" } }),
-    ]);
+    const payload = await buildEventPublicPayload(event, user);
 
-    let myTeam = null;
-    if (myRegistration?.teamId) {
-      const team = teams.find((t) => t.id === myRegistration.teamId);
-      if (team) {
-        const teammates = await prisma.eventRegistration.findMany({
-          where: { teamId: team.id },
-          include: { user: { select: { fullName: true } } },
-        });
-        myTeam = {
-          id: team.id,
-          name: team.name,
-          colour: team.colour,
-          members: teammates.map((t) => t.user?.fullName ?? t.guestName ?? "Guest"),
-        };
-      }
-    }
-
-    // Every team's roster, by name — shown on the public Teams view and the
-    // TV display, not just the logged-in visitor's own team (myTeam above).
-    const allRegistrations = await prisma.eventRegistration.findMany({
-      where: { trekId: eventId, teamId: { not: null } },
-      include: { user: { select: { fullName: true } } },
-    });
-
-    const rosterByTeam = new Map<string, string[]>();
-    for (const r of allRegistrations) {
-      const name = r.user?.fullName ?? r.guestName ?? "Guest";
-      const list = rosterByTeam.get(r.teamId!) ?? [];
-      list.push(name);
-      rosterByTeam.set(r.teamId!, list);
-    }
-
-    const teamsWithRosters = teams.map((t) => ({ ...t, members: rosterByTeam.get(t.id) ?? [] }));
-
-    const standings =
-      groupMatches.length > 0
-        ? computeGroupStandings(
-            teams,
-            groupMatches.map((m) => ({
-              teamAId: m.teamAId,
-              teamBId: m.teamBId ?? "",
-              winnerTeamId: m.winnerTeamId,
-              status: m.status,
-              groupNumber: m.groupNumber,
-            })),
-            event.eventQualifiersCount ?? 4,
-            event.eventDrawSeed ?? ""
-          )
-        : [];
-
-    return NextResponse.json({
-      event,
-      registeredCount,
-      loggedIn: !!user,
-      isRegistered: !!myRegistration,
-      myShortCode: myRegistration?.shortCode ?? null,
-      myAttendanceMarked: myRegistration?.attendanceMarked ?? false,
-      myTeam,
-      teams: teamsWithRosters,
-      groupMatches,
-      knockoutMatches,
-      standings,
-      tournamentStarted: true,
-    });
+    return NextResponse.json(payload);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "Something went wrong." }, { status: 500 });
