@@ -21,6 +21,7 @@ type Registration = {
   guestYear: string | null;
   teamId: string | null;
   shortCode: string;
+  gender: string | null;
   attendanceMarked: boolean;
   attendanceMarkedAt: string | null;
   user: {
@@ -47,6 +48,10 @@ function regDepartment(r: Registration) {
 
 function regYear(r: Registration) {
   return r.user?.year ?? r.guestYear ?? "—";
+}
+
+function regGender(r: Registration) {
+  return r.gender ?? "—";
 }
 
 type Team = {
@@ -114,11 +119,12 @@ const ROUND_LABELS: Record<string, string> = {
 
 const TABS = [
   { key: "registrations", label: "Registrations" },
+  { key: "checkin", label: "Check-In" },
+  { key: "present", label: "Present List" },
   { key: "teams", label: "Team Allocation" },
   { key: "fixtures", label: "Fixtures & Results" },
   { key: "points", label: "Points Table" },
   { key: "bracket", label: "Knockout Bracket" },
-  { key: "checkin", label: "Check-In" },
 ] as const;
 
 function teamOf(teams: Team[], id: string | null) {
@@ -826,8 +832,11 @@ export default function EventOverview({ eventId }: { eventId: string }) {
       {tab === "teams" && (
         <div>
           <p>
-            Teams are drawn automatically — everyone registered gets shuffled into equally-sized,
-            randomly-coloured teams in one click. Set the team size (and format) below, then draw.
+            Teams are drawn automatically from the Present List, not the full registration list —
+            check everyone in first (Check-In tab), then draw. Only people actually marked present
+            get shuffled into equally-sized, gender-balanced, randomly-coloured teams in one click;
+            registered no-shows are simply left off a team. Set the team size (and format) below,
+            then draw.
           </p>
 
           <div className={styles.sectionLabel} style={{ marginTop: 20, marginBottom: 8 }}>
@@ -1204,6 +1213,58 @@ export default function EventOverview({ eventId }: { eventId: string }) {
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {tab === "present" && (
+        <div>
+          <p>
+            {presentCount} / {registrations.length} registered actually checked in on the day.
+            This — not the full registration list — is who Team Allocation draws from, so a
+            no-show never ends up on a team.
+          </p>
+
+          <table className={styles.table} style={{ marginTop: 16 }}>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Club ID / Phone</th>
+                <th>Department</th>
+                <th>Year</th>
+                <th>Gender</th>
+                <th>Team</th>
+                <th>Checked in at</th>
+              </tr>
+            </thead>
+            <tbody>
+              {registrations
+                .filter((r) => r.attendanceMarked)
+                .map((r) => (
+                  <tr key={r.id}>
+                    <td className={styles.num} data-label="Code">
+                      {r.shortCode}
+                    </td>
+                    <td data-label="Name">{regName(r)}</td>
+                    <td data-label="Club ID / Phone">{regIdentifier(r)}</td>
+                    <td data-label="Department">{regDepartment(r)}</td>
+                    <td data-label="Year">{regYear(r)}</td>
+                    <td data-label="Gender">{regGender(r)}</td>
+                    <td data-label="Team">
+                      <TeamLabel team={teamOf(teams, r.teamId)} />
+                    </td>
+                    <td data-label="Checked in at">
+                      {r.attendanceMarkedAt ? new Date(r.attendanceMarkedAt).toLocaleString() : "—"}
+                    </td>
+                  </tr>
+                ))}
+              {presentCount === 0 && (
+                <tr>
+                  <td colSpan={8}>Nobody&apos;s been checked in yet — use the Check-In tab.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

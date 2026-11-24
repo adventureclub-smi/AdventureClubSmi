@@ -55,13 +55,17 @@ export async function POST(req: Request, context: RouteContext) {
       );
     }
 
-    const registrations = await prisma.eventRegistration.findMany({
-      where: { trekId: eventId },
+    // Only people actually marked present on the day go into the draw — a
+    // registration alone doesn't guarantee a show, and a team built out of
+    // no-shows is useless on the field. Everyone else (registered but never
+    // checked in) just stays off a team, same as before the draw ran.
+    const presentRegistrations = await prisma.eventRegistration.findMany({
+      where: { trekId: eventId, attendanceMarked: true },
     });
 
-    if (registrations.length < 4) {
+    if (presentRegistrations.length < 4) {
       return NextResponse.json(
-        { message: "Need at least 4 registered participants to form 2 teams." },
+        { message: "Need at least 4 checked-in (present) participants to form 2 teams." },
         { status: 400 }
       );
     }
@@ -77,7 +81,7 @@ export async function POST(req: Request, context: RouteContext) {
     await prisma.eventTeam.deleteMany({ where: { trekId: eventId } });
 
     const result = runEventDraw({
-      registrations: registrations.map((r) => ({ id: r.id, gender: r.gender })),
+      registrations: presentRegistrations.map((r) => ({ id: r.id, gender: r.gender })),
       teamSize: event.eventTeamSize,
     });
 
