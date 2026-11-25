@@ -237,6 +237,11 @@ model Trek {
   // point, timing, etc.) once the trip is actually confirmed.
   transportIncluded Boolean @default(false)
 
+  // Same spirit as transportIncluded above — an admin-set flag shown as its
+  // own highlighted badge on the registration page for a trip that actually
+  // has a campfire night, rather than inferring it from free text.
+  bonfireIncluded Boolean @default(false)
+
   // 1 = pay the whole trek cost in one go (finalPayment stays 0, and the
   // single payment auto-completes both the initial and final payment flags
   // once verified — see the payments/verify and payments/offline routes).

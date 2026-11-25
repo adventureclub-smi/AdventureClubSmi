@@ -5,7 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, Mountain, MapPin, Clock, Wallet, Bus, TriangleAlert } from "lucide-react";
+import {
+  CalendarDays,
+  Mountain,
+  MapPin,
+  Clock,
+  Wallet,
+  Bus,
+  TriangleAlert,
+  Tent,
+  Flame,
+} from "lucide-react";
 
 import StatusBadge from "@/components/dashboard/shared/StatusBadge";
 import styles from "./TrekDetails.module.scss";
@@ -46,6 +56,8 @@ type Trek = {
   expectedReimbursementMin?: number | null;
   expectedReimbursementMax?: number | null;
   transportIncluded?: boolean;
+  bonfireIncluded?: boolean;
+  campNights?: number;
   restrictedYears?: string[];
 };
 
@@ -120,6 +132,17 @@ export default function TrekDetails({
   const isWorkshop = trek.type === "WORKSHOP";
   const isFree = trek.price === 0;
   const eventWord = isWorkshop ? "workshop" : "trek";
+
+  // A camping trip spans one calendar day more than its nights out — "1
+  // camp night" reads to a prospective registrant as "2 Days, 1 Night",
+  // which is far clearer here than the free-text duration field (meant for
+  // things like "18HRS" on-trail time, not the overall trip length).
+  const campNights = trek.campNights ?? 0;
+  const isCampingTrip = !isWorkshop && campNights > 0;
+  const tripLengthLabel = isCampingTrip
+    ? `${campNights + 1} Days, ${campNights} Night${campNights > 1 ? "s" : ""}`
+    : trek.duration;
+  const hasBonfire = !isWorkshop && !!trek.bonfireIncluded;
 
   // registration.status alone only tells you "approved" — it stays
   // APPROVED all the way through paid/verified/attended/certified, so the
@@ -196,6 +219,25 @@ export default function TrekDetails({
           >
             <p>{trek.destination}</p>
             <h1>{trek.title}</h1>
+
+            {(isCampingTrip || hasBonfire) && (
+              <div className={styles.highlights}>
+                {isCampingTrip && (
+                  <span className={styles.highlightBadge}>
+                    <Tent size={18} />
+                    {tripLengthLabel} Camping Trip
+                  </span>
+                )}
+
+                {hasBonfire && (
+                  <span className={styles.highlightBadge}>
+                    <Flame size={18} />
+                    Bonfire Night
+                  </span>
+                )}
+              </div>
+            )}
+
             <span>{new Date(trek.date).toLocaleDateString("en-IN")}</span>
 
             {!isWorkshop && (
@@ -322,8 +364,28 @@ export default function TrekDetails({
               <span>
                 <Clock size={14} /> Duration
               </span>
-              <strong>{trek.duration}</strong>
+              <strong>{tripLengthLabel}</strong>
             </div>
+
+            {isCampingTrip && (
+              <div>
+                <span>
+                  <Tent size={14} /> Stay
+                </span>
+                <strong>
+                  {campNights} Night{campNights > 1 ? "s" : ""} Camping
+                </strong>
+              </div>
+            )}
+
+            {hasBonfire && (
+              <div>
+                <span>
+                  <Flame size={14} /> Evening
+                </span>
+                <strong>Bonfire Night</strong>
+              </div>
+            )}
           </div>
 
           {status && <p className={styles.status}>{status}</p>}

@@ -61,6 +61,7 @@ export async function POST(req: Request) {
 
       // Transport
       transportIncluded,
+      bonfireIncluded,
     } = body;
 
     const installmentCount = Number(installments) === 1 ? 1 : Number(installments) === 3 ? 3 : 2;
@@ -195,6 +196,7 @@ export async function POST(req: Request) {
         // -------------------------
 
         transportIncluded: Boolean(transportIncluded),
+        bonfireIncluded: Boolean(bonfireIncluded),
       },
     });
 

@@ -40,6 +40,7 @@ type FormState = {
   restrictedYears: string[];
   reimbursementOffered: boolean;
   transportIncluded: boolean;
+  bonfireIncluded: boolean;
 };
 
 const emptyForm: FormState = {
@@ -72,6 +73,7 @@ const emptyForm: FormState = {
   restrictedYears: [],
   reimbursementOffered: false,
   transportIncluded: false,
+  bonfireIncluded: false,
 };
 
 // Both read off Asia/Kolkata explicitly via formatIstDateTimeLocal — see
@@ -144,6 +146,7 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
           restrictedYears: trek.restrictedYears ?? [],
           reimbursementOffered: trek.reimbursementOffered ?? false,
           transportIncluded: trek.transportIncluded ?? false,
+          bonfireIncluded: trek.bonfireIncluded ?? false,
         });
 
         if (trek.coverImage) setPreview(trek.coverImage);
@@ -655,6 +658,16 @@ export default function CreateTrekForm({ trekId }: { trekId?: string }) {
               onChange={handleChange}
             />
             Transport is included for this trek
+          </label>
+
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="bonfireIncluded"
+              checked={form.bonfireIncluded}
+              onChange={handleChange}
+            />
+            This trek has a bonfire night
           </label>
         </div>
 

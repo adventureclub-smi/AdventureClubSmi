@@ -54,6 +54,43 @@
   color: #d5d5d5;
 }
 
+.highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  margin-bottom: 22px;
+}
+
+.highlightBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background: rgba(0, 160, 115, 0.14);
+  border: 1px solid rgba(0, 160, 115, 0.4);
+  border-radius: 999px;
+
+  padding: 10px 20px;
+
+  color: var(--color-accent);
+
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.highlightBadge svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .highlightBadge {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+}
+
 .transportNote {
   display: block;
 

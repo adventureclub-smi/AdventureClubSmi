@@ -108,6 +108,7 @@ export async function PUT(
         date: new Date(body.date),
         price: Number(body.price),
         transportIncluded: Boolean(body.transportIncluded),
+        bonfireIncluded: Boolean(body.bonfireIncluded),
         installments: installmentCount,
         initialPayment: Number(body.initialPayment),
         secondPayment: installmentCount === 3 ? Number(body.secondPayment) : 0,
