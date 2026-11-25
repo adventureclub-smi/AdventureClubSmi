@@ -32,3 +32,37 @@ export async function DELETE(req: Request, context: RouteContext) {
     return NextResponse.json({ message: "Something went wrong." }, { status: 500 });
   }
 }
+
+// Corrects gender and/or toggles the admin's "core member" pick for one
+// registration — for whoever skipped the field at sign-up, was entered
+// wrong, or needs to be seeded evenly across teams at draw time. Both
+// fields are optional in the body; only the ones present are updated.
+export async function PATCH(req: Request, context: RouteContext) {
+  const admin = await requireAdmin();
+
+  if (!admin) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+  }
+
+  try {
+    const { id: eventId, registrationId } = await context.params;
+    const body = await req.json();
+
+    const registration = await prisma.eventRegistration.findUnique({ where: { id: registrationId } });
+
+    if (!registration || registration.trekId !== eventId) {
+      return NextResponse.json({ message: "Registration not found." }, { status: 404 });
+    }
+
+    const data: { gender?: string; isCoreMember?: boolean } = {};
+    if (typeof body.gender === "string" && body.gender.trim()) data.gender = body.gender.trim();
+    if (typeof body.isCoreMember === "boolean") data.isCoreMember = body.isCoreMember;
+
+    const updated = await prisma.eventRegistration.update({ where: { id: registrationId }, data });
+
+    return NextResponse.json({ message: "Updated.", registration: updated });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ message: "Something went wrong." }, { status: 500 });
+  }
+}

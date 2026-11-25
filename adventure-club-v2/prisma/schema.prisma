@@ -496,9 +496,19 @@ model EventRegistration {
   // Collected at registration time for every sign-up, club member and guest
   // alike — not pulled from the User profile, since no such field exists
   // there and asking fresh here is simpler than backfilling every account.
-  // "Male" | "Female" | "Other". Used only so the team draw (event-draw.ts)
-  // can balance each team's gender split; nothing else reads it.
+  // "Male" | "Female" | "Other". Editable afterwards from the Present List
+  // (PATCH .../registrations/[registrationId]) for anyone who skipped it or
+  // was entered wrong. Used only so the team draw (event-draw.ts) can
+  // balance each team's gender split; nothing else reads it.
   gender String?
+
+  // An admin's pick, per event — not tied to the person's actual club role
+  // (a guest can be marked core same as a club member), set from the
+  // Present List. The draw spreads these as evenly across teams as the
+  // count allows (same spirit as the gender split, and balanced by gender
+  // within the core group too) — e.g. a handful of experienced members the
+  // admin wants seeded one-or-two-per-team rather than left to pure chance.
+  isCoreMember Boolean @default(false)
 
   teamId String?    @db.ObjectId
   team   EventTeam? @relation(fields: [teamId], references: [id])

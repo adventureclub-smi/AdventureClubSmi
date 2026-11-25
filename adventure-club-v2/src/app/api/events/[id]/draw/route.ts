@@ -81,7 +81,11 @@ export async function POST(req: Request, context: RouteContext) {
     await prisma.eventTeam.deleteMany({ where: { trekId: eventId } });
 
     const result = runEventDraw({
-      registrations: presentRegistrations.map((r) => ({ id: r.id, gender: r.gender })),
+      registrations: presentRegistrations.map((r) => ({
+        id: r.id,
+        gender: r.gender,
+        isCoreMember: r.isCoreMember,
+      })),
       teamSize: event.eventTeamSize,
     });
 

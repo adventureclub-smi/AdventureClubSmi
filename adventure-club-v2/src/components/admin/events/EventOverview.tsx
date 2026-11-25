@@ -9,6 +9,7 @@ import AddEventParticipantModal from "./AddEventParticipantModal";
 import QrScannerModal from "./QrScannerModal";
 import { colourToHex } from "@/lib/team-colours";
 import { PLAYOFF_ROUND_LABELS } from "@/lib/event-playoff";
+import { GENDERS } from "@/lib/academic-options";
 import styles from "./EventOverview.module.scss";
 
 type Registration = {
@@ -22,6 +23,7 @@ type Registration = {
   teamId: string | null;
   shortCode: string;
   gender: string | null;
+  isCoreMember: boolean;
   attendanceMarked: boolean;
   attendanceMarkedAt: string | null;
   user: {
@@ -458,6 +460,29 @@ export default function EventOverview({ eventId }: { eventId: string }) {
     setCheckinResults(
       (prev) => prev?.map((r) => (r.id === registrationId ? json.registration : r)) ?? null
     );
+    load();
+  }
+
+  // Corrects gender and/or toggles the core-member pick for one
+  // registration, from the Present List — for whoever skipped the field at
+  // sign-up or needs to be seeded evenly across teams at draw time.
+  async function handleUpdateRegistration(
+    registrationId: string,
+    data: { gender?: string; isCoreMember?: boolean }
+  ) {
+    const res = await fetch(`/api/events/${eventId}/registrations/${registrationId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    const json = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      setMessage({ text: json?.message || "Failed to update.", error: true });
+      return;
+    }
+
     load();
   }
 
@@ -1387,6 +1412,16 @@ export default function EventOverview({ eventId }: { eventId: string }) {
             no-show never ends up on a team.
           </p>
 
+          {!event.eventTournamentStarted && (
+            <button
+              className={styles.primaryButton}
+              style={{ margin: "12px 0" }}
+              onClick={() => setAddModalOpen(true)}
+            >
+              <UserPlus size={15} /> On-Spot Registration
+            </button>
+          )}
+
           <table className={styles.table} style={{ marginTop: 16 }}>
             <thead>
               <tr>
@@ -1396,6 +1431,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                 <th>Department</th>
                 <th>Year</th>
                 <th>Gender</th>
+                <th>Core</th>
                 <th>Team</th>
                 <th>Checked in at</th>
                 <th></th>
@@ -1413,7 +1449,30 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                     <td data-label="Club ID / Phone">{regIdentifier(r)}</td>
                     <td data-label="Department">{regDepartment(r)}</td>
                     <td data-label="Year">{regYear(r)}</td>
-                    <td data-label="Gender">{regGender(r)}</td>
+                    <td data-label="Gender">
+                      <select
+                        value={r.gender ?? ""}
+                        onChange={(e) => handleUpdateRegistration(r.id, { gender: e.target.value })}
+                      >
+                        <option value="" disabled>
+                          {regGender(r)}
+                        </option>
+                        {GENDERS.map((g) => (
+                          <option key={g} value={g}>
+                            {g}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td data-label="Core">
+                      <input
+                        type="checkbox"
+                        checked={r.isCoreMember}
+                        onChange={(e) =>
+                          handleUpdateRegistration(r.id, { isCoreMember: e.target.checked })
+                        }
+                      />
+                    </td>
                     <td data-label="Team">
                       <TeamLabel team={teamOf(teams, r.teamId)} />
                     </td>
@@ -1432,7 +1491,7 @@ export default function EventOverview({ eventId }: { eventId: string }) {
                 ))}
               {presentCount === 0 && (
                 <tr>
-                  <td colSpan={9}>Nobody&apos;s been checked in yet — use the Check-In tab.</td>
+                  <td colSpan={10}>Nobody&apos;s been checked in yet — use the Check-In tab.</td>
                 </tr>
               )}
             </tbody>
