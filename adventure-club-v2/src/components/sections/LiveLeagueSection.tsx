@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy } from "lucide-react";
 import { colourToHex } from "@/lib/team-colours";
@@ -176,9 +175,14 @@ export default function LiveLeagueSection() {
               );
             })()}
 
-            <Link href={`/events/${event.id}`} className={styles.viewLink}>
+            <a
+              href={`/events/${event.id}/display`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.viewLink}
+            >
               <Trophy size={15} /> View Full Tournament
-            </Link>
+            </a>
           </div>
         </motion.section>
       )}
