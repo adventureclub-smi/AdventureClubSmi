@@ -176,18 +176,18 @@ export default function AddEventParticipantModal({ eventId, open, onClose, onAdd
           <button onClick={onClose}>✕</button>
         </div>
 
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <div className={styles.modeToggle}>
           <button
             type="button"
+            className={!guestMode ? styles.modeButtonActive : styles.modeButton}
             onClick={() => setGuestMode(false)}
-            style={{ fontWeight: guestMode ? 400 : 700 }}
           >
             Club member
           </button>
           <button
             type="button"
+            className={guestMode ? styles.modeButtonActive : styles.modeButton}
             onClick={() => setGuestMode(true)}
-            style={{ fontWeight: guestMode ? 700 : 400 }}
           >
             Guest (no club account)
           </button>

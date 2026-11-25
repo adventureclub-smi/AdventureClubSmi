@@ -46,6 +46,46 @@
   color: white;
 }
 
+.modeToggle {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 20px;
+
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 12px;
+}
+
+.modeButton,
+.modeButtonActive {
+  flex: 1;
+  padding: 10px 14px;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.modeButton {
+  background: transparent;
+  color: #999;
+}
+
+.modeButton:hover {
+  color: white;
+}
+
+.modeButtonActive {
+  background: #00a073;
+  color: white;
+}
+
 .search {
   width: 100%;
   padding: 14px;
