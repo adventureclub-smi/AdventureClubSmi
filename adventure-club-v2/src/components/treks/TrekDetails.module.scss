@@ -166,6 +166,44 @@
   }
 }
 
+@media (max-width: 600px) {
+  .hero {
+    // A full-height hero on a short phone screen pushes the price card and
+    // registration CTA well below the fold — this is a registration page,
+    // not a poster, so the hero shrinks here to get people to the fold
+    // faster without losing the image. min-height is sized to clear the
+    // fixed mobile navbar above whatever this content block ends up tall —
+    // too short here and the top line renders hidden behind the navbar.
+    height: 62vh;
+    min-height: 500px;
+  }
+
+  .content {
+    bottom: 40px;
+  }
+
+  .content p {
+    margin-bottom: 10px;
+  }
+
+  .content h1 {
+    font-size: 36px;
+    margin-bottom: 14px;
+  }
+
+  .highlights {
+    margin-bottom: 14px;
+  }
+
+  .transportNote {
+    margin-top: 6px;
+  }
+
+  .main {
+    margin: 50px auto;
+  }
+}
+
 .price {
   text-align: center;
 
