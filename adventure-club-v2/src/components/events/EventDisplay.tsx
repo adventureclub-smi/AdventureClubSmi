@@ -52,7 +52,6 @@ type CelebrationInfo = {
 const VIEWS = [
   { key: "points", label: "Points table" },
   { key: "fixtures", label: "Fixtures" },
-  { key: "teams", label: "Teams" },
   { key: "playoff", label: "Playoffs" },
 ] as const;
 type View = (typeof VIEWS)[number]["key"];
@@ -344,34 +343,6 @@ export default function EventDisplay({ eventId }: { eventId: string }) {
                   <RopeMatch key={match.id} match={match} teams={teams} />
                 ))}
                 {groupMatches.length === 0 && <p className={styles.emptyNote}>Fixtures aren&apos;t out yet.</p>}
-              </div>
-            </motion.section>
-          )}
-
-          {view === "teams" && (
-            <motion.section
-              key="teams"
-              className={styles.panel}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-            >
-              <div className={styles.teamsGrid}>
-                {teams.map((team) => (
-                  <div key={team.id} className={styles.teamBlock}>
-                    <div className={styles.teamBlockHead} style={{ background: colourToHex(team.colour) }}>
-                      {team.name}
-                    </div>
-                    <ul className={styles.teamRoster}>
-                      {(team.members ?? []).map((name, i) => (
-                        <li key={i}>{name}</li>
-                      ))}
-                      {(!team.members || team.members.length === 0) && <li className={styles.emptyNote}>—</li>}
-                    </ul>
-                  </div>
-                ))}
-                {teams.length === 0 && <p className={styles.emptyNote}>Teams haven&apos;t been drawn yet.</p>}
               </div>
             </motion.section>
           )}
